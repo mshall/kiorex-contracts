@@ -1,0 +1,32 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generated files are up to date
+        run: |
+          npm run generate
+          git diff --exit-code -- events flags src/generated
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Pack tarball (smoke)
+        run: npm run pack:local
+      - name: Smoke-test ESM and CJS entry points
+        run: |
+          node -e "const c=require('./dist/index.cjs'); if(typeof c.evaluateFlag!=='function'||typeof c.validateEvent!=='function') process.exit(1)"
+          node --input-type=module -e "const c=await import('./dist/index.js'); if(typeof c.signKiorlyRequest!=='function') process.exit(1)"

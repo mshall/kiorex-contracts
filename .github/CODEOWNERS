@@ -1,0 +1,8 @@
+# Contracts are the seam between products: every change needs an owner review.
+# Breaking a published contract needs a human decision (CLAUDE.md "Stop and ask").
+*                       @mshall
+/openapi/               @mshall
+/events/                @mshall
+/flags/                 @mshall
+/src/hmac.ts            @mshall
+/.github/               @mshall

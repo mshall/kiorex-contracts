@@ -1,0 +1,68 @@
+{
+  "name": "@kiorex/contracts",
+  "version": "1.0.0",
+  "description": "Kiorex v2 integration contracts: OpenAPI specs, event JSON Schemas, feature-flag catalogue, HMAC helpers and flag evaluator (KX-09).",
+  "license": "UNLICENSED",
+  "private": false,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./openapi/*": "./openapi/*",
+    "./events/*": "./events/*",
+    "./flags/*": "./flags/*",
+    "./consumer/*": "./consumer/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "openapi",
+    "events",
+    "flags",
+    "consumer",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mshall/kiorex-contracts.git"
+  },
+  "scripts": {
+    "generate": "node scripts/generate-events.mjs && node scripts/generate-flags.mjs && node scripts/generate-types.mjs",
+    "build": "npm run generate && tsup",
+    "lint": "tsc --noEmit",
+    "test": "vitest run",
+    "pack:local": "npm run build && mkdir -p dist-pack && npm pack --pack-destination dist-pack",
+    "prepublishOnly": "npm run lint && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "openapi-typescript": "^7.4.4",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

@@ -1,0 +1,38 @@
+name: publish
+# Manual only for now (workflow_dispatch). Switch to `on: push: tags: ['v*']` once the founder approves publishing.
+# NOT executed by the build agent. Publishing creates an immutable version on GitHub Packages.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to publish (e.g. v1.0.0). Must equal package.json version."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://npm.pkg.github.com
+          scope: "@kiorex"
+      - run: npm ci
+      - name: Tag matches package version
+        run: test "v$(node -p "require('./package.json').version")" = "${{ inputs.tag }}"
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
