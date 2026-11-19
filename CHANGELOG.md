@@ -2,6 +2,16 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.4.0
+
+Additive minor (no field removed or renamed). Reconciliation of Kiorex <-> Kiorly Pharmacy / Kiorly Lab against the RUNNING services (first real HTTP integration; before this only fake partner servers existed).
+
+- **Partner addressing (resolves NH-PH-024).** There is NO `X-Kiorex-Org-Id` header. The partner integration **client key** (`X-Kiorly-Client-Key`, already part of the request scheme) is bound to exactly one partner organisation on the partner side, so the HMAC credentials address the tenant; the branch/lab is addressed by id in the path/body (`pharmacyId` = branch id, `labId`).
+- **Webhook scheme extension.** `WEBHOOK_HEADERS.clientKey` / `signWebhook({ clientKey })`: partners add `X-Kiorly-Client-Key` to outbox events so Kiorex picks the per-partner webhook secret (Kiorly Clinic keeps the single global secret and does not send it).
+- **Constants.** `PARTNER_API_PATH` (`/marketplace/v1` for pharmacy, `/api/v1/integration/v1` for lab), `PARTNER_WEBHOOK_PATH` (`/api/v1/webhooks/pharmacy|lab` on Kiorex), `PARTNER_DEV_DEFAULTS` (dev keys, local only).
+- **OpenAPI** `openapi/kiorly-pharmacy.v1.openapi.json` (new, draft): `GET /pharmacies`, `GET /catalogue`, `POST /catalogue/quote`, `POST /orders` (idempotent on orderId), `POST /prescriptions/validate`, `POST /orders/{orderId}/cancel`, `GET /availability`. `openapi/kiorly-lab.v1.openapi.json` 0.2.0: `GET /labs`, `GET /tests`, `POST /tests/quote`, `GET /labs/{labId}/slots`. `openapi/kiorex-webhooks.v1.openapi.json` 1.1.0: `POST /webhooks/pharmacy`, `POST /webhooks/lab`.
+- Events: no schema change. `OrderReady`/`DispenseCompleted`/`OrderRejected`/`LabResultReleased` stay `v2-draft` until the owners ratify (NEEDS_HUMAN #23).
+
 ## 1.3.0
 
 Additive minor (no field removed or renamed). Kiorly Lab draft contracts (kiorly-lab NH-LB-025), all `x-status: v2-draft` / `draft`.

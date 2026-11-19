@@ -178,6 +178,24 @@ export const WEBHOOK_HEADERS = {
   eventId: "X-Kiorly-Event-Id",
   timestamp: "X-Kiorly-Timestamp",
   signature: "X-Kiorly-Signature",
+  /**
+   * Partner webhooks (Kiorly Pharmacy / Kiorly Lab -> Kiorex, 1.4.0): the partner's integration client key. Kiorex resolves the
+   * partner registration (and its per-partner webhook secret) from it. Optional for Kiorly Clinic (single global secret).
+   */
+  clientKey: "X-Kiorly-Client-Key",
+} as const;
+
+/**
+ * Where partner products live relative to their host (1.4.0, INTEGRATION.md "Vertical partners"). Kiorex stores only the host
+ * per partner registration and appends these; the path is part of the HMAC canonical string, so both sides must agree on it.
+ */
+export const PARTNER_API_PATH = { pharmacy: "/marketplace/v1", lab: "/api/v1/integration/v1" } as const;
+/** Kiorex receiver paths for partner outbox events (host = Kiorex API). */
+export const PARTNER_WEBHOOK_PATH = { pharmacy: "/api/v1/webhooks/pharmacy", lab: "/api/v1/webhooks/lab" } as const;
+/** Dev registration shared by Kiorex and the partners (documented in INTEGRATION.md; never used in production). */
+export const PARTNER_DEV_DEFAULTS = {
+  pharmacy: { baseUrl: "http://localhost:3100", clientKey: "kx_dev_pharmacy_client", clientSecret: "kx_dev_pharmacy_secret_change_me", webhookSecret: "kx_dev_pharmacy_webhook_secret" },
+  lab: { baseUrl: "http://localhost:3200", clientKey: "kl_dev_kiorex", clientSecret: "dev_kiorex_secret_change_me", webhookSecret: "kx_dev_lab_webhook_secret" },
 } as const;
 
 /** hex HMAC-SHA256(secret, `${timestampSeconds}.${body}`) — OutboxDeliveryService.signBody. */
@@ -200,6 +218,8 @@ export function signWebhook(input: {
   timestamp?: number;
   eventType?: string;
   eventId?: string;
+  /** Partner webhooks: sends X-Kiorly-Client-Key so the receiver can pick the per-partner secret. */
+  clientKey?: string;
 }): SignedWebhook {
   const timestamp = String(input.timestamp ?? Math.floor(Date.now() / 1000));
   const signature = `sha256=${webhookSignatureHex(input.secret, timestamp, input.body)}`;
@@ -210,6 +230,7 @@ export function signWebhook(input: {
   };
   if (input.eventType) headers[WEBHOOK_HEADERS.event] = input.eventType;
   if (input.eventId) headers[WEBHOOK_HEADERS.eventId] = input.eventId;
+  if (input.clientKey) headers[WEBHOOK_HEADERS.clientKey] = input.clientKey;
   return { timestamp, signature, headers };
 }
 

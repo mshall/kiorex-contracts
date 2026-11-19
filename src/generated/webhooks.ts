@@ -60,6 +60,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/webhooks/pharmacy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kiorly Pharmacy outbox event receiver (OrderReady / DispenseCompleted / OrderRejected).
+         * @description Kiorly Pharmacy outbox event receiver (OrderReady / DispenseCompleted / OrderRejected). Same signature scheme and eventId de-duplication as /webhooks/kiorly, but the secret is PER PARTNER: the sender adds `X-Kiorly-Client-Key` (its integration client key) and Kiorex verifies with that partner registration's webhook secret (dev: kx_dev_pharmacy_webhook_secret). Unknown client key => 401.
+         */
+        post: operations["receivePharmacyWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webhooks/lab": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kiorly Lab outbox event receiver (LabResultReleased carries a secure link only; Lab* draft events are acknowledged).
+         * @description Kiorly Lab outbox event receiver (LabResultReleased carries a secure link only; Lab* draft events are acknowledged). Same signature scheme and eventId de-duplication as /webhooks/kiorly, but the secret is PER PARTNER: the sender adds `X-Kiorly-Client-Key` (its integration client key) and Kiorex verifies with that partner registration's webhook secret (dev: kx_dev_lab_webhook_secret). Unknown client key => 401.
+         */
+        post: operations["receiveLabWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -297,6 +337,146 @@ export interface operations {
             };
             /** @description Invalid logout_token */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    receivePharmacyWebhook: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Event type, e.g. APPOINTMENT_CONFIRMED. */
+                "X-Kiorly-Event": string;
+                "X-Kiorly-Event-Id": string;
+                /** @description Unix epoch seconds. */
+                "X-Kiorly-Timestamp": string;
+                "X-Kiorly-Signature": string;
+                "User-Agent"?: string;
+                /** @description Partner client key (selects the per-partner webhook secret). */
+                "X-Kiorly-Client-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KiorlyEventEnvelope"];
+            };
+        };
+        responses: {
+            /** @description Accepted (also for duplicates) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookAck"];
+                };
+            };
+            /** @description Malformed envelope */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Bad signature / stale timestamp */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Backpressure; Kiorly retries */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Transient failure; Kiorly retries */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    receiveLabWebhook: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Event type, e.g. APPOINTMENT_CONFIRMED. */
+                "X-Kiorly-Event": string;
+                "X-Kiorly-Event-Id": string;
+                /** @description Unix epoch seconds. */
+                "X-Kiorly-Timestamp": string;
+                "X-Kiorly-Signature": string;
+                "User-Agent"?: string;
+                /** @description Partner client key (selects the per-partner webhook secret). */
+                "X-Kiorly-Client-Key"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KiorlyEventEnvelope"];
+            };
+        };
+        responses: {
+            /** @description Accepted (also for duplicates) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WebhookAck"];
+                };
+            };
+            /** @description Malformed envelope */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Bad signature / stale timestamp */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Backpressure; Kiorly retries */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Transient failure; Kiorly retries */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

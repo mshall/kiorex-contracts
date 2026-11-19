@@ -1,0 +1,1142 @@
+{
+  "openapi": "3.1.0",
+  "x-status": "draft",
+  "info": {
+    "title": "Kiorly Pharmacy Marketplace API (draft)",
+    "version": "0.1.0",
+    "description": "Kiorex -> Kiorly Pharmacy machine API (kiorly-pharmacy apps/api src/modules/marketplace), reconciled in 1.4.0 against the running services (NH-PH-024, NH-023). Auth: Kiorly HMAC request scheme with a per-pharmacy integration client key (the key IS the tenant address, no X-Kiorex-Org-Id). Pharmacy -> Kiorex events (OrderReady, DispenseCompleted, OrderRejected) are signed with the webhook scheme plus X-Kiorly-Client-Key and posted to Kiorex /api/v1/webhooks/pharmacy. Money: Kiorex Pay captures first; OrderRejected triggers a full refund; partial dispense parks in PARTIAL_REVIEW. No tax-authority reporting."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3100",
+      "description": "Local Kiorly Pharmacy (paths are NOT under /api/v1)"
+    }
+  ],
+  "security": [
+    {
+      "kiorlyHmac": []
+    }
+  ],
+  "paths": {
+    "/marketplace/v1/pharmacies": {
+      "get": {
+        "operationId": "pharmacyListPharmacies",
+        "tags": [
+          "marketplace-v1"
+        ],
+        "summary": "Opted-in branches (KPMKT01)",
+        "description": "Branches that opted into Kiorex orders with delivery options.",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Branches"
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | HMAC_REJECTED (bad signature, stale timestamp, replayed nonce)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key,scope} (pharmacy.kiorex_orders)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/marketplace/v1/catalogue": {
+      "get": {
+        "operationId": "pharmacyCatalogue",
+        "tags": [
+          "marketplace-v1"
+        ],
+        "summary": "Catalogue with availability-to-promise (KPINV07)",
+        "description": "Controlled medicines are never returned.",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pharmacyId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items"
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | HMAC_REJECTED (bad signature, stale timestamp, replayed nonce)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key,scope} (pharmacy.kiorex_orders)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/marketplace/v1/catalogue/quote": {
+      "post": {
+        "operationId": "pharmacyQuote",
+        "tags": [
+          "marketplace-v1"
+        ],
+        "summary": "Authoritative quote for a cart",
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | HMAC_REJECTED (bad signature, stale timestamp, replayed nonce)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key,scope} (pharmacy.kiorex_orders)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/marketplace/v1/orders": {
+      "post": {
+        "operationId": "pharmacyCreateOrder",
+        "tags": [
+          "marketplace-v1"
+        ],
+        "summary": "Order intent (after payment capture)",
+        "description": "Idempotent on orderId. 409 BRANCH_NOT_OPTED_IN | PRICE_CHANGED, 422 UNKNOWN_SKU | CONTROLLED_NOT_ORDERABLE | PRESCRIPTION_REQUIRED. Pharmacy then emits OrderReady / DispenseCompleted / OrderRejected.",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Kiorex order id; the order is also idempotent on its orderId."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderIntent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Replayed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | HMAC_REJECTED (bad signature, stale timestamp, replayed nonce)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key,scope} (pharmacy.kiorex_orders)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/marketplace/v1/prescriptions/validate": {
+      "post": {
+        "operationId": "pharmacyValidatePrescription",
+        "tags": [
+          "marketplace-v1"
+        ],
+        "summary": "Rx validation request (KPMKT04)",
+        "description": "The pharmacy verifies the token with Kiorex, then a pharmacist validates. Answer is VALID | PENDING | INVALID.",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RxValidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RxValidateResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | HMAC_REJECTED (bad signature, stale timestamp, replayed nonce)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key,scope} (pharmacy.kiorex_orders)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RxValidateResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/marketplace/v1/orders/{orderId}/cancel": {
+      "post": {
+        "operationId": "pharmacyCancelOrder",
+        "tags": [
+          "marketplace-v1"
+        ],
+        "summary": "Patient cancel before preparation completes",
+        "description": "409 ALREADY_DISPENSED once dispensed.",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          },
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cancelled"
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | HMAC_REJECTED (bad signature, stale timestamp, replayed nonce)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key,scope} (pharmacy.kiorex_orders)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Cancelled"
+          }
+        }
+      }
+    },
+    "/marketplace/v1/availability": {
+      "get": {
+        "operationId": "pharmacyAvailability",
+        "tags": [
+          "marketplace-v1"
+        ],
+        "summary": "Stock exposure per opted-in branch (KPINV07)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Availability"
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | HMAC_REJECTED (bad signature, stale timestamp, replayed nonce)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key,scope} (pharmacy.kiorex_orders)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "kiorlyHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorly-Signature"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "Pharmacy": {
+        "type": "object",
+        "description": "One opted-in branch. `id` is the branch id (Kiorex `pharmacyId`).",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "feeMinor": {
+                "type": "integer"
+              },
+              "radiusKm": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "enabled",
+              "feeMinor"
+            ]
+          },
+          "pickup": {
+            "type": "boolean"
+          },
+          "prepMinutes": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "delivery",
+          "pickup"
+        ]
+      },
+      "CatalogueItem": {
+        "type": "object",
+        "description": "Controlled medicines are NEVER listed (KPRX05). Prices are minor units (EGP piastres).",
+        "properties": {
+          "pharmacyId": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "strength": {
+            "type": "string"
+          },
+          "form": {
+            "type": "string"
+          },
+          "priceMinor": {
+            "type": "integer"
+          },
+          "rxRequired": {
+            "type": "boolean"
+          },
+          "controlled": {
+            "type": "boolean",
+            "const": false
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "availableQty": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pharmacyId",
+          "sku",
+          "name",
+          "priceMinor",
+          "rxRequired",
+          "available"
+        ]
+      },
+      "QuoteRequest": {
+        "type": "object",
+        "properties": {
+          "pharmacyId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "qty": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "sku",
+                "qty"
+              ]
+            }
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "PICKUP",
+                  "DELIVERY"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "pharmacyId",
+          "items"
+        ]
+      },
+      "Quote": {
+        "type": "object",
+        "description": "Authoritative price/availability: the pharmacy is the price authority, Kiorex never trusts client prices.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "qty": {
+                  "type": "integer"
+                },
+                "unitPriceMinor": {
+                  "type": "integer"
+                },
+                "rxRequired": {
+                  "type": "boolean"
+                },
+                "controlled": {
+                  "type": "boolean"
+                },
+                "available": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "sku",
+                "qty",
+                "unitPriceMinor",
+                "rxRequired",
+                "controlled",
+                "available"
+              ]
+            }
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "feeMinor": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "OrderIntent": {
+        "type": "object",
+        "description": "Created by Kiorex AFTER Kiorex Pay captured the payment. Idempotent on orderId (= Kiorex order id = Idempotency-Key): a replay returns the original result with replayed:true. Unit prices must equal the pharmacy's own price book (else 409 PRICE_CHANGED). Rx-only lines need `prescription` (recordRef + verificationToken, or prescriberName for an uploaded scan).",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "branchId": {
+            "type": "string",
+            "description": "= Pharmacy.id"
+          },
+          "patientRef": {
+            "type": "string"
+          },
+          "customer": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              }
+            }
+          },
+          "prepaid": {
+            "type": "boolean"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "unitPrice": {
+                  "type": "string",
+                  "description": "Decimal MAJOR units, e.g. \"12.50\" (the pharmacy ledger unit)."
+                }
+              },
+              "required": [
+                "sku",
+                "quantity",
+                "unitPrice"
+              ]
+            }
+          },
+          "delivery": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "PICKUP",
+                  "DELIVERY"
+                ]
+              },
+              "address": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "payment": {
+            "type": "object",
+            "properties": {
+              "reference": {
+                "type": "string"
+              },
+              "totalMinor": {
+                "type": "integer"
+              },
+              "currency": {
+                "type": "string"
+              }
+            }
+          },
+          "prescription": {
+            "type": "object",
+            "properties": {
+              "recordRef": {
+                "type": "string"
+              },
+              "verificationToken": {
+                "type": "string",
+                "description": "Kiorex opaque Rx token; the pharmacy verifies it with Kiorex GET /api/v1/rx/verify?t="
+              },
+              "patientRef": {
+                "type": "string"
+              },
+              "prescriberName": {
+                "type": "string"
+              },
+              "prescriberLicenceNo": {
+                "type": "string"
+              },
+              "issuedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "scanRef": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "orderId",
+          "branchId",
+          "lines"
+        ]
+      },
+      "OrderResult": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RECEIVED",
+              "ACCEPTED",
+              "PARTIALLY_ACCEPTED",
+              "READY",
+              "DISPENSED",
+              "REJECTED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "slaDueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "orderId",
+          "status"
+        ]
+      },
+      "RxValidateRequest": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "prescriptionRef": {
+            "type": "string"
+          },
+          "verificationToken": {
+            "type": "string"
+          },
+          "patientRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderId",
+          "prescriptionRef",
+          "verificationToken"
+        ]
+      },
+      "RxValidateResult": {
+        "type": "object",
+        "description": "VALID only after a pharmacist validated the prescription (KPMKT04); PENDING while that is outstanding; INVALID when Kiorex rejects the token (the order is then rejected and OrderRejected is emitted).",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "VALID",
+              "INVALID",
+              "PENDING"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CancelRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -94,3 +94,18 @@ describe("flag snapshot signature", () => {
     expect(verifySnapshot("x", { ...snap, signature: sig })).toBe(false);
   });
 });
+
+describe("partner webhook client key (1.4.0)", () => {
+  it("signWebhook adds X-Kiorly-Client-Key only when given and the signature is unchanged by it", async () => {
+    const { signWebhook, verifyWebhook, PARTNER_API_PATH, PARTNER_WEBHOOK_PATH, WEBHOOK_HEADERS } = await import("../src/index.js");
+    const body = JSON.stringify({ eventId: "e1" });
+    const a = signWebhook({ secret: "s", body, timestamp: 1_800_000_000, eventType: "OrderReady", eventId: "e1", clientKey: "kx_dev_pharmacy_client" });
+    const b = signWebhook({ secret: "s", body, timestamp: 1_800_000_000, eventType: "OrderReady", eventId: "e1" });
+    expect(a.headers[WEBHOOK_HEADERS.clientKey]).toBe("kx_dev_pharmacy_client");
+    expect(b.headers[WEBHOOK_HEADERS.clientKey]).toBeUndefined();
+    expect(a.signature).toBe(b.signature);
+    expect(verifyWebhook({ secret: "s", body, timestamp: a.timestamp, signature: a.signature, now: 1_800_000_001 }).ok).toBe(true);
+    expect(PARTNER_API_PATH.pharmacy).toBe("/marketplace/v1");
+    expect(PARTNER_WEBHOOK_PATH.lab).toBe("/api/v1/webhooks/lab");
+  });
+});

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Kiorex Webhook Receivers API",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Inbound webhooks implemented by kiorex-platform: Kiorly outbox events (KX-09 \u00a702/\u00a704), PSP callbacks (Kiorex Pay, KX-09 \u00a706) and OIDC back-channel logout (KX-04 KA05). Kiorly's signing scheme is taken from clinics-management outbox-delivery.service.ts (the code wins over KX-09 prose)."
   },
   "servers": [
@@ -285,6 +285,272 @@
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/pharmacy": {
+      "post": {
+        "operationId": "receivePharmacyWebhook",
+        "tags": [
+          "pharmacy"
+        ],
+        "summary": "Kiorly Pharmacy outbox event receiver (OrderReady / DispenseCompleted / OrderRejected).",
+        "description": "Kiorly Pharmacy outbox event receiver (OrderReady / DispenseCompleted / OrderRejected). Same signature scheme and eventId de-duplication as /webhooks/kiorly, but the secret is PER PARTNER: the sender adds `X-Kiorly-Client-Key` (its integration client key) and Kiorex verifies with that partner registration's webhook secret (dev: kx_dev_pharmacy_webhook_secret). Unknown client key => 401.",
+        "security": [
+          {
+            "kiorlyWebhookHmac": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Kiorly-Event",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Event type, e.g. APPOINTMENT_CONFIRMED."
+          },
+          {
+            "name": "X-Kiorly-Event-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{10}$"
+            },
+            "description": "Unix epoch seconds."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^sha256=[0-9a-f]{64}$"
+            }
+          },
+          {
+            "name": "User-Agent",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Kiorly-Outbox/1.0"
+            }
+          },
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner client key (selects the per-partner webhook secret)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accepted (also for duplicates)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad signature / stale timestamp",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Backpressure; Kiorly retries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Transient failure; Kiorly retries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KiorlyEventEnvelope"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/lab": {
+      "post": {
+        "operationId": "receiveLabWebhook",
+        "tags": [
+          "lab"
+        ],
+        "summary": "Kiorly Lab outbox event receiver (LabResultReleased carries a secure link only; Lab* draft events are acknowledged).",
+        "description": "Kiorly Lab outbox event receiver (LabResultReleased carries a secure link only; Lab* draft events are acknowledged). Same signature scheme and eventId de-duplication as /webhooks/kiorly, but the secret is PER PARTNER: the sender adds `X-Kiorly-Client-Key` (its integration client key) and Kiorex verifies with that partner registration's webhook secret (dev: kx_dev_lab_webhook_secret). Unknown client key => 401.",
+        "security": [
+          {
+            "kiorlyWebhookHmac": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Kiorly-Event",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Event type, e.g. APPOINTMENT_CONFIRMED."
+          },
+          {
+            "name": "X-Kiorly-Event-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{10}$"
+            },
+            "description": "Unix epoch seconds."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^sha256=[0-9a-f]{64}$"
+            }
+          },
+          {
+            "name": "User-Agent",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Kiorly-Outbox/1.0"
+            }
+          },
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner client key (selects the per-partner webhook secret)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accepted (also for duplicates)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad signature / stale timestamp",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Backpressure; Kiorly retries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Transient failure; Kiorly retries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KiorlyEventEnvelope"
               }
             }
           }

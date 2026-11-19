@@ -116,3 +116,22 @@ describe("Kiorly Lab draft OpenAPI (NH-LB-025)", () => {
     for (const m of JSON.stringify(lab).matchAll(/#\/components\/schemas\/(\w+)/g)) expect(lab.components.schemas[m[1]], m[1]).toBeTruthy();
   });
 });
+
+describe("Kiorly Pharmacy draft OpenAPI + partner addressing (1.4.0)", () => {
+  const ph = readJson("openapi/kiorly-pharmacy.v1.openapi.json");
+  it("documents the order intent, Rx validation, quote and catalogue operations with HMAC headers", () => {
+    const ids = Object.values<any>(ph.paths).flatMap((i) => Object.values<any>(i).map((o) => o.operationId));
+    expect(ids).toEqual(expect.arrayContaining(["pharmacyListPharmacies", "pharmacyCatalogue", "pharmacyQuote", "pharmacyCreateOrder", "pharmacyValidatePrescription", "pharmacyCancelOrder"]));
+    expect(new Set(ids).size).toBe(ids.length);
+    const names = ph.paths["/marketplace/v1/orders"].post.parameters.map((p: any) => p.name);
+    expect(names).toEqual(expect.arrayContaining(["X-Kiorly-Client-Key", "X-Kiorly-Timestamp", "X-Kiorly-Nonce", "X-Kiorly-Signature"]));
+    expect(JSON.stringify(ph)).not.toContain("X-Kiorex-Org-Id\"");
+    for (const m of JSON.stringify(ph).matchAll(/#\/components\/schemas\/(\w+)/g)) expect(ph.components.schemas[m[1]], m[1]).toBeTruthy();
+  });
+  it("lab has catalogue/quote/slots and Kiorex receives pharmacy + lab webhooks", () => {
+    const lab = readJson("openapi/kiorly-lab.v1.openapi.json");
+    for (const p of ["/integration/v1/tests", "/integration/v1/tests/quote", "/integration/v1/labs/{labId}/slots", "/integration/v1/labs"]) expect(lab.paths[p], p).toBeTruthy();
+    expect(hooks.paths["/webhooks/pharmacy"].post.operationId).toBe("receivePharmacyWebhook");
+    expect(hooks.paths["/webhooks/lab"].post.operationId).toBe("receiveLabWebhook");
+  });
+});
