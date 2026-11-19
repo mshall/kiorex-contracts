@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/membership.changed.schema.json",
+  "title": "membership.changed",
+  "description": "An organisation membership hint was added, changed or removed (KA09). Hint only: the product decides permissions. No clinical data. Additive in 1.2.0.",
+  "x-producer": "kiorex-account",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "membership.changed"
+    },
+    "aggregateType": {
+      "const": "Membership"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sub": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roleHint": {
+          "type": "string",
+          "description": "Role hint, e.g. owner, admin, doctor, nurse, receptionist, finance, pharmacist, lab_technician, staff."
+        },
+        "change": {
+          "enum": [
+            "added",
+            "removed",
+            "role_changed"
+          ]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "orgId",
+        "sub",
+        "roleHint",
+        "change",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

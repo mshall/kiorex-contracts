@@ -11,6 +11,10 @@
     "encounterId": "enc_01JF3ZB000",
     "clinicId": "clinic_01JF3Z7ZZZ",
     "signedAt": "2027-03-05T11:10:00.000Z",
+    "pdf": {
+      "url": "https://app.kiorly.com/api/v1/public/rx/verify/abc123/pdf",
+      "expiresAt": "2027-03-19T11:10:00.000Z"
+    },
     "aggregateType": "Encounter",
     "aggregateId": "enc_01JF3ZB000"
   }

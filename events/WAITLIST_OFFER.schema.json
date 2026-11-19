@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/WAITLIST_OFFER.schema.json",
+  "title": "WAITLIST_OFFER",
+  "description": "A slot opened (cancellation) and Kiorly's FS-03 auto-fill offers it to a Kiorex-sourced waitlist entry. Kiorex notifies the patient, who accepts/declines via POST /waitlist/offers/{offerId}/accept|decline before expiresAt. Additive in 1.1.0.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "WAITLIST_OFFER"
+    },
+    "aggregateType": {
+      "const": "WaitlistOffer"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "offerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "waitlistRef": {
+          "type": "string",
+          "description": "The externalRef the patient joined with."
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicianId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "typeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "feeAmount": {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+          "description": "Decimal string."
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "offerId",
+        "waitlistRef",
+        "clinicId",
+        "clinicianId",
+        "startsAt",
+        "expiresAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

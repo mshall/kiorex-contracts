@@ -195,8 +195,8 @@ export const EVENTS = [
   {
     type: "PRESCRIPTION_SHARED", producer: "kiorly-clinic", aggregateType: "Encounter", status: "kiorly-extra",
     description: "Prescription of a signed encounter shared with the patient app after consent. Not in KX-09 §04.",
-    data: { properties: { patientId: ID, scope: { const: "PRESCRIPTIONS" }, encounterId: ID, clinicId: ID, signedAt: TS, ...AGG }, required: ["patientId", "scope", "encounterId", "clinicId", "signedAt"] },
-    example: { aggregateId: "enc_01JF3ZB000", data: { patientId: "pat_01JF3Z0000", scope: "PRESCRIPTIONS", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", signedAt: "2027-03-05T11:10:00.000Z", aggregateType: "Encounter", aggregateId: "enc_01JF3ZB000" } },
+    data: { properties: { patientId: ID, scope: { const: "PRESCRIPTIONS" }, encounterId: ID, clinicId: ID, signedAt: TS, pdf: { type: "object", description: "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.", properties: { url: { type: "string", format: "uri" }, expiresAt: TS }, required: ["url", "expiresAt"] }, ...AGG }, required: ["patientId", "scope", "encounterId", "clinicId", "signedAt"] },
+    example: { aggregateId: "enc_01JF3ZB000", data: { patientId: "pat_01JF3Z0000", scope: "PRESCRIPTIONS", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", signedAt: "2027-03-05T11:10:00.000Z", pdf: { url: "https://app.kiorly.com/api/v1/public/rx/verify/abc123/pdf", expiresAt: "2027-03-19T11:10:00.000Z" }, aggregateType: "Encounter", aggregateId: "enc_01JF3ZB000" } },
   },
   {
     type: "RECORD_SHARE_REVOKED", producer: "kiorly-clinic", aggregateType: "Patient", status: "kiorly-extra",
@@ -204,19 +204,45 @@ export const EVENTS = [
     data: { properties: { patientId: ID, scope: { enum: ["VISIT_SUMMARY", "PRESCRIPTIONS", "LAB_RESULTS", "SHARE_WITH_OTHER_CLINICS"] }, action: { const: "DELETE_REQUESTED" }, ...AGG }, required: ["patientId", "scope", "action"] },
     example: { aggregateId: "pat_01JF3Z0000", data: { patientId: "pat_01JF3Z0000", scope: "VISIT_SUMMARY", action: "DELETE_REQUESTED", aggregateType: "Patient", aggregateId: "pat_01JF3Z0000" } },
   },
+  {
+    type: "WAITLIST_OFFER", producer: "kiorly-clinic", aggregateType: "WaitlistOffer", status: "emitted",
+    description: "A slot opened (cancellation) and Kiorly's FS-03 auto-fill offers it to a Kiorex-sourced waitlist entry. Kiorex notifies the patient, who accepts/declines via POST /waitlist/offers/{offerId}/accept|decline before expiresAt. Additive in 1.1.0.",
+    data: {
+      properties: {
+        offerId: ID, waitlistRef: { type: "string", description: "The externalRef the patient joined with." }, clinicId: ID, clinicianId: ID, typeId: ID,
+        startsAt: TS, endsAt: TS, expiresAt: TS, feeAmount: { type: "string", pattern: "^-?\\d+(\\.\\d{1,2})?$", description: "Decimal string." }, ...AGG,
+      },
+      required: ["offerId", "waitlistRef", "clinicId", "clinicianId", "startsAt", "expiresAt"],
+    },
+    example: { aggregateId: "wlo_01JF3ZG000", data: { offerId: "wlo_01JF3ZG000", waitlistRef: "kx_wl_01JF3ZG111", clinicId: "clinic_01JF3Z7ZZZ", clinicianId: "clin_01JF3Z7AAA", typeId: "type_01JF3Z8000", startsAt: "2027-03-06T09:00:00.000Z", endsAt: "2027-03-06T09:30:00.000Z", expiresAt: "2027-03-05T14:15:00.000Z", feeAmount: "300.00", aggregateType: "WaitlistOffer", aggregateId: "wlo_01JF3ZG000" } },
+  },
   // ---- v2 events (not yet emitted by any product; drafts for Pharmacy M9 / Lab M15) ----
   {
-    type: "PrescriptionIssued", producer: "kiorly-clinic", aggregateType: "Prescription", status: "v2-draft",
-    description: "Kiorly Clinic issued an e-prescription for hand-off to Kiorly Pharmacy via Kiorex. A patient consent token is required (KPRX01).",
+    type: "PrescriptionIssued", producer: "kiorly-clinic", aggregateType: "Prescription", status: "emitted",
+    description: "Kiorly Clinic issued an e-prescription for hand-off to Kiorly Pharmacy via Kiorex. A patient consent token is required (KPRX01). Emitted by Kiorly Clinic (KCV203, clinic.eprescription_handoff) when staff hand off a signed Rx; one event per encounter (prescriptionId = encounterId). Kiorly has no pack count, so item quantity is 1 and Pharmacy confirms at dispensing.",
     data: {
       properties: {
         prescriptionId: ID, encounterId: ID, clinicId: ID, patientRef: { type: "string", description: "Kiorex subject or Kiorly patient reference; never a national ID." },
-        prescriberId: ID, consentToken: { type: "string", minLength: 1 }, issuedAt: TS,
+        prescriberId: ID, consentToken: { type: "string", minLength: 1, description: "Opaque token derived from the patient's active PRESCRIPTIONS record-share grant (rsc_...)." }, issuedAt: TS, ...AGG,
         items: { type: "array", minItems: 1, items: { type: "object", properties: { activeIngredient: S, drugName: S, strength: S, dose: S, quantity: { type: "number", exclusiveMinimum: 0 }, controlled: { type: "boolean" } }, required: ["activeIngredient", "quantity"] } },
       },
       required: ["prescriptionId", "clinicId", "patientRef", "prescriberId", "consentToken", "issuedAt", "items"],
     },
     example: { aggregateId: "rx_01JF3ZC000", data: { prescriptionId: "rx_01JF3ZC000", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", patientRef: "sub_01JF3Z0001", prescriberId: "clin_01JF3Z7AAA", consentToken: "ct_01JF3ZC111", issuedAt: "2027-03-05T11:12:00.000Z", items: [{ activeIngredient: "amoxicillin", strength: "500 mg", quantity: 21 }] } },
+  },
+  {
+    type: "LabOrderPlaced", producer: "kiorly-clinic", aggregateType: "LabOrder", status: "emitted",
+    description: "Kiorly Clinic handed a lab order to Kiorly Lab via Kiorex (KCV204, clinic.lab_order_handoff). A patient consent token (LAB_RESULTS record-share grant) is required. One event per order. Additive in 1.1.0.",
+    data: {
+      properties: {
+        orderId: ID, encounterId: ID, clinicId: ID, patientRef: { type: "string", minLength: 1, description: "Kiorly patient reference; never a national ID." },
+        orderingClinicianId: ID, consentToken: { type: "string", minLength: 1 }, orderedAt: TS,
+        items: { type: "array", minItems: 1, items: { type: "object", properties: { code: S, nameEn: { type: "string", minLength: 1 }, nameAr: S }, required: ["nameEn"] } },
+        notes: S, preferredLabId: ID, ...AGG,
+      },
+      required: ["orderId", "clinicId", "patientRef", "consentToken", "orderedAt", "items"],
+    },
+    example: { aggregateId: "lord_01JF3ZF000", data: { orderId: "lord_01JF3ZF000", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", patientRef: "pat_01JF3Z0000", orderingClinicianId: "clin_01JF3Z7AAA", consentToken: "rsc_0123456789abcdef0123456789abcdef", orderedAt: "2027-03-05T11:15:00.000Z", items: [{ code: "CBC", nameEn: "Complete blood count" }], aggregateType: "LabOrder", aggregateId: "lord_01JF3ZF000" } },
   },
   {
     type: "OrderReady", producer: "kiorly-pharmacy", aggregateType: "PharmacyOrder", status: "v2-draft",
@@ -254,6 +280,46 @@ export const EVENTS = [
     description: "Back-channel logout (KA05): revoke the product sessions bound to this sub and/or sid.",
     data: { properties: { sub: ID, sid: ID, revokedAt: TS, reason: { enum: ["logout", "remote_revoke", "reuse_detected", "password_or_credential_change", "admin"] } }, required: ["sub", "revokedAt"]},
     example: { aggregateId: "sid_01JF3ZF000", data: { sub: "sub_01JF3Z0001", sid: "sid_01JF3ZF000", revokedAt: "2027-04-01T08:00:00.000Z", reason: "remote_revoke" } },
+  },
+  {
+    type: "guardian.link.changed", producer: "kiorex-account", aggregateType: "GuardianLink", status: "v2-draft",
+    description: "A guardian <-> dependant link was created, activated (co-guardian accepted), revoked or expired at the age of majority (KA06). Identifiers and relationship facts only; no clinical data (ADR-013). Additive in 1.2.0.",
+    data: {
+      properties: {
+        linkId: ID, guardianSub: ID, dependantSub: ID,
+        change: { enum: ["created", "activated", "revoked", "expired"] },
+        relationship: { enum: ["parent", "legal_guardian", "grandparent", "other_relative"] },
+        evidenceType: { enum: ["self_declared", "birth_certificate_ref", "court_order_ref", "provider_attested"] },
+        reason: { type: "string", description: "For revoked/expired, e.g. age_of_majority, revoked_by_guardian, guardian_deleted." },
+        expiresAt: { ...TS, description: "Age-of-majority expiry of the link." },
+        effectiveAt: TS,
+      },
+      required: ["linkId", "guardianSub", "dependantSub", "change", "effectiveAt"],
+    },
+    example: { aggregateId: "gl_01JF3ZG000", data: { linkId: "gl_01JF3ZG000", guardianSub: "sub_01JF3Z0001", dependantSub: "sub_01JF3Z0002", change: "created", relationship: "parent", evidenceType: "self_declared", expiresAt: "2044-05-01T00:00:00.000Z", effectiveAt: "2026-11-19T08:00:00.000Z" } },
+  },
+  {
+    type: "membership.changed", producer: "kiorex-account", aggregateType: "Membership", status: "v2-draft",
+    description: "An organisation membership hint was added, changed or removed (KA09). Hint only: the product decides permissions. No clinical data. Additive in 1.2.0.",
+    data: {
+      properties: {
+        orgId: ID, sub: ID, roleHint: { type: "string", description: "Role hint, e.g. owner, admin, doctor, nurse, receptionist, finance, pharmacist, lab_technician, staff." },
+        change: { enum: ["added", "removed", "role_changed"] }, at: TS,
+      },
+      required: ["orgId", "sub", "roleHint", "change", "at"],
+    },
+    example: { aggregateId: "org_01JF3ZH000:sub_01JF3Z0001", data: { orgId: "org_01JF3ZH000", sub: "sub_01JF3Z0001", roleHint: "doctor", change: "added", at: "2026-11-19T08:00:00.000Z" } },
+  },
+  {
+    type: "account.merged", producer: "kiorex-account", aggregateType: "Account", status: "v2-draft",
+    description: "Two Passports were merged after operator review, or a merge was reversed (KA08). Products merge or split their OWN patient links separately and with review; this event never implies a clinical merge. Additive in 1.2.0.",
+    data: {
+      properties: {
+        linkId: ID, primarySub: ID, mergedSub: ID, change: { enum: ["merged", "reversed"] }, reversible: { type: "boolean" }, at: TS,
+      },
+      required: ["linkId", "primarySub", "mergedSub", "change", "at"],
+    },
+    example: { aggregateId: "sub_01JF3Z0001", data: { linkId: "lk_01JF3ZJ000", primarySub: "sub_01JF3Z0001", mergedSub: "sub_01JF3Z0003", change: "merged", reversible: true, at: "2026-11-19T08:00:00.000Z" } },
   },
   // ---- Feature-flag control plane ----
   {

@@ -2,6 +2,35 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.2.0
+
+Additive minor (no field removed or renamed). Kiorex Passport (kiorex-account) identity work KA-06/08/09/10/11.
+
+- **Events** (producer `kiorex-account`, status `v2-draft`): `guardian.link.changed` (KA06), `membership.changed` (KA09),
+  `account.merged` (KA08). Identifiers and relationship facts only, no clinical data (ADR-013).
+- **Access-token claims** (documented here because they are the identity contract; no schema file exists for tokens). All additive,
+  all optional, none clinical: `acr` (`urn:kiorex:acr:basic` | `urn:kiorex:acr:mfa`) and `amr` (RFC 8176 values plus `totp`, `fed`)
+  and `auth_time` as the step-up signal (KA10); `kx_orgs: [{org_id, role_hint}]` only when scope `kx_org` is requested (KA09);
+  `act: {sub}` (RFC 8693 actor) on guardian acting-as tokens where `sub` is the dependant and `scope` is a subset of
+  `dependant:profile dependant:booking dependant:consent` (KA06). Products must keep ignoring unknown claims.
+- OpenAPI: no change. Flags: no change in the catalogue (`account.provider_sso` is a kiorex-account IdP flag, registered by the control plane later).
+
+## 1.1.0
+
+Additive minor (no field removed or renamed).
+
+- **Marketplace OpenAPI** (also in clinics-management `apps/api/openapi`, kept identical): `GET /analytics/slot-capacity`
+  (`marketplaceSlotCapacity`, HMAC, counts of open marketplace slots per clinician per clinic-local day, for Kiorex liquidity
+  "slots/day"); waitlist: `POST /waitlist` (`marketplaceJoinWaitlist`, idempotent on `externalRef`), `GET|DELETE /waitlist/{externalRef}`
+  (`marketplaceGetWaitlist`, `marketplaceLeaveWaitlist`), `POST /waitlist/offers/{offerId}/accept|decline`
+  (`marketplaceAcceptWaitlistOffer`, `marketplaceDeclineWaitlistOffer`). Added to the consumer contract.
+- **Events**: new `WAITLIST_OFFER` (Kiorly -> Kiorex; a cancelled slot offered to a Kiorex-sourced waitlist entry) and
+  `LabOrderPlaced` (Kiorly Clinic -> Kiorly Lab via Kiorex, KCV204, consent token required).
+  `PrescriptionIssued` now has a producer (KCV203): status `v2-draft` -> `emitted`; optional `aggregateType/aggregateId` added
+  to `data`; Kiorly sends `quantity: 1` per item (no pack count in the clinic Rx).
+- `PRESCRIPTION_SHARED` gains an optional `pdf: { url, expiresAt }` (signed expiring link to the Rx PDF, KX-11 "Rx PDF").
+- Flags: no change.
+
 ## 1.0.0
 
 Initial release (NH-019, KX-09 §07). Contents: Kiorly marketplace OpenAPI + Kiorex consumer contract (copied unchanged from

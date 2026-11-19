@@ -1,0 +1,25 @@
+{
+  "eventId": "01JF3ZEVTLABORDER",
+  "type": "LabOrderPlaced",
+  "aggregateType": "LabOrder",
+  "aggregateId": "lord_01JF3ZF000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "orderId": "lord_01JF3ZF000",
+    "encounterId": "enc_01JF3ZB000",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "patientRef": "pat_01JF3Z0000",
+    "orderingClinicianId": "clin_01JF3Z7AAA",
+    "consentToken": "rsc_0123456789abcdef0123456789abcdef",
+    "orderedAt": "2027-03-05T11:15:00.000Z",
+    "items": [
+      {
+        "code": "CBC",
+        "nameEn": "Complete blood count"
+      }
+    ],
+    "aggregateType": "LabOrder",
+    "aggregateId": "lord_01JF3ZF000"
+  }
+}

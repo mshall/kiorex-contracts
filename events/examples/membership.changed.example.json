@@ -1,0 +1,14 @@
+{
+  "eventId": "01JF3ZEVTMEMBERSH",
+  "type": "membership.changed",
+  "aggregateType": "Membership",
+  "aggregateId": "org_01JF3ZH000:sub_01JF3Z0001",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "orgId": "org_01JF3ZH000",
+    "sub": "sub_01JF3Z0001",
+    "roleHint": "doctor",
+    "change": "added",
+    "at": "2026-11-19T08:00:00.000Z"
+  }
+}

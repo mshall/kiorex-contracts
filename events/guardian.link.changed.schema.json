@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/guardian.link.changed.schema.json",
+  "title": "guardian.link.changed",
+  "description": "A guardian <-> dependant link was created, activated (co-guardian accepted), revoked or expired at the age of majority (KA06). Identifiers and relationship facts only; no clinical data (ADR-013). Additive in 1.2.0.",
+  "x-producer": "kiorex-account",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "guardian.link.changed"
+    },
+    "aggregateType": {
+      "const": "GuardianLink"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "linkId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "guardianSub": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependantSub": {
+          "type": "string",
+          "minLength": 1
+        },
+        "change": {
+          "enum": [
+            "created",
+            "activated",
+            "revoked",
+            "expired"
+          ]
+        },
+        "relationship": {
+          "enum": [
+            "parent",
+            "legal_guardian",
+            "grandparent",
+            "other_relative"
+          ]
+        },
+        "evidenceType": {
+          "enum": [
+            "self_declared",
+            "birth_certificate_ref",
+            "court_order_ref",
+            "provider_attested"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "description": "For revoked/expired, e.g. age_of_majority, revoked_by_guardian, guardian_deleted."
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Age-of-majority expiry of the link."
+        },
+        "effectiveAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "linkId",
+        "guardianSub",
+        "dependantSub",
+        "change",
+        "effectiveAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

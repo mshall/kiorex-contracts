@@ -238,6 +238,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/analytics/slot-capacity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Open marketplace slots per clinician per clinic-local day, for Kiorex liquidity (slots/day). Counts only, no PHI (additive, 1.1.0) */
+        get: operations["marketplaceSlotCapacity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/waitlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Kiorex patient joins a clinic/doctor waitlist; idempotent on externalRef (additive, 1.1.0). Slots that open are offered via the WAITLIST_OFFER event */
+        post: operations["marketplaceJoinWaitlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/waitlist/{externalRef}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a Kiorex waitlist entry (additive, 1.1.0) */
+        get: operations["marketplaceGetWaitlist"];
+        put?: never;
+        post?: never;
+        /** Kiorex patient leaves the waitlist; idempotent, withdraws a pending offer (additive, 1.1.0) */
+        delete: operations["marketplaceLeaveWaitlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/waitlist/offers/{offerId}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Patient accepts a WAITLIST_OFFER: Kiorly books the slot as a KIOREX_MARKETPLACE appointment with externalReference = waitlist ref (additive, 1.1.0) */
+        post: operations["marketplaceAcceptWaitlistOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/waitlist/offers/{offerId}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Patient declines a WAITLIST_OFFER; the slot goes to the next person (additive, 1.1.0) */
+        post: operations["marketplaceDeclineWaitlistOffer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/analytics/profile-views": {
         parameters: {
             query?: never;
@@ -769,6 +855,222 @@ export interface operations {
             };
             /** @description CANCELLATION_WINDOW_CLOSED or BOOKING_NOT_CHANGEABLE */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceSlotCapacity: {
+        parameters: {
+            query: {
+                /** @description Clinic-local first day, inclusive */
+                from: string;
+                /** @description Clinic-local last day, inclusive; range max 30 days */
+                to: string;
+                clinicId?: string;
+                clinicianId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Per LIVE listing per day open slot counts (based on the clinician's shortest marketplace-bookable type) plus per-day totals */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Format: date */
+                        from: string;
+                        /** Format: date */
+                        to: string;
+                        items: {
+                            clinicId: string;
+                            clinicianId: string;
+                            /** Format: date */
+                            date: string;
+                            typeId: string;
+                            slotMinutes: number;
+                            openSlots: number;
+                        }[];
+                        totals: {
+                            /** Format: date */
+                            date: string;
+                            openSlots: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description Missing/invalid dates or range over 30 days */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceJoinWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Kiorex waitlist reference */
+                    externalRef: string;
+                    clinicId: string;
+                    clinicianId?: string;
+                    typeId?: string;
+                    /** Format: date-time */
+                    preferredFrom?: string;
+                    /** Format: date-time */
+                    preferredTo?: string;
+                    notes?: string;
+                    marketplaceConsentGranted?: boolean;
+                    patient: {
+                        phone: string;
+                        firstNameEn: string;
+                        lastNameEn: string;
+                        nationalId?: string;
+                        email?: string;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description Waitlist entry (status WAITING | OFFERED | BOOKED | CANCELLED) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid clinic, type, window or patient */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No LIVE listing for the clinic/doctor */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceGetWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                externalRef: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Waitlist entry */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown entry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceLeaveWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                externalRef: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Waitlist entry (CANCELLED, or BOOKED if already booked) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown entry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceAcceptWaitlistOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description { offerId, outcome: BOOKED | UNAVAILABLE, appointmentId } */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown offer */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceDeclineWaitlistOffer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description { offerId, outcome: DECLINED | UNAVAILABLE } */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown offer */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

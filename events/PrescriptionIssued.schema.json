@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://contracts.kiorex.com/events/PrescriptionIssued.schema.json",
   "title": "PrescriptionIssued",
-  "description": "Kiorly Clinic issued an e-prescription for hand-off to Kiorly Pharmacy via Kiorex. A patient consent token is required (KPRX01).",
+  "description": "Kiorly Clinic issued an e-prescription for hand-off to Kiorly Pharmacy via Kiorex. A patient consent token is required (KPRX01). Emitted by Kiorly Clinic (KCV203, clinic.eprescription_handoff) when staff hand off a signed Rx; one event per encounter (prescriptionId = encounterId). Kiorly has no pack count, so item quantity is 1 and Pharmacy confirms at dispensing.",
   "x-producer": "kiorly-clinic",
-  "x-status": "v2-draft",
+  "x-status": "emitted",
   "allOf": [
     {
       "$ref": "envelope.schema.json"
@@ -43,11 +43,20 @@
         },
         "consentToken": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Opaque token derived from the patient's active PRESCRIPTIONS record-share grant (rsc_...)."
         },
         "issuedAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
         },
         "items": {
           "type": "array",

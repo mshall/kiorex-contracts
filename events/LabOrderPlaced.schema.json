@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/LabOrderPlaced.schema.json",
+  "title": "LabOrderPlaced",
+  "description": "Kiorly Clinic handed a lab order to Kiorly Lab via Kiorex (KCV204, clinic.lab_order_handoff). A patient consent token (LAB_RESULTS record-share grant) is required. One event per order. Additive in 1.1.0.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "LabOrderPlaced"
+    },
+    "aggregateType": {
+      "const": "LabOrder"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encounterId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "patientRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Kiorly patient reference; never a national ID."
+        },
+        "orderingClinicianId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consentToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orderedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "nameEn": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nameAr": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "nameEn"
+            ]
+          }
+        },
+        "notes": {
+          "type": "string"
+        },
+        "preferredLabId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "orderId",
+        "clinicId",
+        "patientRef",
+        "consentToken",
+        "orderedAt",
+        "items"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

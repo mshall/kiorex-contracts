@@ -1651,6 +1651,24 @@ export const EVENT_SCHEMAS = {
             "type": "string",
             "format": "date-time"
           },
+          "pdf": {
+            "type": "object",
+            "description": "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.",
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri"
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "url",
+              "expiresAt"
+            ]
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -1735,13 +1753,98 @@ export const EVENT_SCHEMAS = {
       "data"
     ]
   },
+  "WAITLIST_OFFER": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/WAITLIST_OFFER.schema.json",
+    "title": "WAITLIST_OFFER",
+    "description": "A slot opened (cancellation) and Kiorly's FS-03 auto-fill offers it to a Kiorex-sourced waitlist entry. Kiorex notifies the patient, who accepts/declines via POST /waitlist/offers/{offerId}/accept|decline before expiresAt. Additive in 1.1.0.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "emitted",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "WAITLIST_OFFER"
+      },
+      "aggregateType": {
+        "const": "WaitlistOffer"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "waitlistRef": {
+            "type": "string",
+            "description": "The externalRef the patient joined with."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "clinicianId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "typeId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "feeAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+            "description": "Decimal string."
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "offerId",
+          "waitlistRef",
+          "clinicId",
+          "clinicianId",
+          "startsAt",
+          "expiresAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
   "PrescriptionIssued": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/events/PrescriptionIssued.schema.json",
     "title": "PrescriptionIssued",
-    "description": "Kiorly Clinic issued an e-prescription for hand-off to Kiorly Pharmacy via Kiorex. A patient consent token is required (KPRX01).",
+    "description": "Kiorly Clinic issued an e-prescription for hand-off to Kiorly Pharmacy via Kiorex. A patient consent token is required (KPRX01). Emitted by Kiorly Clinic (KCV203, clinic.eprescription_handoff) when staff hand off a signed Rx; one event per encounter (prescriptionId = encounterId). Kiorly has no pack count, so item quantity is 1 and Pharmacy confirms at dispensing.",
     "x-producer": "kiorly-clinic",
-    "x-status": "v2-draft",
+    "x-status": "emitted",
     "allOf": [
       {
         "$ref": "envelope.schema.json"
@@ -1780,11 +1883,20 @@ export const EVENT_SCHEMAS = {
           },
           "consentToken": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Opaque token derived from the patient's active PRESCRIPTIONS record-share grant (rsc_...)."
           },
           "issuedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
           },
           "items": {
             "type": "array",
@@ -1826,6 +1938,112 @@ export const EVENT_SCHEMAS = {
           "prescriberId",
           "consentToken",
           "issuedAt",
+          "items"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LabOrderPlaced": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LabOrderPlaced.schema.json",
+    "title": "LabOrderPlaced",
+    "description": "Kiorly Clinic handed a lab order to Kiorly Lab via Kiorex (KCV204, clinic.lab_order_handoff). A patient consent token (LAB_RESULTS record-share grant) is required. One event per order. Additive in 1.1.0.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "emitted",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LabOrderPlaced"
+      },
+      "aggregateType": {
+        "const": "LabOrder"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "encounterId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "patientRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Kiorly patient reference; never a national ID."
+          },
+          "orderingClinicianId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "consentToken": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orderedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "nameEn": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "nameAr": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "nameEn"
+              ]
+            }
+          },
+          "notes": {
+            "type": "string"
+          },
+          "preferredLabId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "orderId",
+          "clinicId",
+          "patientRef",
+          "consentToken",
+          "orderedAt",
           "items"
         ]
       }
@@ -2222,6 +2440,220 @@ export const EVENT_SCHEMAS = {
         "required": [
           "sub",
           "revokedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "guardian.link.changed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/guardian.link.changed.schema.json",
+    "title": "guardian.link.changed",
+    "description": "A guardian <-> dependant link was created, activated (co-guardian accepted), revoked or expired at the age of majority (KA06). Identifiers and relationship facts only; no clinical data (ADR-013). Additive in 1.2.0.",
+    "x-producer": "kiorex-account",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "guardian.link.changed"
+      },
+      "aggregateType": {
+        "const": "GuardianLink"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "linkId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "guardianSub": {
+            "type": "string",
+            "minLength": 1
+          },
+          "dependantSub": {
+            "type": "string",
+            "minLength": 1
+          },
+          "change": {
+            "enum": [
+              "created",
+              "activated",
+              "revoked",
+              "expired"
+            ]
+          },
+          "relationship": {
+            "enum": [
+              "parent",
+              "legal_guardian",
+              "grandparent",
+              "other_relative"
+            ]
+          },
+          "evidenceType": {
+            "enum": [
+              "self_declared",
+              "birth_certificate_ref",
+              "court_order_ref",
+              "provider_attested"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "For revoked/expired, e.g. age_of_majority, revoked_by_guardian, guardian_deleted."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Age-of-majority expiry of the link."
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "linkId",
+          "guardianSub",
+          "dependantSub",
+          "change",
+          "effectiveAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "membership.changed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/membership.changed.schema.json",
+    "title": "membership.changed",
+    "description": "An organisation membership hint was added, changed or removed (KA09). Hint only: the product decides permissions. No clinical data. Additive in 1.2.0.",
+    "x-producer": "kiorex-account",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "membership.changed"
+      },
+      "aggregateType": {
+        "const": "Membership"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "orgId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sub": {
+            "type": "string",
+            "minLength": 1
+          },
+          "roleHint": {
+            "type": "string",
+            "description": "Role hint, e.g. owner, admin, doctor, nurse, receptionist, finance, pharmacist, lab_technician, staff."
+          },
+          "change": {
+            "enum": [
+              "added",
+              "removed",
+              "role_changed"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "orgId",
+          "sub",
+          "roleHint",
+          "change",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "account.merged": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/account.merged.schema.json",
+    "title": "account.merged",
+    "description": "Two Passports were merged after operator review, or a merge was reversed (KA08). Products merge or split their OWN patient links separately and with review; this event never implies a clinical merge. Additive in 1.2.0.",
+    "x-producer": "kiorex-account",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "account.merged"
+      },
+      "aggregateType": {
+        "const": "Account"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "linkId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "primarySub": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mergedSub": {
+            "type": "string",
+            "minLength": 1
+          },
+          "change": {
+            "enum": [
+              "merged",
+              "reversed"
+            ]
+          },
+          "reversible": {
+            "type": "boolean"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "linkId",
+          "primarySub",
+          "mergedSub",
+          "change",
+          "at"
         ]
       }
     },
@@ -2660,6 +3092,10 @@ export const EVENT_EXAMPLES = {
       "encounterId": "enc_01JF3ZB000",
       "clinicId": "clinic_01JF3Z7ZZZ",
       "signedAt": "2027-03-05T11:10:00.000Z",
+      "pdf": {
+        "url": "https://app.kiorly.com/api/v1/public/rx/verify/abc123/pdf",
+        "expiresAt": "2027-03-19T11:10:00.000Z"
+      },
       "aggregateType": "Encounter",
       "aggregateId": "enc_01JF3ZB000"
     }
@@ -2677,6 +3113,27 @@ export const EVENT_EXAMPLES = {
       "action": "DELETE_REQUESTED",
       "aggregateType": "Patient",
       "aggregateId": "pat_01JF3Z0000"
+    }
+  },
+  "WAITLIST_OFFER": {
+    "eventId": "01JF3ZEVTWAITLIST",
+    "type": "WAITLIST_OFFER",
+    "aggregateType": "WaitlistOffer",
+    "aggregateId": "wlo_01JF3ZG000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "offerId": "wlo_01JF3ZG000",
+      "waitlistRef": "kx_wl_01JF3ZG111",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "clinicianId": "clin_01JF3Z7AAA",
+      "typeId": "type_01JF3Z8000",
+      "startsAt": "2027-03-06T09:00:00.000Z",
+      "endsAt": "2027-03-06T09:30:00.000Z",
+      "expiresAt": "2027-03-05T14:15:00.000Z",
+      "feeAmount": "300.00",
+      "aggregateType": "WaitlistOffer",
+      "aggregateId": "wlo_01JF3ZG000"
     }
   },
   "PrescriptionIssued": {
@@ -2701,6 +3158,31 @@ export const EVENT_EXAMPLES = {
           "quantity": 21
         }
       ]
+    }
+  },
+  "LabOrderPlaced": {
+    "eventId": "01JF3ZEVTLABORDER",
+    "type": "LabOrderPlaced",
+    "aggregateType": "LabOrder",
+    "aggregateId": "lord_01JF3ZF000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "orderId": "lord_01JF3ZF000",
+      "encounterId": "enc_01JF3ZB000",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "patientRef": "pat_01JF3Z0000",
+      "orderingClinicianId": "clin_01JF3Z7AAA",
+      "consentToken": "rsc_0123456789abcdef0123456789abcdef",
+      "orderedAt": "2027-03-05T11:15:00.000Z",
+      "items": [
+        {
+          "code": "CBC",
+          "nameEn": "Complete blood count"
+        }
+      ],
+      "aggregateType": "LabOrder",
+      "aggregateId": "lord_01JF3ZF000"
     }
   },
   "OrderReady": {
@@ -2792,6 +3274,52 @@ export const EVENT_EXAMPLES = {
       "sid": "sid_01JF3ZF000",
       "revokedAt": "2027-04-01T08:00:00.000Z",
       "reason": "remote_revoke"
+    }
+  },
+  "guardian.link.changed": {
+    "eventId": "01JF3ZEVTGUARDIAN",
+    "type": "guardian.link.changed",
+    "aggregateType": "GuardianLink",
+    "aggregateId": "gl_01JF3ZG000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "linkId": "gl_01JF3ZG000",
+      "guardianSub": "sub_01JF3Z0001",
+      "dependantSub": "sub_01JF3Z0002",
+      "change": "created",
+      "relationship": "parent",
+      "evidenceType": "self_declared",
+      "expiresAt": "2044-05-01T00:00:00.000Z",
+      "effectiveAt": "2026-11-19T08:00:00.000Z"
+    }
+  },
+  "membership.changed": {
+    "eventId": "01JF3ZEVTMEMBERSH",
+    "type": "membership.changed",
+    "aggregateType": "Membership",
+    "aggregateId": "org_01JF3ZH000:sub_01JF3Z0001",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "orgId": "org_01JF3ZH000",
+      "sub": "sub_01JF3Z0001",
+      "roleHint": "doctor",
+      "change": "added",
+      "at": "2026-11-19T08:00:00.000Z"
+    }
+  },
+  "account.merged": {
+    "eventId": "01JF3ZEVTACCOUNTM",
+    "type": "account.merged",
+    "aggregateType": "Account",
+    "aggregateId": "sub_01JF3Z0001",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "linkId": "lk_01JF3ZJ000",
+      "primarySub": "sub_01JF3Z0001",
+      "mergedSub": "sub_01JF3Z0003",
+      "change": "merged",
+      "reversible": true,
+      "at": "2026-11-19T08:00:00.000Z"
     }
   },
   "flag.changed": {
@@ -2935,11 +3463,23 @@ export const EVENT_META = {
     "status": "kiorly-extra",
     "schemaFile": "RECORD_SHARE_REVOKED.schema.json"
   },
+  "WAITLIST_OFFER": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "WaitlistOffer",
+    "status": "emitted",
+    "schemaFile": "WAITLIST_OFFER.schema.json"
+  },
   "PrescriptionIssued": {
     "producer": "kiorly-clinic",
     "aggregateType": "Prescription",
-    "status": "v2-draft",
+    "status": "emitted",
     "schemaFile": "PrescriptionIssued.schema.json"
+  },
+  "LabOrderPlaced": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "LabOrder",
+    "status": "emitted",
+    "schemaFile": "LabOrderPlaced.schema.json"
   },
   "OrderReady": {
     "producer": "kiorly-pharmacy",
@@ -2977,6 +3517,24 @@ export const EVENT_META = {
     "status": "v2-draft",
     "schemaFile": "session.revoked.schema.json"
   },
+  "guardian.link.changed": {
+    "producer": "kiorex-account",
+    "aggregateType": "GuardianLink",
+    "status": "v2-draft",
+    "schemaFile": "guardian.link.changed.schema.json"
+  },
+  "membership.changed": {
+    "producer": "kiorex-account",
+    "aggregateType": "Membership",
+    "status": "v2-draft",
+    "schemaFile": "membership.changed.schema.json"
+  },
+  "account.merged": {
+    "producer": "kiorex-account",
+    "aggregateType": "Account",
+    "status": "v2-draft",
+    "schemaFile": "account.merged.schema.json"
+  },
   "flag.changed": {
     "producer": "kiorex-control-plane",
     "aggregateType": "Flag",
@@ -2985,7 +3543,7 @@ export const EVENT_META = {
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "PrescriptionIssued" | "OrderReady" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "subject.deleted" | "session.revoked" | "flag.changed";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -3031,12 +3589,16 @@ export type MarketplaceBookingConfirmTimeoutData = { "appointmentId": string; "c
 export type MarketplaceBookingConfirmTimeoutEvent = EventEnvelope<"MARKETPLACE_BOOKING_CONFIRM_TIMEOUT", MarketplaceBookingConfirmTimeoutData>;
 export type VisitSummarySharedData = { "patientId": string; "scope": "VISIT_SUMMARY"; "summary": { "encounterId": string; "clinicId": string; "signedAt": string; "soap": { "chiefComplaint"?: string | null; "subjective"?: string | null; "objective"?: string | null; "assessment"?: string | null; "plan"?: string | null; [k: string]: unknown }; [k: string]: unknown }; "signature": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type VisitSummarySharedEvent = EventEnvelope<"VISIT_SUMMARY_SHARED", VisitSummarySharedData>;
-export type PrescriptionSharedData = { "patientId": string; "scope": "PRESCRIPTIONS"; "encounterId": string; "clinicId": string; "signedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PrescriptionSharedData = { "patientId": string; "scope": "PRESCRIPTIONS"; "encounterId": string; "clinicId": string; "signedAt": string; "pdf"?: { "url": string; "expiresAt": string; [k: string]: unknown }; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PrescriptionSharedEvent = EventEnvelope<"PRESCRIPTION_SHARED", PrescriptionSharedData>;
 export type RecordShareRevokedData = { "patientId": string; "scope": "VISIT_SUMMARY" | "PRESCRIPTIONS" | "LAB_RESULTS" | "SHARE_WITH_OTHER_CLINICS"; "action": "DELETE_REQUESTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type RecordShareRevokedEvent = EventEnvelope<"RECORD_SHARE_REVOKED", RecordShareRevokedData>;
-export type PrescriptionIssuedData = { "prescriptionId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "prescriberId": string; "consentToken": string; "issuedAt": string; "items": Array<{ "activeIngredient": string; "drugName"?: string; "strength"?: string; "dose"?: string; "quantity": number; "controlled"?: boolean; [k: string]: unknown }>; [k: string]: unknown };
+export type WaitlistOfferData = { "offerId": string; "waitlistRef": string; "clinicId": string; "clinicianId": string; "typeId"?: string; "startsAt": string; "endsAt"?: string; "expiresAt": string; "feeAmount"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type WaitlistOfferEvent = EventEnvelope<"WAITLIST_OFFER", WaitlistOfferData>;
+export type PrescriptionIssuedData = { "prescriptionId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "prescriberId": string; "consentToken": string; "issuedAt": string; "aggregateType"?: string; "aggregateId"?: string; "items": Array<{ "activeIngredient": string; "drugName"?: string; "strength"?: string; "dose"?: string; "quantity": number; "controlled"?: boolean; [k: string]: unknown }>; [k: string]: unknown };
 export type PrescriptionIssuedEvent = EventEnvelope<"PrescriptionIssued", PrescriptionIssuedData>;
+export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "orderingClinicianId"?: string; "consentToken": string; "orderedAt": string; "items": Array<{ "code"?: string; "nameEn": string; "nameAr"?: string; [k: string]: unknown }>; "notes"?: string; "preferredLabId"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type LabOrderPlacedEvent = EventEnvelope<"LabOrderPlaced", LabOrderPlacedData>;
 export type OrderReadyData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "readyAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; [k: string]: unknown };
 export type OrderReadyEvent = EventEnvelope<"OrderReady", OrderReadyData>;
 export type DispenseCompletedData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "dispensedAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; "partial"?: boolean; [k: string]: unknown };
@@ -3049,6 +3611,12 @@ export type SubjectDeletedData = { "sub": string; "deletedAt": string; "requeste
 export type SubjectDeletedEvent = EventEnvelope<"subject.deleted", SubjectDeletedData>;
 export type SessionRevokedData = { "sub": string; "sid"?: string; "revokedAt": string; "reason"?: "logout" | "remote_revoke" | "reuse_detected" | "password_or_credential_change" | "admin"; [k: string]: unknown };
 export type SessionRevokedEvent = EventEnvelope<"session.revoked", SessionRevokedData>;
+export type GuardianLinkChangedData = { "linkId": string; "guardianSub": string; "dependantSub": string; "change": "created" | "activated" | "revoked" | "expired"; "relationship"?: "parent" | "legal_guardian" | "grandparent" | "other_relative"; "evidenceType"?: "self_declared" | "birth_certificate_ref" | "court_order_ref" | "provider_attested"; "reason"?: string; "expiresAt"?: string; "effectiveAt": string; [k: string]: unknown };
+export type GuardianLinkChangedEvent = EventEnvelope<"guardian.link.changed", GuardianLinkChangedData>;
+export type MembershipChangedData = { "orgId": string; "sub": string; "roleHint": string; "change": "added" | "removed" | "role_changed"; "at": string; [k: string]: unknown };
+export type MembershipChangedEvent = EventEnvelope<"membership.changed", MembershipChangedData>;
+export type AccountMergedData = { "linkId": string; "primarySub": string; "mergedSub": string; "change": "merged" | "reversed"; "reversible"?: boolean; "at": string; [k: string]: unknown };
+export type AccountMergedEvent = EventEnvelope<"account.merged", AccountMergedData>;
 export type FlagChangedData = { "product": "kiorly-clinic" | "kiorex" | "kiorex-account" | "kiorly-pharmacy" | "kiorly-lab"; "key": string; "scope": "global" | "market" | "org"; "scopeId"?: string | null; "previousValue"?: "ON" | "OFF" | "INHERIT"; "newValue": "ON" | "OFF" | "INHERIT"; "snapshotVersion": number; "changedAt": string; "reason"?: string; "actor"?: string; "expiresAt"?: string; [k: string]: unknown };
 export type FlagChangedEvent = EventEnvelope<"flag.changed", FlagChangedData>;
 
@@ -3072,12 +3640,17 @@ export interface EventMap {
   "VISIT_SUMMARY_SHARED": VisitSummarySharedEvent;
   "PRESCRIPTION_SHARED": PrescriptionSharedEvent;
   "RECORD_SHARE_REVOKED": RecordShareRevokedEvent;
+  "WAITLIST_OFFER": WaitlistOfferEvent;
   "PrescriptionIssued": PrescriptionIssuedEvent;
+  "LabOrderPlaced": LabOrderPlacedEvent;
   "OrderReady": OrderReadyEvent;
   "DispenseCompleted": DispenseCompletedEvent;
   "OrderRejected": OrderRejectedEvent;
   "LabResultReleased": LabResultReleasedEvent;
   "subject.deleted": SubjectDeletedEvent;
   "session.revoked": SessionRevokedEvent;
+  "guardian.link.changed": GuardianLinkChangedEvent;
+  "membership.changed": MembershipChangedEvent;
+  "account.merged": AccountMergedEvent;
   "flag.changed": FlagChangedEvent;
 }

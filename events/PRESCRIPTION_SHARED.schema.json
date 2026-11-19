@@ -40,6 +40,24 @@
           "type": "string",
           "format": "date-time"
         },
+        "pdf": {
+          "type": "object",
+          "description": "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "url",
+            "expiresAt"
+          ]
+        },
         "aggregateType": {
           "type": "string",
           "description": "Injected by the Kiorly outbox; mirrors the envelope field."

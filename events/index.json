@@ -156,12 +156,28 @@
       "status": "kiorly-extra"
     },
     {
+      "type": "WAITLIST_OFFER",
+      "aliases": [],
+      "file": "WAITLIST_OFFER",
+      "producer": "kiorly-clinic",
+      "aggregateType": "WaitlistOffer",
+      "status": "emitted"
+    },
+    {
       "type": "PrescriptionIssued",
       "aliases": [],
       "file": "PrescriptionIssued",
       "producer": "kiorly-clinic",
       "aggregateType": "Prescription",
-      "status": "v2-draft"
+      "status": "emitted"
+    },
+    {
+      "type": "LabOrderPlaced",
+      "aliases": [],
+      "file": "LabOrderPlaced",
+      "producer": "kiorly-clinic",
+      "aggregateType": "LabOrder",
+      "status": "emitted"
     },
     {
       "type": "OrderReady",
@@ -209,6 +225,30 @@
       "file": "session.revoked",
       "producer": "kiorex-account",
       "aggregateType": "Session",
+      "status": "v2-draft"
+    },
+    {
+      "type": "guardian.link.changed",
+      "aliases": [],
+      "file": "guardian.link.changed",
+      "producer": "kiorex-account",
+      "aggregateType": "GuardianLink",
+      "status": "v2-draft"
+    },
+    {
+      "type": "membership.changed",
+      "aliases": [],
+      "file": "membership.changed",
+      "producer": "kiorex-account",
+      "aggregateType": "Membership",
+      "status": "v2-draft"
+    },
+    {
+      "type": "account.merged",
+      "aliases": [],
+      "file": "account.merged",
+      "producer": "kiorex-account",
+      "aggregateType": "Account",
       "status": "v2-draft"
     },
     {

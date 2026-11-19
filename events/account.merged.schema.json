@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/account.merged.schema.json",
+  "title": "account.merged",
+  "description": "Two Passports were merged after operator review, or a merge was reversed (KA08). Products merge or split their OWN patient links separately and with review; this event never implies a clinical merge. Additive in 1.2.0.",
+  "x-producer": "kiorex-account",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "account.merged"
+    },
+    "aggregateType": {
+      "const": "Account"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "linkId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primarySub": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mergedSub": {
+          "type": "string",
+          "minLength": 1
+        },
+        "change": {
+          "enum": [
+            "merged",
+            "reversed"
+          ]
+        },
+        "reversible": {
+          "type": "boolean"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "linkId",
+        "primarySub",
+        "mergedSub",
+        "change",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

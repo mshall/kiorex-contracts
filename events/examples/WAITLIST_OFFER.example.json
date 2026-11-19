@@ -1,0 +1,21 @@
+{
+  "eventId": "01JF3ZEVTWAITLIST",
+  "type": "WAITLIST_OFFER",
+  "aggregateType": "WaitlistOffer",
+  "aggregateId": "wlo_01JF3ZG000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "offerId": "wlo_01JF3ZG000",
+    "waitlistRef": "kx_wl_01JF3ZG111",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "clinicianId": "clin_01JF3Z7AAA",
+    "typeId": "type_01JF3Z8000",
+    "startsAt": "2027-03-06T09:00:00.000Z",
+    "endsAt": "2027-03-06T09:30:00.000Z",
+    "expiresAt": "2027-03-05T14:15:00.000Z",
+    "feeAmount": "300.00",
+    "aggregateType": "WaitlistOffer",
+    "aggregateId": "wlo_01JF3ZG000"
+  }
+}
