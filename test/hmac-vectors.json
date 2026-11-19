@@ -1,0 +1,59 @@
+{
+  "generatedBy": "clinics-management/apps/api/src/marketplace/marketplace-hmac.ts (functions executed directly); webhook = OutboxDeliveryService.signBody formula",
+  "request": [
+    {
+      "name": "POST /bookings with JSON body",
+      "timestamp": "1767225600000",
+      "nonce": "6f1d6a54-9d3c-4a0e-8d5e-3b6d3f2a1c11",
+      "method": "post",
+      "path": "/api/v1/marketplace/v1/bookings",
+      "body": "{\"externalRef\":\"kx_bk_01JF3Z8P2M\",\"clinicId\":\"clinic_01\",\"startsAt\":\"2027-03-05T10:30:00.000Z\"}",
+      "secret": "kx_dev_secret_change_me",
+      "bodySha256": "7775dbd28ce632c42b450e919267bc227d047b8e393a9530abc5719e25bc87b0",
+      "canonical": "1767225600000\n6f1d6a54-9d3c-4a0e-8d5e-3b6d3f2a1c11\nPOST\n/api/v1/marketplace/v1/bookings\n7775dbd28ce632c42b450e919267bc227d047b8e393a9530abc5719e25bc87b0",
+      "signature": "VsJl8pEcwYjkQab6JT3ucaE3z11aq-zV7yNavGuTJAU"
+    },
+    {
+      "name": "GET with empty body",
+      "timestamp": "1767225600000",
+      "nonce": "0b9c7f10-2a4e-4c55-9a0a-7f6e2d1b3c22",
+      "method": "GET",
+      "path": "/api/v1/marketplace/v1/providers",
+      "body": "",
+      "secret": "kx_dev_secret_change_me",
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonical": "1767225600000\n0b9c7f10-2a4e-4c55-9a0a-7f6e2d1b3c22\nGET\n/api/v1/marketplace/v1/providers\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signature": "_j8CHvx9xgfPcINb_HkuKCP-ylMTn1LxUChG-zUv-d8"
+    },
+    {
+      "name": "GET control-plane snapshot",
+      "timestamp": "1767225601234",
+      "nonce": "a3d5c2e1-1111-4222-8333-944455566677",
+      "method": "GET",
+      "path": "/api/v1/control/v1/flags/snapshot",
+      "body": "",
+      "secret": "kx_dev_secret_change_me",
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "canonical": "1767225601234\na3d5c2e1-1111-4222-8333-944455566677\nGET\n/api/v1/control/v1/flags/snapshot\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "signature": "inM6nxEqOkBG7R-77k-IVnEVYeiaq_eIrVIb2SfmyRU"
+    },
+    {
+      "name": "POST with unicode body",
+      "timestamp": "1767225602000",
+      "nonce": "c0ffee00-0000-4000-8000-000000000001",
+      "method": "POST",
+      "path": "/api/v1/marketplace/v1/reviews/aggregate",
+      "body": "{\"note\":\"عيادة النيل — ممتاز\"}",
+      "secret": "kx_dev_secret_change_me",
+      "bodySha256": "887664269bdb702be7781aecd781235944f126afa43953057b707b61363be1c5",
+      "canonical": "1767225602000\nc0ffee00-0000-4000-8000-000000000001\nPOST\n/api/v1/marketplace/v1/reviews/aggregate\n887664269bdb702be7781aecd781235944f126afa43953057b707b61363be1c5",
+      "signature": "xlNhGR-R1ZMPa97-2xfAZ13kz8NuQQ6t9YiR3glXKKk"
+    }
+  ],
+  "webhook": {
+    "secret": "kx_dev_webhook_secret",
+    "timestamp": 1767225600,
+    "body": "{\"eventId\":\"clx9abc\",\"type\":\"APPOINTMENT_CONFIRMED\",\"aggregateType\":\"Appointment\",\"aggregateId\":\"apt_01JF3Z8Q0K\",\"target\":\"KIOREX\",\"occurredAt\":\"2027-03-04T09:12:44.000Z\",\"data\":{\"appointmentId\":\"apt_01JF3Z8Q0K\",\"clinicId\":\"clinic_01\",\"previousStatus\":\"SCHEDULED\",\"nextStatus\":\"CONFIRMED\",\"bookingSource\":\"KIOREX_MARKETPLACE\"}}",
+    "signature": "sha256=2d6e9559730c9788e35e0b64cb00cd66adcefa0a32b5da218b848da72368f979"
+  }
+}
