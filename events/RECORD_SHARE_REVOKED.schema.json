@@ -16,7 +16,10 @@
       "const": "RECORD_SHARE_REVOKED"
     },
     "aggregateType": {
-      "const": "Patient"
+      "enum": [
+        "Patient",
+        "Record"
+      ]
     },
     "data": {
       "type": "object",

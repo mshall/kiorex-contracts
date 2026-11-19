@@ -1512,7 +1512,10 @@ export const EVENT_SCHEMAS = {
         "const": "VISIT_SUMMARY_SHARED"
       },
       "aggregateType": {
-        "const": "Encounter"
+        "enum": [
+          "Encounter",
+          "Record"
+        ]
       },
       "data": {
         "type": "object",
@@ -1627,7 +1630,10 @@ export const EVENT_SCHEMAS = {
         "const": "PRESCRIPTION_SHARED"
       },
       "aggregateType": {
-        "const": "Encounter"
+        "enum": [
+          "Encounter",
+          "Record"
+        ]
       },
       "data": {
         "type": "object",
@@ -1711,7 +1717,10 @@ export const EVENT_SCHEMAS = {
         "const": "RECORD_SHARE_REVOKED"
       },
       "aggregateType": {
-        "const": "Patient"
+        "enum": [
+          "Patient",
+          "Record"
+        ]
       },
       "data": {
         "type": "object",

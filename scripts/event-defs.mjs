@@ -182,7 +182,7 @@ export const EVENTS = [
     example: { aggregateId: "apt_01JF3Z8Q0K", data: { appointmentId: "apt_01JF3Z8Q0K", clinicId: "clinic_01JF3Z7ZZZ", externalReference: "kx_bk_01JF3Z8P2M", platformIntegrationClientId: "pic_01", aggregateType: "Appointment", aggregateId: "apt_01JF3Z8Q0K" } },
   },
   {
-    type: "VISIT_SUMMARY_SHARED", producer: "kiorly-clinic", aggregateType: "Encounter", status: "kiorly-extra",
+    type: "VISIT_SUMMARY_SHARED", producer: "kiorly-clinic", aggregateType: "Encounter", aggregateTypeAlt: ["Record"], status: "kiorly-extra",
     description: "Signed visit summary pushed to the Kiorex record vault after patient consent (KX-11). Not in KX-09 §04. Contains clinical content: never log it.",
     data: {
       properties: {
@@ -195,13 +195,13 @@ export const EVENTS = [
     example: { aggregateId: "enc_01JF3ZB000", data: { patientId: "pat_01JF3Z0000", scope: "VISIT_SUMMARY", summary: { encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", signedAt: "2027-03-05T11:10:00.000Z", soap: { chiefComplaint: "Cough", subjective: null, objective: null, assessment: null, plan: null } }, signature: "0".repeat(64), aggregateType: "Encounter", aggregateId: "enc_01JF3ZB000" } },
   },
   {
-    type: "PRESCRIPTION_SHARED", producer: "kiorly-clinic", aggregateType: "Encounter", status: "kiorly-extra",
+    type: "PRESCRIPTION_SHARED", producer: "kiorly-clinic", aggregateType: "Encounter", aggregateTypeAlt: ["Record"], status: "kiorly-extra",
     description: "Prescription of a signed encounter shared with the patient app after consent. Not in KX-09 §04.",
     data: { properties: { patientId: ID, scope: { const: "PRESCRIPTIONS" }, encounterId: ID, clinicId: ID, signedAt: TS, pdf: { type: "object", description: "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.", properties: { url: { type: "string", format: "uri" }, expiresAt: TS }, required: ["url", "expiresAt"] }, ...AGG }, required: ["patientId", "scope", "encounterId", "clinicId", "signedAt"] },
     example: { aggregateId: "enc_01JF3ZB000", data: { patientId: "pat_01JF3Z0000", scope: "PRESCRIPTIONS", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", signedAt: "2027-03-05T11:10:00.000Z", pdf: { url: "https://app.kiorly.com/api/v1/public/rx/verify/abc123/pdf", expiresAt: "2027-03-19T11:10:00.000Z" }, aggregateType: "Encounter", aggregateId: "enc_01JF3ZB000" } },
   },
   {
-    type: "RECORD_SHARE_REVOKED", producer: "kiorly-clinic", aggregateType: "Patient", status: "kiorly-extra",
+    type: "RECORD_SHARE_REVOKED", producer: "kiorly-clinic", aggregateType: "Patient", aggregateTypeAlt: ["Record"], status: "kiorly-extra",
     description: "Patient revoked a record-share scope; Kiorex must delete the shared copies. Not in KX-09 §04.",
     data: { properties: { patientId: ID, scope: { enum: ["VISIT_SUMMARY", "PRESCRIPTIONS", "LAB_RESULTS", "SHARE_WITH_OTHER_CLINICS"] }, action: { const: "DELETE_REQUESTED" }, ...AGG }, required: ["patientId", "scope", "action"] },
     example: { aggregateId: "pat_01JF3Z0000", data: { patientId: "pat_01JF3Z0000", scope: "VISIT_SUMMARY", action: "DELETE_REQUESTED", aggregateType: "Patient", aggregateId: "pat_01JF3Z0000" } },
@@ -409,7 +409,7 @@ export function buildSchema(ev) {
     type: "object",
     properties: {
       type: types.length === 1 ? { const: ev.type } : { enum: types },
-      aggregateType: { const: ev.aggregateType },
+      aggregateType: ev.aggregateTypeAlt ? { enum: [ev.aggregateType, ...ev.aggregateTypeAlt] } : { const: ev.aggregateType },
       data: { type: "object", ...ev.data },
     },
     required: ["type", "aggregateType", "data"],

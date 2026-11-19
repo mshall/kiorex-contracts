@@ -1,7 +1,7 @@
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
-import { EVENT_META, EVENT_SCHEMAS, isEventType, validateEnvelope, validateEvent, type EventType } from "../src/index.js";
+import { EVENT_EXAMPLES, EVENT_META, EVENT_SCHEMAS, isEventType, validateEnvelope, validateEvent, type EventType } from "../src/index.js";
 import { listDir, readJson } from "./helpers.js";
 
 const KX09_EVENTS = [
@@ -111,6 +111,16 @@ describe("Kiorly Lab draft events (NH-LB-025)", () => {
     for (const t of ["LabCriticalEscalated", "LabReportCorrected"]) {
       const ex = readJson(`events/examples/${t}.example.json`);
       expect(validateEvent(t as EventType, { ...ex, data: { ...ex.data, values: [1] } }).valid).toBe(false);
+    }
+  });
+});
+
+describe("record-share aggregateType (1.4.1)", () => {
+  it("accepts the canonical Encounter/Patient and the vault naming Record, still rejects anything else", () => {
+    const ex = (t: string) => JSON.parse(JSON.stringify((EVENT_EXAMPLES as any)[t]));
+    for (const t of ["VISIT_SUMMARY_SHARED", "PRESCRIPTION_SHARED", "RECORD_SHARE_REVOKED"]) {
+      for (const agg of [ex(t).aggregateType, "Record"]) { const e = ex(t); e.aggregateType = agg; expect(validateEvent(t, e).valid, `${t} ${agg}`).toBe(true); }
+      const bad = ex(t); bad.aggregateType = "Nope"; expect(validateEvent(t, bad).valid, t).toBe(false);
     }
   });
 });

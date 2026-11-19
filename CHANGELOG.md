@@ -2,6 +2,10 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.4.1
+
+Patch (loosening, additive). Record-share events (`VISIT_SUMMARY_SHARED`, `PRESCRIPTION_SHARED`, `RECORD_SHARE_REVOKED`) now also accept `aggregateType: "Record"` (the vault-record naming used by Kiorex tooling); Kiorly Clinic keeps emitting `Encounter` / `Patient`, which stay the canonical values.
+
 ## 1.4.0
 
 Additive minor (no field removed or renamed). Reconciliation of Kiorex <-> Kiorly Pharmacy / Kiorly Lab against the RUNNING services (first real HTTP integration; before this only fake partner servers existed).

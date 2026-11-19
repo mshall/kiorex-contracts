@@ -16,7 +16,10 @@
       "const": "VISIT_SUMMARY_SHARED"
     },
     "aggregateType": {
-      "const": "Encounter"
+      "enum": [
+        "Encounter",
+        "Record"
+      ]
     },
     "data": {
       "type": "object",
