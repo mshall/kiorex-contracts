@@ -1,6 +1,6 @@
 {
   "adr": "ADR-025",
-  "source": "KX-08 \u00a709 (Not flags \u2014 never switchable)",
+  "source": "KX-08 §09 (Not flags — never switchable), extended in Rev 2.3 (KX-05 §08, KX-23 §08, ADR-025)",
   "rule": "These controls must never be gated by a feature flag. CI rejects flag keys on safety paths.",
   "items": [
     {
@@ -139,6 +139,63 @@
       ],
       "forbiddenKeyTokens": [
         "breach"
+      ]
+    },
+    {
+      "id": "scope_of_practice_enforcement",
+      "label": "Scope-of-practice enforcement (@RequiresScope, 403 SCOPE_NOT_ALLOWED; physios and nurses can never prescribe)",
+      "products": [
+        "kiorly-clinic",
+        "kiorly-nurse"
+      ],
+      "forbiddenKeyTokens": [
+        "scope_of_practice",
+        "scope_not_allowed",
+        "requires_scope"
+      ]
+    },
+    {
+      "id": "profession_verification",
+      "label": "Profession verification before listing (PRVER01-04)",
+      "products": [
+        "kiorly-clinic",
+        "kiorly-nurse",
+        "kiorex"
+      ],
+      "forbiddenKeyTokens": [
+        "profession_verif",
+        "registration_verif",
+        "prver"
+      ]
+    },
+    {
+      "id": "home_visit_safety",
+      "label": "Home-visit safety timer, SOS, unsafe-abort with no penalty, and address masking",
+      "products": [
+        "kiorly-clinic",
+        "kiorly-nurse",
+        "kiorex"
+      ],
+      "forbiddenKeyTokens": [
+        "safety_timer",
+        "sos",
+        "unsafe_abort",
+        "address_mask",
+        "safety_alert"
+      ]
+    },
+    {
+      "id": "mar_safety_checks",
+      "label": "MAR allergy/duplicate checks and the doctor-order requirement",
+      "products": [
+        "kiorly-nurse",
+        "kiorly-clinic"
+      ],
+      "forbiddenKeyTokens": [
+        "mar_allergy",
+        "mar_duplicate",
+        "mar_check",
+        "doctor_order"
       ]
     }
   ]

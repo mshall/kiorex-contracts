@@ -10,6 +10,7 @@ Single source of truth for everything that crosses a product boundary in Kiorex 
 | `openapi/kiorex-webhooks.v1.openapi.json` | Kiorly -> Kiorex receiver `POST /api/v1/webhooks/kiorly`, PSP webhook shape, OIDC back-channel logout |
 | `openapi/kiorly-pharmacy.v1.openapi.json`, `openapi/kiorly-lab.v1.openapi.json` | Kiorex -> Kiorly Pharmacy / Lab machine APIs (draft, reconciled against the running services in 1.4.0) |
 | `events/*.schema.json` (+ `examples/`) | JSON Schema 2020-12: envelope + one schema per event |
+| `fixtures/events-v2.3/*.json`, `fixtures/marketplace-v1.2-home-visit.json` | Example JSON for the Rev 2.3 events and marketplace additions (validated in tests; not shipped in the package) |
 | `flags/catalogue.json`, `flags/safety-never-flags.json` | KX-08 §09 flag catalogue; ADR-025 never-a-flag list |
 | `src/` | Types (openapi-typescript + generated event types), `validateEvent`, HMAC helpers, `evaluateFlag`, typed `FLAGS` |
 

@@ -5,6 +5,12 @@ import { readJson } from "./helpers.js";
 const cat = readJson("flags/catalogue.json");
 const safety = readJson("flags/safety-never-flags.json");
 
+const REV23_KEYS = [
+  "clinic.profession.physiotherapy", "clinic.home_visits", "clinic.home_route_view", "clinic.home_dispatch",
+  "nurse.edition", "nurse.individual_tenants", "nurse.care_plans", "nurse.mar", "nurse.private_duty_shifts", "nurse.family_updates",
+  "nurse.individual_kiorex_listing", "kiorex.home_visits", "kiorex.category.physiotherapy", "kiorex.category.nursing", "kiorex.visit_tracking",
+];
+
 describe("flag catalogue (KX-08 §09)", () => {
   it("json files and generated TS constants agree", () => {
     expect(cat.flags.map((f: any) => f.key)).toEqual(FLAG_CATALOGUE.map((f) => f.key));
@@ -37,6 +43,8 @@ describe("flag catalogue (KX-08 §09)", () => {
       "kiorex.pharmacy_orders", "kiorex.lab_bookings", "kiorex.telemedicine", "kiorex.ai_navigation", "account.passkeys", "account.provider_sso",
       "pharmacy.module", "pharmacy.kiorex_orders", "pharmacy.forecasting", "pharmacy.insurer_claims", "lab.module", "lab.analyzer_interfaces",
       "lab.home_collection", "lab.kiorex_bookings", "market.<country>.live",
+      // Rev 2.3 (KX-08 §10): 15 keys
+      ...REV23_KEYS,
     ];
     expect(cat.flags.map((f: any) => f.key).sort()).toEqual(expected.sort());
   });
@@ -58,16 +66,62 @@ describe("flag catalogue (KX-08 §09)", () => {
   it("launch-locked set matches KX-08 §09", () => {
     const locked = cat.flags.filter((f: any) => f.launchLocked).map((f: any) => f.key).sort();
     expect(locked).toEqual([
-      "clinic.specialty_templates.<code>", "clinic.whatsapp_ai_receptionist", "kiorex.ai_navigation", "kiorex.lab_bookings",
-      "kiorex.pharmacy_orders", "kiorex.telemedicine", "market.<country>.live",
+      "clinic.home_visits", "clinic.specialty_templates.<code>", "clinic.whatsapp_ai_receptionist", "kiorex.ai_navigation",
+      "kiorex.category.physiotherapy", "kiorex.home_visits", "kiorex.lab_bookings", "kiorex.pharmacy_orders", "kiorex.telemedicine",
+      "market.<country>.live", "nurse.care_plans", "nurse.individual_kiorex_listing", "nurse.mar",
     ]);
   });
 });
 
+describe("Rev 2.3 flags: classes, scopes, dependencies and launch gates (KX-08 §10, KX-23 §09, KX-05 §11)", () => {
+  const by = (k: string) => cat.flags.find((f: any) => f.key === k);
+  const rows: Array<[string, string, string[], string[], string[]]> = [
+    // key, class, scopes, dependsOn, gateIds
+    ["clinic.profession.physiotherapy", "Module", ["global", "market"], [], []],
+    ["clinic.home_visits", "Launch-locked", ["global", "market", "org"], [], ["GHV1", "GHV2"]],
+    ["clinic.home_route_view", "Module", ["global", "market", "org"], ["clinic.home_visits"], []],
+    ["clinic.home_dispatch", "Module", ["global", "market", "org"], ["clinic.home_visits"], []],
+    ["nurse.edition", "Module", ["global", "market"], [], []],
+    ["nurse.individual_tenants", "Commercial", ["global", "market"], ["nurse.edition"], []],
+    ["nurse.care_plans", "Launch-locked", ["global", "market", "org"], [], ["GKN1"]],
+    ["nurse.mar", "Launch-locked", ["global", "market", "org"], [], ["GKN1"]],
+    ["nurse.private_duty_shifts", "Module", ["global", "market", "org"], ["nurse.edition"], []],
+    ["nurse.family_updates", "Integration", ["global", "market", "org"], ["whatsapp_reminders"], []],
+    ["nurse.individual_kiorex_listing", "Launch-locked", ["global", "market"], ["kiorex.home_visits"], ["GKN2"]],
+    ["kiorex.home_visits", "Launch-locked", ["global", "market"], ["clinic.home_visits"], ["GHV1", "GHV2"]],
+    ["kiorex.category.physiotherapy", "Launch-locked", ["global", "market"], [], ["GPR1"]],
+    ["kiorex.category.nursing", "Module", ["global", "market"], ["kiorex.home_visits", "nurse.edition"], []],
+    ["kiorex.visit_tracking", "Module", ["global", "market"], ["kiorex.home_visits"], []],
+  ];
+  it.each(rows)("%s", (key, cls, scopes, deps, gates) => {
+    const f = by(key);
+    expect(f, key).toBeTruthy();
+    expect(f.class).toBe(cls);
+    expect(f.scopes).toEqual(scopes);
+    expect(f.dependsOn).toEqual(deps);
+    expect(f.gateIds ?? []).toEqual(gates);
+    for (const g of gates) expect(f.gate).toContain(g);
+  });
+  it("nurse.* flags are Nurse-edition scoped; physio template gate GPR2 is on the specialty pattern key", () => {
+    for (const f of cat.flags.filter((x: any) => x.key.startsWith("nurse."))) expect(f.edition, f.key).toBe("NURSE");
+    expect(by("clinic.specialty_templates.<code>").gateIds).toEqual(["NH010", "GPR2"]);
+    expect(REV23_KEYS).toHaveLength(15);
+  });
+  it("gates GHV1/GHV2/GPR1/GPR2/GKN1/GKN2 are all referenced by the catalogue", () => {
+    const ids = new Set(cat.flags.flatMap((f: any) => f.gateIds ?? []));
+    for (const g of ["GHV1", "GHV2", "GPR1", "GPR2", "GKN1", "GKN2"]) expect(ids.has(g), g).toBe(true);
+  });
+  it("home-visit safety controls are not flags (ADR-025 / KX-05 §08)", () => {
+    const keys = cat.flags.map((f: any) => f.key.toLowerCase());
+    for (const t of ["safety_timer", "sos", "unsafe_abort", "address_mask", "scope_of_practice", "mar_allergy"]) expect(keys.some((k: string) => k.includes(t)), t).toBe(false);
+  });
+});
+
 describe("ADR-025: safety controls are never flags", () => {
-  it("lists the 12 fixed controls from KX-08 §09", () => {
+  it("lists the 12 fixed controls from KX-08 §09 plus the 4 added in Rev 2.3", () => {
     expect(safety.adr).toBe("ADR-025");
-    expect(safety.items).toHaveLength(12);
+    expect(safety.items).toHaveLength(16);
+    expect(safety.items.slice(12).map((i: any) => i.id)).toEqual(["scope_of_practice_enforcement", "profession_verification", "home_visit_safety", "mar_safety_checks"]);
   });
 
   it("no catalogue key (or whenOff text claiming to disable a safety control) matches a safety control", () => {

@@ -1,6 +1,6 @@
 {
   "$schema": "./catalogue.schema.json",
-  "source": "KX-08 §09 (Rev 2.1)",
+  "source": "KX-08 §09 (Rev 2.1) + §10 Rev 2.3 (15 keys: home visits, physiotherapy, Kiorly Nurse), KX-23 §09, KX-05 §11",
   "defaultState": "ON",
   "flags": [
     {
@@ -289,9 +289,13 @@
       "whenOff": "Template hidden from new encounters",
       "dependsOn": [],
       "launchLocked": true,
-      "gate": "Specialty board sign-off (NH010)",
-      "note": "Pattern key: <code> is the specialty template code",
-      "keyPattern": true
+      "gate": "Specialty board sign-off (NH010); physio: GPR2",
+      "note": "Pattern key: <code> is the specialty template code; physio template code `physio` is launch-locked until GPR2 (KX-05 §07)",
+      "keyPattern": true,
+      "gateIds": [
+        "NH010",
+        "GPR2"
+      ]
     },
     {
       "key": "clinic.referral_rewards",
@@ -661,6 +665,272 @@
       "gate": "Market pack certification + local counsel",
       "note": "Pattern key: <country> is a lower-case ISO 3166-1 alpha-2 code, e.g. market.eg.live",
       "keyPattern": true
+    },
+    {
+      "key": "clinic.profession.physiotherapy",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "No new physio sign-ups; existing physios keep working",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "KX-05 §06-07; the physiotherapy pack template itself is gated by clinic.specialty_templates.physio (GPR2)",
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.home_visits",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Home visit types hidden for new bookings; booked visits honoured",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "GHV1 + GHV2",
+      "gateIds": [
+        "GHV1",
+        "GHV2"
+      ],
+      "note": "Shared by the Clinic and Nurse editions. Safety timer, SOS, unsafe-abort and address masking are never flags (ADR-025)",
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.home_route_view",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "List view only",
+      "dependsOn": [
+        "clinic.home_visits"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.home_dispatch",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Manual assignment",
+      "dependsOn": [
+        "clinic.home_visits"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "nurse.edition",
+      "product": "kiorly-nurse",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "No new Nurse sign-ups; existing tenants read-only with export",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "edition": "NURSE",
+      "keyPattern": false
+    },
+    {
+      "key": "nurse.individual_tenants",
+      "product": "kiorly-nurse",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Commercial",
+      "whenOff": "Solo plans hidden at sign-up; existing solos keep working",
+      "dependsOn": [
+        "nurse.edition"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "edition": "NURSE",
+      "keyPattern": false
+    },
+    {
+      "key": "nurse.care_plans",
+      "product": "kiorly-nurse",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Single visits only; active plans complete",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "GKN1",
+      "gateIds": [
+        "GKN1"
+      ],
+      "edition": "NURSE",
+      "keyPattern": false
+    },
+    {
+      "key": "nurse.mar",
+      "product": "kiorly-nurse",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Medication recorded as free text in the visit record",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "GKN1",
+      "gateIds": [
+        "GKN1"
+      ],
+      "edition": "NURSE",
+      "note": "MAR allergy/duplicate checks and the doctor-order requirement are never flags (ADR-025)",
+      "keyPattern": false
+    },
+    {
+      "key": "nurse.private_duty_shifts",
+      "product": "kiorly-nurse",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Shift booking hidden",
+      "dependsOn": [
+        "nurse.edition"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "edition": "NURSE",
+      "keyPattern": false
+    },
+    {
+      "key": "nurse.family_updates",
+      "product": "kiorly-nurse",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Integration",
+      "whenOff": "No family messages",
+      "dependsOn": [
+        "whatsapp_reminders"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "edition": "NURSE",
+      "keyPattern": false
+    },
+    {
+      "key": "nurse.individual_kiorex_listing",
+      "product": "kiorly-nurse",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Solo nurses not listed on Kiorex",
+      "dependsOn": [
+        "kiorex.home_visits"
+      ],
+      "launchLocked": true,
+      "gate": "GKN2",
+      "gateIds": [
+        "GKN2"
+      ],
+      "edition": "NURSE",
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.home_visits",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Home filter hidden; booked home visits honoured",
+      "dependsOn": [
+        "clinic.home_visits"
+      ],
+      "launchLocked": true,
+      "gate": "GHV1 + GHV2",
+      "gateIds": [
+        "GHV1",
+        "GHV2"
+      ],
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.category.physiotherapy",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Physio providers not shown",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "GPR1",
+      "gateIds": [
+        "GPR1"
+      ],
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.category.nursing",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "Home nursing not shown",
+      "dependsOn": [
+        "kiorex.home_visits",
+        "nurse.edition"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.visit_tracking",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "Status timeline without on-the-way updates",
+      "dependsOn": [
+        "kiorex.home_visits"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
     }
   ]
 }
