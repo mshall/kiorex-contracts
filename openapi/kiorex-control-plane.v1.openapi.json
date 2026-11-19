@@ -1,0 +1,592 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kiorex Control Plane API",
+    "version": "1.0.0",
+    "description": "Feature-flag control plane (ADR-023/024/025, KX-08 \u00a708-09). Owned by kiorex-platform. Products poll the signed snapshot every 30 s (ETag / If-None-Match) and receive a `flag.changed` push for immediate refresh. Evaluation is local in each product (see evaluateFlag in @kiorex/contracts); products never call the control plane per request."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000/api/v1",
+      "description": "Local Kiorex API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "flags"
+    },
+    {
+      "name": "product-receiver",
+      "description": "Endpoints implemented by each product (Kiorly Clinic, Pharmacy, Lab, Kiorex, Account), called by the control plane."
+    }
+  ],
+  "paths": {
+    "/control/v1/flags/snapshot": {
+      "get": {
+        "tags": [
+          "flags"
+        ],
+        "operationId": "controlGetFlagsSnapshot",
+        "summary": "Signed flag snapshot for one product",
+        "description": "HMAC-authenticated. Sign exactly like the marketplace scheme: base64url(HMAC-SHA256(secret, TIMESTAMP\\nNONCE\\nMETHOD\\nPATH\\nsha256hex(BODY))) where PATH is the request path without query string and BODY is empty. The secret itself is NOT sent. Use signKiorlyRequest / signControlPlaneRequest from @kiorex/contracts. Dev key `ff_<product>_dev`, secret `ff_dev_secret_change_me`.",
+        "security": [
+          {
+            "productKeyHmac": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "kiorly-clinic",
+                "kiorex",
+                "kiorex-account",
+                "kiorly-pharmacy",
+                "kiorly-lab"
+              ]
+            }
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ETag from a previous 200; unchanged snapshot returns 304 with no body."
+          },
+          {
+            "$ref": "#/components/parameters/Timestamp"
+          },
+          {
+            "$ref": "#/components/parameters/Nonce"
+          },
+          {
+            "$ref": "#/components/parameters/Signature"
+          },
+          {
+            "$ref": "#/components/parameters/ProductKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlagSnapshot"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Strong ETag of the snapshot version."
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "example": "private, max-age=0, must-revalidate"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not modified (If-None-Match matched)."
+          },
+          "400": {
+            "description": "Unknown product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid HMAC headers, stale timestamp, replayed nonce",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Product key not allowed for the requested product",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feature-flags/kiorex/changed": {
+      "post": {
+        "tags": [
+          "product-receiver"
+        ],
+        "operationId": "productFlagChanged",
+        "summary": "flag.changed push (implemented by each product)",
+        "description": "Control plane POSTs to `<product base>/api/v1/feature-flags/kiorex/changed`. Same signed-webhook scheme as Kiorly outbox events: X-Kiorly-Timestamp (unix seconds) and X-Kiorly-Signature = `sha256=` + hex(HMAC-SHA256(webhookSecret, `${timestamp}.${rawBody}`)) (signWebhook / verifyWebhook). Receivers verify, then re-fetch the snapshot immediately (using If-None-Match). 2xx on success; the control plane retries 5xx/429.",
+        "servers": [
+          {
+            "url": "{productBaseUrl}/api/v1",
+            "variables": {
+              "productBaseUrl": {
+                "default": "http://localhost:3000"
+              }
+            }
+          }
+        ],
+        "security": [
+          {
+            "webhookHmac": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WhTimestamp"
+          },
+          {
+            "$ref": "#/components/parameters/WhSignature"
+          },
+          {
+            "$ref": "#/components/parameters/WhEventId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlagChangedWebhook"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted; snapshot refresh triggered"
+          },
+          "401": {
+            "description": "Bad signature or stale timestamp",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "productKeyHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorex-Product-Key",
+        "description": "Product key plus X-Kiorly-Timestamp (unix ms, +/-5 min), X-Kiorly-Nonce (uuid, single use) and X-Kiorly-Signature (base64url HMAC, marketplace scheme)."
+      },
+      "webhookHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorly-Signature",
+        "description": "sha256=<hex HMAC-SHA256(secret, `${X-Kiorly-Timestamp}.${rawBody}`)>"
+      }
+    },
+    "parameters": {
+      "ProductKey": {
+        "name": "X-Kiorex-Product-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "ff_kiorly-clinic_dev"
+        }
+      },
+      "Timestamp": {
+        "name": "X-Kiorly-Timestamp",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^\\d{13}$"
+        },
+        "description": "Unix epoch milliseconds; rejected if skew > 5 min."
+      },
+      "Nonce": {
+        "name": "X-Kiorly-Nonce",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "Signature": {
+        "name": "X-Kiorly-Signature",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "base64url(HMAC-SHA256(secret, TIMESTAMP\\nNONCE\\nMETHOD\\nPATH\\nsha256hex(BODY)))"
+      },
+      "WhTimestamp": {
+        "name": "X-Kiorly-Timestamp",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^\\d{10}$"
+        },
+        "description": "Unix epoch seconds."
+      },
+      "WhSignature": {
+        "name": "X-Kiorly-Signature",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^sha256=[0-9a-f]{64}$"
+        }
+      },
+      "WhEventId": {
+        "name": "X-Kiorly-Event-Id",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message"
+        ]
+      },
+      "FlagScope": {
+        "enum": [
+          "global",
+          "market",
+          "org"
+        ]
+      },
+      "FlagValue": {
+        "enum": [
+          "ON",
+          "OFF"
+        ]
+      },
+      "FlagClass": {
+        "enum": [
+          "Module",
+          "Commercial",
+          "Integration",
+          "AI",
+          "Launch-locked"
+        ]
+      },
+      "FeatureDisabledError": {
+        "type": "object",
+        "description": "Universal OFF contract (KX-08 \u00a708): every product returns this with HTTP 403 for a new action on a disabled capability. OFF never deletes or hides data; reads of existing records keep working.",
+        "properties": {
+          "statusCode": {
+            "const": 403
+          },
+          "code": {
+            "const": "FEATURE_DISABLED"
+          },
+          "key": {
+            "type": "string",
+            "description": "Flag key, e.g. kiorex.marketplace"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/FlagScope"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "key",
+          "scope"
+        ],
+        "example": {
+          "statusCode": 403,
+          "code": "FEATURE_DISABLED",
+          "key": "kiorex.marketplace",
+          "scope": "market",
+          "message": "This capability is temporarily unavailable."
+        }
+      },
+      "FlagValues": {
+        "type": "object",
+        "description": "Only explicit OFF entries are listed; absence means inherit (root inherits ON).",
+        "properties": {
+          "global": {
+            "const": "OFF"
+          },
+          "markets": {
+            "type": "object",
+            "additionalProperties": {
+              "const": "OFF"
+            },
+            "description": "Market code (e.g. EG) -> OFF"
+          },
+          "orgs": {
+            "type": "object",
+            "additionalProperties": {
+              "const": "OFF"
+            },
+            "description": "Organization id -> OFF"
+          }
+        }
+      },
+      "FlagDefinition": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "class": {
+            "$ref": "#/components/schemas/FlagClass"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlagScope"
+            },
+            "minItems": 1
+          },
+          "dependsOn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "launchLocked": {
+            "type": "boolean"
+          },
+          "gateSatisfied": {
+            "type": "boolean",
+            "description": "Only meaningful when launchLocked. Set by a super admin recording gate evidence (gate id, approver, date, document link)."
+          },
+          "values": {
+            "$ref": "#/components/schemas/FlagValues"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional auto-revert time for the OFF values; after it the flag is ON again."
+          }
+        },
+        "required": [
+          "key",
+          "class",
+          "scopes",
+          "dependsOn",
+          "launchLocked",
+          "gateSatisfied",
+          "values"
+        ]
+      },
+      "FlagSnapshot": {
+        "type": "object",
+        "properties": {
+          "product": {
+            "enum": [
+              "kiorly-clinic",
+              "kiorex",
+              "kiorex-account",
+              "kiorly-pharmacy",
+              "kiorly-lab"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FlagDefinition"
+            }
+          },
+          "signature": {
+            "type": "string",
+            "description": "base64url HMAC-SHA256 over the canonical (sorted-key) JSON of the snapshot without this field. See signSnapshot / verifySnapshot."
+          }
+        },
+        "required": [
+          "product",
+          "version",
+          "generatedAt",
+          "flags",
+          "signature"
+        ]
+      },
+      "FlagChangedWebhook": {
+        "type": "object",
+        "description": "Kiorex event envelope with type flag.changed (see events/flag.changed.schema.json).",
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "type": {
+            "const": "flag.changed"
+          },
+          "aggregateType": {
+            "const": "Flag"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "product": {
+                "enum": [
+                  "kiorly-clinic",
+                  "kiorex",
+                  "kiorex-account",
+                  "kiorly-pharmacy",
+                  "kiorly-lab"
+                ]
+              },
+              "key": {
+                "type": "string"
+              },
+              "scope": {
+                "$ref": "#/components/schemas/FlagScope"
+              },
+              "scopeId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "previousValue": {
+                "enum": [
+                  "ON",
+                  "OFF",
+                  "INHERIT"
+                ]
+              },
+              "newValue": {
+                "enum": [
+                  "ON",
+                  "OFF",
+                  "INHERIT"
+                ]
+              },
+              "snapshotVersion": {
+                "type": "integer"
+              },
+              "changedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "product",
+              "key",
+              "scope",
+              "newValue",
+              "snapshotVersion",
+              "changedAt"
+            ]
+          }
+        },
+        "required": [
+          "eventId",
+          "type",
+          "aggregateType",
+          "aggregateId",
+          "occurredAt",
+          "data"
+        ]
+      }
+    },
+    "responses": {
+      "FeatureDisabled": {
+        "description": "403 FEATURE_DISABLED {key,scope}: the capability is switched off.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/FeatureDisabledError"
+            }
+          }
+        }
+      }
+    }
+  }
+}

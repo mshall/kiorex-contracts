@@ -1,0 +1,453 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kiorex Webhook Receivers API",
+    "version": "1.0.0",
+    "description": "Inbound webhooks implemented by kiorex-platform: Kiorly outbox events (KX-09 \u00a702/\u00a704), PSP callbacks (Kiorex Pay, KX-09 \u00a706) and OIDC back-channel logout (KX-04 KA05). Kiorly's signing scheme is taken from clinics-management outbox-delivery.service.ts (the code wins over KX-09 prose)."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000/api/v1"
+    }
+  ],
+  "paths": {
+    "/webhooks/kiorly": {
+      "post": {
+        "operationId": "receiveKiorlyWebhook",
+        "tags": [
+          "kiorly"
+        ],
+        "summary": "Kiorly Clinic outbox event receiver",
+        "description": "Raw body must be verified before JSON parsing. Signature: `X-Kiorly-Signature: sha256=<hex>` where hex = HMAC-SHA256(secret, `${X-Kiorly-Timestamp}.${rawBody}`) (timestamp = unix SECONDS). Reject stale timestamps (>5 min). De-duplicate on eventId (X-Kiorly-Event-Id). Return 2xx for duplicates and for unknown event types (log and ignore); return 5xx/429 only for transient failure \u2014 Kiorly retries 5xx/429 with exponential backoff (5 s loop, DEAD after 8 attempts) and treats other 4xx as non-retryable. Dev secret: kx_dev_webhook_secret.",
+        "security": [
+          {
+            "kiorlyWebhookHmac": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Kiorly-Event",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Event type, e.g. APPOINTMENT_CONFIRMED."
+          },
+          {
+            "name": "X-Kiorly-Event-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{10}$"
+            },
+            "description": "Unix epoch seconds."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^sha256=[0-9a-f]{64}$"
+            }
+          },
+          {
+            "name": "User-Agent",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Kiorly-Outbox/1.0"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KiorlyEventEnvelope"
+              },
+              "example": {
+                "eventId": "clx9abc",
+                "type": "APPOINTMENT_CONFIRMED",
+                "aggregateType": "Appointment",
+                "aggregateId": "apt_01JF3Z8Q0K",
+                "target": "KIOREX",
+                "occurredAt": "2027-03-04T09:12:44.000Z",
+                "data": {
+                  "appointmentId": "apt_01JF3Z8Q0K",
+                  "clinicId": "clinic_01",
+                  "previousStatus": "SCHEDULED",
+                  "nextStatus": "CONFIRMED",
+                  "bookingSource": "KIOREX_MARKETPLACE",
+                  "externalReference": "kx_bk_01JF3Z8P2M"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted (also for duplicates)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad signature / stale timestamp",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Backpressure; Kiorly retries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Transient failure; Kiorly retries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/psp/{provider}": {
+      "post": {
+        "operationId": "receivePspWebhook",
+        "tags": [
+          "psp"
+        ],
+        "summary": "PSP webhook (normalised shape; sandbox-fake and adapter output)",
+        "description": "Provider-native payloads (Paymob, Fawry, InstaPay) are verified and mapped by the PSP adapter inside kiorex-platform with the provider's own scheme. The `sandbox-fake` provider (PSP_MODE=sandbox-fake, served by /api/v1/pay/fake-checkout/:intentId) posts this normalised body signed with `X-Kiorex-Psp-Signature: sha256=<hex HMAC-SHA256(PSP_WEBHOOK_SECRET, `${X-Kiorex-Psp-Timestamp}.${rawBody}`)>`. Handlers must be idempotent on pspEventId and must reconcile against intentId. Amounts are integer minor units.",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "paymob",
+                "fawry",
+                "instapay",
+                "sandbox-fake"
+              ]
+            }
+          },
+          {
+            "name": "X-Kiorex-Psp-Timestamp",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{10}$"
+            },
+            "description": "Unix seconds (sandbox-fake)."
+          },
+          {
+            "name": "X-Kiorex-Psp-Signature",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "sandbox-fake signature; real providers use their own headers."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PspWebhook"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted (idempotent)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAck"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad signature",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Transient; PSP retries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/backchannel-logout": {
+      "post": {
+        "operationId": "receiveBackchannelLogout",
+        "tags": [
+          "identity"
+        ],
+        "summary": "OIDC back-channel logout (session.revoked / subject.deleted)",
+        "description": "Kiorex Account POSTs a signed logout_token (JWT, RS256, verified against the issuer JWKS) per OIDC Back-Channel Logout 1.0. Claims: iss, aud, iat, jti, sub and/or sid, events[\"http://schemas.openid.net/event/backchannel-logout\"], plus Kiorex extension claim `kx_event` = session.revoked | subject.deleted. Kiorly Clinic hosts the same contract at /api/v1/auth/kiorex/backchannel-logout. Products retain legally required records on subject.deleted.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "logout_token": {
+                    "type": "string",
+                    "description": "JWT"
+                  }
+                },
+                "required": [
+                  "logout_token"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sessions revoked"
+          },
+          "400": {
+            "description": "Invalid logout_token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "kiorlyWebhookHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorly-Signature",
+        "description": "sha256=<hex HMAC-SHA256(secret, `${timestamp}.${rawBody}`)>"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message"
+        ]
+      },
+      "WebhookAck": {
+        "type": "object",
+        "properties": {
+          "received": {
+            "type": "boolean"
+          },
+          "duplicate": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "received"
+        ]
+      },
+      "KiorlyEventEnvelope": {
+        "type": "object",
+        "description": "See events/envelope.schema.json and one events/<TYPE>.schema.json per type.",
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "aggregateType": {
+            "type": "string"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "eventId",
+          "type",
+          "aggregateType",
+          "aggregateId",
+          "occurredAt",
+          "data"
+        ]
+      },
+      "PspWebhook": {
+        "type": "object",
+        "properties": {
+          "pspEventId": {
+            "type": "string",
+            "description": "Idempotency key from the PSP."
+          },
+          "provider": {
+            "enum": [
+              "paymob",
+              "fawry",
+              "instapay",
+              "sandbox-fake"
+            ]
+          },
+          "type": {
+            "enum": [
+              "payment.captured",
+              "payment.failed",
+              "payment.refunded",
+              "payment.expired",
+              "settlement.reported"
+            ]
+          },
+          "intentId": {
+            "type": "string",
+            "description": "Kiorex Pay payment intent id (merchant reference)."
+          },
+          "pspReference": {
+            "type": "string"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "feeMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failureCode": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "raw": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Provider payload; must contain no PHI and is never logged."
+          }
+        },
+        "required": [
+          "pspEventId",
+          "provider",
+          "type",
+          "intentId",
+          "amountMinor",
+          "currency",
+          "occurredAt"
+        ],
+        "example": {
+          "pspEventId": "fake_evt_1",
+          "provider": "sandbox-fake",
+          "type": "payment.captured",
+          "intentId": "pi_01JF3ZG000",
+          "pspReference": "fake_ref_1",
+          "amountMinor": 20000,
+          "currency": "EGP",
+          "occurredAt": "2027-03-04T09:10:00.000Z"
+        }
+      }
+    }
+  }
+}
