@@ -212,6 +212,54 @@
       "status": "v2-draft"
     },
     {
+      "type": "LabOrderCreated",
+      "aliases": [],
+      "file": "LabOrderCreated",
+      "producer": "kiorly-lab",
+      "aggregateType": "LabOrder",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LabOrderStatusChanged",
+      "aliases": [],
+      "file": "LabOrderStatusChanged",
+      "producer": "kiorly-lab",
+      "aggregateType": "LabOrder",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LabCriticalEscalated",
+      "aliases": [],
+      "file": "LabCriticalEscalated",
+      "producer": "kiorly-lab",
+      "aggregateType": "CriticalAlert",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LabReportCorrected",
+      "aliases": [],
+      "file": "LabReportCorrected",
+      "producer": "kiorly-lab",
+      "aggregateType": "LabReport",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LabInvoiceIssued",
+      "aliases": [],
+      "file": "LabInvoiceIssued",
+      "producer": "kiorly-lab",
+      "aggregateType": "Invoice",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LabPaymentRecorded",
+      "aliases": [],
+      "file": "LabPaymentRecorded",
+      "producer": "kiorly-lab",
+      "aggregateType": "Payment",
+      "status": "v2-draft"
+    },
+    {
       "type": "subject.deleted",
       "aliases": [],
       "file": "subject.deleted",

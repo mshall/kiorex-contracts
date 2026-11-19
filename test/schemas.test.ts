@@ -12,6 +12,7 @@ const KX09_EVENTS = [
   "subject.deleted", "session.revoked", "flag.changed",
 ];
 
+const LAB_DRAFT_EVENTS = ["LabOrderCreated", "LabOrderStatusChanged", "LabCriticalEscalated", "LabReportCorrected", "LabInvoiceIssued", "LabPaymentRecorded"];
 const schemaFiles = listDir("events").filter((f) => f.endsWith(".schema.json"));
 
 describe("event schemas", () => {
@@ -96,5 +97,20 @@ describe("event examples", () => {
     const { consentToken: _c, ...noConsent } = rx.data;
     void _c;
     expect(validateEvent("PrescriptionIssued", { ...rx, data: noConsent }).valid).toBe(false);
+  });
+});
+
+describe("Kiorly Lab draft events (NH-LB-025)", () => {
+  it.each(LAB_DRAFT_EVENTS)("%s is a v2-draft kiorly-lab event whose example validates", (t) => {
+    expect(isEventType(t)).toBe(true);
+    expect(EVENT_META[t as EventType]).toMatchObject({ producer: "kiorly-lab", status: "v2-draft" });
+    const ex = readJson(`events/examples/${t}.example.json`);
+    expect(validateEvent(t as EventType, ex).valid).toBe(true);
+  });
+  it("critical/report events never carry result values", () => {
+    for (const t of ["LabCriticalEscalated", "LabReportCorrected"]) {
+      const ex = readJson(`events/examples/${t}.example.json`);
+      expect(validateEvent(t as EventType, { ...ex, data: { ...ex.data, values: [1] } }).valid).toBe(false);
+    }
   });
 });

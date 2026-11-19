@@ -11,6 +11,8 @@ const BOOKING_SOURCE = {
   enum: ["FRONT_DESK", "PHONE", "WALK_IN", "CLINIC_LINK", "KIOREX_MARKETPLACE", "KIOREX_WHATSAPP", "INTEGRATION", "IMPORT"],
 };
 const LISTING_STATUS = { enum: ["DRAFT", "PENDING_VERIFICATION", "LIVE", "PAUSED"] };
+const LAB_SOURCE = { enum: ["KIOREX_BOOKING", "KIORLY_CLINIC"] };
+const LAB_ORDER_STATUS = { enum: ["DRAFT", "AWAITING_COLLECTION", "COLLECTED", "IN_LAB", "PARTIALLY_RESULTED", "AWAITING_VALIDATION", "VALIDATED", "RELEASED", "CANCELLED"] };
 const AGG = {
   aggregateType: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
   aggregateId: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
@@ -268,6 +270,43 @@ export const EVENTS = [
     data: { properties: { reportId: ID, orderId: ID, labId: ID, patientRef: ID, reportVersion: { type: "integer", minimum: 1 }, signedAt: TS, secureLink: { type: "string", format: "uri" }, channels: { type: "array", items: { enum: ["PATIENT_LINK", "KIOREX_VAULT", "KIORLY_CLINIC", "PRINTED"] } }, values: false, results: false }, required: ["reportId", "orderId", "labId", "patientRef", "reportVersion", "signedAt", "secureLink"] },
     example: { aggregateId: "rep_01JF3ZE000", data: { reportId: "rep_01JF3ZE000", orderId: "lab_ord_01", labId: "lab_01", patientRef: "sub_01JF3Z0001", reportVersion: 1, signedAt: "2027-03-05T15:00:00.000Z", secureLink: "https://lab.kiorly.com/r/abc123", channels: ["KIOREX_VAULT"] } },
   },
+  // ---- Kiorly Lab local drafts (NH-LB-025; mirror kiorly-lab apps/api outbox emitters; additive in 1.3.0) ----
+  {
+    type: "LabOrderCreated", producer: "kiorly-lab", aggregateType: "LabOrder", status: "v2-draft",
+    description: "Kiorly Lab created an order that came from Kiorex (KIOREX_BOOKING) or Kiorly Clinic (KIORLY_CLINIC). Not emitted for walk-in or referring-doctor orders. Draft (NH-LB-025).",
+    data: { properties: { orderId: ID, orderNumber: ID, source: LAB_SOURCE, sourceRef: { type: ["string", "null"], description: "Caller's idempotency reference from POST /integration/v1/orders." }, labId: ID }, required: ["orderId", "orderNumber", "source", "labId"] },
+    example: { aggregateId: "lord_01JF3ZF000", data: { orderId: "lord_01JF3ZF000", orderNumber: "LAB-2027-000123", source: "KIOREX_BOOKING", sourceRef: "bk_01JF3ZG000", labId: "lab_01JF3Z8AAA" } },
+  },
+  {
+    type: "LabOrderStatusChanged", producer: "kiorly-lab", aggregateType: "LabOrder", status: "v2-draft",
+    description: "Derived order status moved (only for KIOREX_BOOKING / KIORLY_CLINIC orders). Event id is deterministic per (order, nextStatus). Draft (NH-LB-025).",
+    data: { properties: { orderId: ID, orderNumber: ID, source: LAB_SOURCE, sourceRef: { type: ["string", "null"] }, previousStatus: LAB_ORDER_STATUS, nextStatus: LAB_ORDER_STATUS }, required: ["orderId", "orderNumber", "source", "previousStatus", "nextStatus"] },
+    example: { aggregateId: "lord_01JF3ZF000", data: { orderId: "lord_01JF3ZF000", orderNumber: "LAB-2027-000123", source: "KIOREX_BOOKING", sourceRef: "bk_01JF3ZG000", previousStatus: "AWAITING_COLLECTION", nextStatus: "COLLECTED" } },
+  },
+  {
+    type: "LabCriticalEscalated", producer: "kiorly-lab", aggregateType: "CriticalAlert", status: "v2-draft",
+    description: "A critical-value alert passed its acknowledgement deadline and escalated one level (KLCRIT). Carries ids and the level only, never result values.",
+    data: { properties: { alertId: ID, orderId: { type: ["string", "null"] }, level: { type: "integer", minimum: 1, description: "New escalation level (1 = lab director, 2 = owner)." }, values: false, results: false }, required: ["alertId", "level"] },
+    example: { aggregateId: "calert_01JF3ZH000", data: { alertId: "calert_01JF3ZH000", orderId: "lord_01JF3ZF000", level: 1 } },
+  },
+  {
+    type: "LabReportCorrected", producer: "kiorly-lab", aggregateType: "LabReport", status: "v2-draft",
+    description: "A corrected report (version > 1) was released. Ids and version only; the patient fetches the new version via the secure link / vault. Never raw result values.",
+    data: { properties: { reportId: ID, orderId: ID, reportVersion: { type: "integer", minimum: 2 }, values: false, results: false }, required: ["reportId", "orderId", "reportVersion"] },
+    example: { aggregateId: "rep_01JF3ZE001", data: { reportId: "rep_01JF3ZE001", orderId: "lord_01JF3ZF000", reportVersion: 2 } },
+  },
+  {
+    type: "LabInvoiceIssued", producer: "kiorly-lab", aggregateType: "Invoice", status: "v2-draft",
+    description: "Lab invoice issued for a KIOREX_BOOKING order. Total is a decimal in major units of `currency`, VAT is a configurable line on the lab's own invoice (no tax-authority reporting).",
+    data: { properties: { invoiceId: ID, orderId: ID, sourceRef: { type: ["string", "null"] }, currency: { type: "string", minLength: 3, maxLength: 3 }, total: { type: "number", minimum: 0 } }, required: ["invoiceId", "orderId", "currency", "total"] },
+    example: { aggregateId: "inv_01JF3ZJ000", data: { invoiceId: "inv_01JF3ZJ000", orderId: "lord_01JF3ZF000", sourceRef: "bk_01JF3ZG000", currency: "EGP", total: 450 } },
+  },
+  {
+    type: "LabPaymentRecorded", producer: "kiorly-lab", aggregateType: "Payment", status: "v2-draft",
+    description: "A payment was recorded at the lab against a KIOREX_BOOKING order invoice (cash or card). Amount is a decimal in major units. Lab-side ledger only; never commingled with Kiorex Pay.",
+    data: { properties: { paymentId: ID, invoiceId: ID, sourceRef: { type: ["string", "null"] }, method: { enum: ["CASH", "CARD"] }, amount: { type: "number", exclusiveMinimum: 0 }, currency: { type: "string", minLength: 3, maxLength: 3 } }, required: ["paymentId", "invoiceId", "method", "amount", "currency"] },
+    example: { aggregateId: "pay_01JF3ZK000", data: { paymentId: "pay_01JF3ZK000", invoiceId: "inv_01JF3ZJ000", sourceRef: "bk_01JF3ZG000", method: "CASH", amount: 450, currency: "EGP" } },
+  },
   // ---- Identity (Kiorex Account, KX-04 KA05/KA07) ----
   {
     type: "subject.deleted", producer: "kiorex-account", aggregateType: "Subject", status: "v2-draft",
@@ -383,7 +422,7 @@ export function buildExample(ev) {
     type: ev.type,
     aggregateType: ev.aggregateType,
     aggregateId: ev.example.aggregateId,
-    ...(ev.producer === "kiorly-clinic" ? { target: "KIOREX" } : {}),
+    ...(ev.producer === "kiorly-clinic" || (ev.producer === "kiorly-lab" && ev.type !== "LabResultReleased") ? { target: "KIOREX" } : {}),
     occurredAt: "2027-03-04T09:12:44.000Z",
     data: ev.example.data,
   };

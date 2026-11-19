@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/LabCriticalEscalated.schema.json",
+  "title": "LabCriticalEscalated",
+  "description": "A critical-value alert passed its acknowledgement deadline and escalated one level (KLCRIT). Carries ids and the level only, never result values.",
+  "x-producer": "kiorly-lab",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "LabCriticalEscalated"
+    },
+    "aggregateType": {
+      "const": "CriticalAlert"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "alertId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orderId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "New escalation level (1 = lab director, 2 = owner)."
+        },
+        "values": false,
+        "results": false
+      },
+      "required": [
+        "alertId",
+        "level"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

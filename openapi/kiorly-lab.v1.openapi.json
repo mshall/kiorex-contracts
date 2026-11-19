@@ -1,0 +1,640 @@
+{
+  "openapi": "3.1.0",
+  "x-status": "draft",
+  "info": {
+    "title": "Kiorly Lab Integration API (draft)",
+    "version": "0.1.0",
+    "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3200/api/v1",
+      "description": "Local Kiorly Lab"
+    }
+  ],
+  "security": [
+    {
+      "kiorlyHmac": []
+    }
+  ],
+  "paths": {
+    "/integration/v1/orders": {
+      "post": {
+        "operationId": "labCreateOrder",
+        "tags": [
+          "integration"
+        ],
+        "summary": "Create (idempotent on sourceRef) a lab order from Kiorex or Kiorly Clinic",
+        "description": "Replaying the same `sourceRef` for the same client returns the existing order with `created: false`. Unknown fields are rejected (strict). Flag lab.kiorex_bookings gates KIOREX_BOOKING orders.",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Integration client key (created by a lab owner via POST /integration-clients)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC-SHA256 over `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)` (query string stripped); same scheme as kiorly-marketplace."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InboundLabOrder"
+              },
+              "example": {
+                "sourceRef": "bk_01JF3ZG000",
+                "labId": "lab_01JF3Z8AAA",
+                "patient": {
+                  "fullName": "Amira Samy",
+                  "sex": "F",
+                  "phone": "+201000000001",
+                  "preferredLocale": "ar"
+                },
+                "testCodes": [
+                  "CBC"
+                ],
+                "priority": "ROUTINE",
+                "collection": {
+                  "type": "HOME",
+                  "address": "12 Nile St, Cairo",
+                  "windowStart": "2027-03-06T08:00:00.000Z",
+                  "windowEnd": "2027-03-06T10:00:00.000Z",
+                  "contactPhone": "+201000000001"
+                },
+                "consentChannels": [
+                  "KIOREX_VAULT"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order created or replayed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InboundLabOrderResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED {issues[]}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/v1/orders/{sourceRef}": {
+      "get": {
+        "operationId": "labGetOrderStatus",
+        "tags": [
+          "integration"
+        ],
+        "summary": "Order status by the caller's sourceRef",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Integration client key (created by a lab owner via POST /integration-clients)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC-SHA256 over `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)` (query string stripped); same scheme as kiorly-marketplace."
+          },
+          {
+            "name": "sourceRef",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabOrderStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORDER_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/v1/orders/{sourceRef}/cancel": {
+      "post": {
+        "operationId": "labCancelOrder",
+        "tags": [
+          "integration"
+        ],
+        "summary": "Cancel an order (external cancellation)",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Integration client key (created by a lab owner via POST /integration-clients)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC-SHA256 over `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)` (query string stripped); same scheme as kiorly-marketplace."
+          },
+          {
+            "name": "sourceRef",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/LabOrderStatusEnum"
+                    }
+                  },
+                  "required": [
+                    "orderId",
+                    "status"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORDER_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/integration/v1/reports/{reportId}/pdf": {
+      "get": {
+        "operationId": "labGetReportPdf",
+        "tags": [
+          "integration"
+        ],
+        "summary": "Released report PDF (only on that client's consented channel: KIOREX_VAULT or KIORLY_CLINIC_IMPORT)",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Integration client key (created by a lab owner via POST /integration-clients)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC-SHA256 over `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)` (query string stripped); same scheme as kiorly-marketplace."
+          },
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "kiorlyHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorly-Signature",
+        "description": "See operation header parameters."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "additionalProperties": true
+      },
+      "LabOrderStatusEnum": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "AWAITING_COLLECTION",
+          "COLLECTED",
+          "IN_LAB",
+          "PARTIALLY_RESULTED",
+          "AWAITING_VALIDATION",
+          "VALIDATED",
+          "RELEASED",
+          "CANCELLED"
+        ]
+      },
+      "InboundLabOrder": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sourceRef",
+          "patient"
+        ],
+        "properties": {
+          "sourceRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "labId": {
+            "type": "string"
+          },
+          "patient": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fullName"
+            ],
+            "properties": {
+              "fullName": {
+                "type": "string",
+                "minLength": 2
+              },
+              "dateOfBirth": {
+                "type": "string"
+              },
+              "sex": {
+                "type": "string",
+                "enum": [
+                  "M",
+                  "F",
+                  "OTHER",
+                  "UNKNOWN"
+                ]
+              },
+              "phone": {
+                "type": "string"
+              },
+              "externalId": {
+                "type": "string"
+              },
+              "preferredLocale": {
+                "type": "string",
+                "enum": [
+                  "ar",
+                  "en"
+                ]
+              }
+            }
+          },
+          "testCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "packageCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "ROUTINE",
+              "URGENT",
+              "STAT"
+            ]
+          },
+          "referringDoctor": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "ref": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              }
+            }
+          },
+          "collection": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "IN_LAB",
+                  "HOME"
+                ]
+              },
+              "address": {
+                "type": "string"
+              },
+              "windowStart": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "windowEnd": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "geo": {
+                "type": "object",
+                "required": [
+                  "lat",
+                  "lng"
+                ],
+                "properties": {
+                  "lat": {
+                    "type": "number"
+                  },
+                  "lng": {
+                    "type": "number"
+                  }
+                }
+              },
+              "contactPhone": {
+                "type": "string"
+              }
+            }
+          },
+          "consentChannels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "PRINTED",
+                "PATIENT_LINK_OTP",
+                "KIORLY_CLINIC_IMPORT",
+                "KIOREX_VAULT"
+              ]
+            },
+            "description": "Result-release consent; with none recorded nothing is released on any channel."
+          }
+        }
+      },
+      "InboundLabOrderResult": {
+        "type": "object",
+        "required": [
+          "orderId",
+          "orderNumber",
+          "status",
+          "created"
+        ],
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LabOrderStatusEnum"
+          },
+          "created": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LabOrderStatus": {
+        "type": "object",
+        "required": [
+          "id",
+          "orderNumber",
+          "status",
+          "collectionType"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LabOrderStatusEnum"
+          },
+          "collectionType": {
+            "type": "string",
+            "enum": [
+              "IN_LAB",
+              "HOME"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

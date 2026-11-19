@@ -99,3 +99,20 @@ describe("OpenAPI documents", () => {
     expect(hooks.components.schemas.PspWebhook.required).toEqual(expect.arrayContaining(["pspEventId", "intentId", "amountMinor"]));
   });
 });
+
+describe("Kiorly Lab draft OpenAPI (NH-LB-025)", () => {
+  const lab = readJson("openapi/kiorly-lab.v1.openapi.json");
+  it("is marked draft and documents the inbound order endpoint with HMAC headers", () => {
+    expect(lab["x-status"]).toBe("draft");
+    const post = lab.paths["/integration/v1/orders"].post;
+    expect(post.operationId).toBe("labCreateOrder");
+    expect(post.parameters.map((p: any) => p.name)).toEqual(["X-Kiorly-Client-Key", "X-Kiorly-Timestamp", "X-Kiorly-Nonce", "X-Kiorly-Signature"]);
+    expect(lab.components.schemas.InboundLabOrder.required).toEqual(["sourceRef", "patient"]);
+  });
+  it("operationIds are unique and every $ref resolves", () => {
+    const ids: string[] = [];
+    for (const item of Object.values<any>(lab.paths)) for (const op of Object.values<any>(item)) ids.push(op.operationId);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const m of JSON.stringify(lab).matchAll(/#\/components\/schemas\/(\w+)/g)) expect(lab.components.schemas[m[1]], m[1]).toBeTruthy();
+  });
+});

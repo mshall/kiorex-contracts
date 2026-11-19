@@ -2338,6 +2338,387 @@ export const EVENT_SCHEMAS = {
       "data"
     ]
   },
+  "LabOrderCreated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LabOrderCreated.schema.json",
+    "title": "LabOrderCreated",
+    "description": "Kiorly Lab created an order that came from Kiorex (KIOREX_BOOKING) or Kiorly Clinic (KIORLY_CLINIC). Not emitted for walk-in or referring-doctor orders. Draft (NH-LB-025).",
+    "x-producer": "kiorly-lab",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LabOrderCreated"
+      },
+      "aggregateType": {
+        "const": "LabOrder"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orderNumber": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "enum": [
+              "KIOREX_BOOKING",
+              "KIORLY_CLINIC"
+            ]
+          },
+          "sourceRef": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Caller's idempotency reference from POST /integration/v1/orders."
+          },
+          "labId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "orderId",
+          "orderNumber",
+          "source",
+          "labId"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LabOrderStatusChanged": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LabOrderStatusChanged.schema.json",
+    "title": "LabOrderStatusChanged",
+    "description": "Derived order status moved (only for KIOREX_BOOKING / KIORLY_CLINIC orders). Event id is deterministic per (order, nextStatus). Draft (NH-LB-025).",
+    "x-producer": "kiorly-lab",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LabOrderStatusChanged"
+      },
+      "aggregateType": {
+        "const": "LabOrder"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orderNumber": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "enum": [
+              "KIOREX_BOOKING",
+              "KIORLY_CLINIC"
+            ]
+          },
+          "sourceRef": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "previousStatus": {
+            "enum": [
+              "DRAFT",
+              "AWAITING_COLLECTION",
+              "COLLECTED",
+              "IN_LAB",
+              "PARTIALLY_RESULTED",
+              "AWAITING_VALIDATION",
+              "VALIDATED",
+              "RELEASED",
+              "CANCELLED"
+            ]
+          },
+          "nextStatus": {
+            "enum": [
+              "DRAFT",
+              "AWAITING_COLLECTION",
+              "COLLECTED",
+              "IN_LAB",
+              "PARTIALLY_RESULTED",
+              "AWAITING_VALIDATION",
+              "VALIDATED",
+              "RELEASED",
+              "CANCELLED"
+            ]
+          }
+        },
+        "required": [
+          "orderId",
+          "orderNumber",
+          "source",
+          "previousStatus",
+          "nextStatus"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LabCriticalEscalated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LabCriticalEscalated.schema.json",
+    "title": "LabCriticalEscalated",
+    "description": "A critical-value alert passed its acknowledgement deadline and escalated one level (KLCRIT). Carries ids and the level only, never result values.",
+    "x-producer": "kiorly-lab",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LabCriticalEscalated"
+      },
+      "aggregateType": {
+        "const": "CriticalAlert"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "alertId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orderId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "New escalation level (1 = lab director, 2 = owner)."
+          },
+          "values": false,
+          "results": false
+        },
+        "required": [
+          "alertId",
+          "level"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LabReportCorrected": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LabReportCorrected.schema.json",
+    "title": "LabReportCorrected",
+    "description": "A corrected report (version > 1) was released. Ids and version only; the patient fetches the new version via the secure link / vault. Never raw result values.",
+    "x-producer": "kiorly-lab",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LabReportCorrected"
+      },
+      "aggregateType": {
+        "const": "LabReport"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orderId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reportVersion": {
+            "type": "integer",
+            "minimum": 2
+          },
+          "values": false,
+          "results": false
+        },
+        "required": [
+          "reportId",
+          "orderId",
+          "reportVersion"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LabInvoiceIssued": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LabInvoiceIssued.schema.json",
+    "title": "LabInvoiceIssued",
+    "description": "Lab invoice issued for a KIOREX_BOOKING order. Total is a decimal in major units of `currency`, VAT is a configurable line on the lab's own invoice (no tax-authority reporting).",
+    "x-producer": "kiorly-lab",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LabInvoiceIssued"
+      },
+      "aggregateType": {
+        "const": "Invoice"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "invoiceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orderId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceRef": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "total": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "invoiceId",
+          "orderId",
+          "currency",
+          "total"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LabPaymentRecorded": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LabPaymentRecorded.schema.json",
+    "title": "LabPaymentRecorded",
+    "description": "A payment was recorded at the lab against a KIOREX_BOOKING order invoice (cash or card). Amount is a decimal in major units. Lab-side ledger only; never commingled with Kiorex Pay.",
+    "x-producer": "kiorly-lab",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LabPaymentRecorded"
+      },
+      "aggregateType": {
+        "const": "Payment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "invoiceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceRef": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "method": {
+            "enum": [
+              "CASH",
+              "CARD"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          }
+        },
+        "required": [
+          "paymentId",
+          "invoiceId",
+          "method",
+          "amount",
+          "currency"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
   "subject.deleted": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/events/subject.deleted.schema.json",
@@ -3251,6 +3632,94 @@ export const EVENT_EXAMPLES = {
       ]
     }
   },
+  "LabOrderCreated": {
+    "eventId": "01JF3ZEVTLABORDER",
+    "type": "LabOrderCreated",
+    "aggregateType": "LabOrder",
+    "aggregateId": "lord_01JF3ZF000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "orderId": "lord_01JF3ZF000",
+      "orderNumber": "LAB-2027-000123",
+      "source": "KIOREX_BOOKING",
+      "sourceRef": "bk_01JF3ZG000",
+      "labId": "lab_01JF3Z8AAA"
+    }
+  },
+  "LabOrderStatusChanged": {
+    "eventId": "01JF3ZEVTLABORDER",
+    "type": "LabOrderStatusChanged",
+    "aggregateType": "LabOrder",
+    "aggregateId": "lord_01JF3ZF000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "orderId": "lord_01JF3ZF000",
+      "orderNumber": "LAB-2027-000123",
+      "source": "KIOREX_BOOKING",
+      "sourceRef": "bk_01JF3ZG000",
+      "previousStatus": "AWAITING_COLLECTION",
+      "nextStatus": "COLLECTED"
+    }
+  },
+  "LabCriticalEscalated": {
+    "eventId": "01JF3ZEVTLABCRITI",
+    "type": "LabCriticalEscalated",
+    "aggregateType": "CriticalAlert",
+    "aggregateId": "calert_01JF3ZH000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "alertId": "calert_01JF3ZH000",
+      "orderId": "lord_01JF3ZF000",
+      "level": 1
+    }
+  },
+  "LabReportCorrected": {
+    "eventId": "01JF3ZEVTLABREPOR",
+    "type": "LabReportCorrected",
+    "aggregateType": "LabReport",
+    "aggregateId": "rep_01JF3ZE001",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "reportId": "rep_01JF3ZE001",
+      "orderId": "lord_01JF3ZF000",
+      "reportVersion": 2
+    }
+  },
+  "LabInvoiceIssued": {
+    "eventId": "01JF3ZEVTLABINVOI",
+    "type": "LabInvoiceIssued",
+    "aggregateType": "Invoice",
+    "aggregateId": "inv_01JF3ZJ000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "invoiceId": "inv_01JF3ZJ000",
+      "orderId": "lord_01JF3ZF000",
+      "sourceRef": "bk_01JF3ZG000",
+      "currency": "EGP",
+      "total": 450
+    }
+  },
+  "LabPaymentRecorded": {
+    "eventId": "01JF3ZEVTLABPAYME",
+    "type": "LabPaymentRecorded",
+    "aggregateType": "Payment",
+    "aggregateId": "pay_01JF3ZK000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "paymentId": "pay_01JF3ZK000",
+      "invoiceId": "inv_01JF3ZJ000",
+      "sourceRef": "bk_01JF3ZG000",
+      "method": "CASH",
+      "amount": 450,
+      "currency": "EGP"
+    }
+  },
   "subject.deleted": {
     "eventId": "01JF3ZEVTSUBJECTD",
     "type": "subject.deleted",
@@ -3505,6 +3974,42 @@ export const EVENT_META = {
     "status": "v2-draft",
     "schemaFile": "LabResultReleased.schema.json"
   },
+  "LabOrderCreated": {
+    "producer": "kiorly-lab",
+    "aggregateType": "LabOrder",
+    "status": "v2-draft",
+    "schemaFile": "LabOrderCreated.schema.json"
+  },
+  "LabOrderStatusChanged": {
+    "producer": "kiorly-lab",
+    "aggregateType": "LabOrder",
+    "status": "v2-draft",
+    "schemaFile": "LabOrderStatusChanged.schema.json"
+  },
+  "LabCriticalEscalated": {
+    "producer": "kiorly-lab",
+    "aggregateType": "CriticalAlert",
+    "status": "v2-draft",
+    "schemaFile": "LabCriticalEscalated.schema.json"
+  },
+  "LabReportCorrected": {
+    "producer": "kiorly-lab",
+    "aggregateType": "LabReport",
+    "status": "v2-draft",
+    "schemaFile": "LabReportCorrected.schema.json"
+  },
+  "LabInvoiceIssued": {
+    "producer": "kiorly-lab",
+    "aggregateType": "Invoice",
+    "status": "v2-draft",
+    "schemaFile": "LabInvoiceIssued.schema.json"
+  },
+  "LabPaymentRecorded": {
+    "producer": "kiorly-lab",
+    "aggregateType": "Payment",
+    "status": "v2-draft",
+    "schemaFile": "LabPaymentRecorded.schema.json"
+  },
   "subject.deleted": {
     "producer": "kiorex-account",
     "aggregateType": "Subject",
@@ -3543,7 +4048,7 @@ export const EVENT_META = {
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -3607,6 +4112,18 @@ export type OrderRejectedData = { "orderId": string; "pharmacyId": string; "reje
 export type OrderRejectedEvent = EventEnvelope<"OrderRejected", OrderRejectedData>;
 export type LabResultReleasedData = { "reportId": string; "orderId": string; "labId": string; "patientRef": string; "reportVersion": number; "signedAt": string; "secureLink": string; "channels"?: Array<"PATIENT_LINK" | "KIOREX_VAULT" | "KIORLY_CLINIC" | "PRINTED">; "values"?: never; "results"?: never; [k: string]: unknown };
 export type LabResultReleasedEvent = EventEnvelope<"LabResultReleased", LabResultReleasedData>;
+export type LabOrderCreatedData = { "orderId": string; "orderNumber": string; "source": "KIOREX_BOOKING" | "KIORLY_CLINIC"; "sourceRef"?: string | null; "labId": string; [k: string]: unknown };
+export type LabOrderCreatedEvent = EventEnvelope<"LabOrderCreated", LabOrderCreatedData>;
+export type LabOrderStatusChangedData = { "orderId": string; "orderNumber": string; "source": "KIOREX_BOOKING" | "KIORLY_CLINIC"; "sourceRef"?: string | null; "previousStatus": "DRAFT" | "AWAITING_COLLECTION" | "COLLECTED" | "IN_LAB" | "PARTIALLY_RESULTED" | "AWAITING_VALIDATION" | "VALIDATED" | "RELEASED" | "CANCELLED"; "nextStatus": "DRAFT" | "AWAITING_COLLECTION" | "COLLECTED" | "IN_LAB" | "PARTIALLY_RESULTED" | "AWAITING_VALIDATION" | "VALIDATED" | "RELEASED" | "CANCELLED"; [k: string]: unknown };
+export type LabOrderStatusChangedEvent = EventEnvelope<"LabOrderStatusChanged", LabOrderStatusChangedData>;
+export type LabCriticalEscalatedData = { "alertId": string; "orderId"?: string | null; "level": number; "values"?: never; "results"?: never; [k: string]: unknown };
+export type LabCriticalEscalatedEvent = EventEnvelope<"LabCriticalEscalated", LabCriticalEscalatedData>;
+export type LabReportCorrectedData = { "reportId": string; "orderId": string; "reportVersion": number; "values"?: never; "results"?: never; [k: string]: unknown };
+export type LabReportCorrectedEvent = EventEnvelope<"LabReportCorrected", LabReportCorrectedData>;
+export type LabInvoiceIssuedData = { "invoiceId": string; "orderId": string; "sourceRef"?: string | null; "currency": string; "total": number; [k: string]: unknown };
+export type LabInvoiceIssuedEvent = EventEnvelope<"LabInvoiceIssued", LabInvoiceIssuedData>;
+export type LabPaymentRecordedData = { "paymentId": string; "invoiceId": string; "sourceRef"?: string | null; "method": "CASH" | "CARD"; "amount": number; "currency": string; [k: string]: unknown };
+export type LabPaymentRecordedEvent = EventEnvelope<"LabPaymentRecorded", LabPaymentRecordedData>;
 export type SubjectDeletedData = { "sub": string; "deletedAt": string; "requestedBy"?: "subject" | "operator" | "guardian"; "retainLegalRecords"?: boolean; [k: string]: unknown };
 export type SubjectDeletedEvent = EventEnvelope<"subject.deleted", SubjectDeletedData>;
 export type SessionRevokedData = { "sub": string; "sid"?: string; "revokedAt": string; "reason"?: "logout" | "remote_revoke" | "reuse_detected" | "password_or_credential_change" | "admin"; [k: string]: unknown };
@@ -3647,6 +4164,12 @@ export interface EventMap {
   "DispenseCompleted": DispenseCompletedEvent;
   "OrderRejected": OrderRejectedEvent;
   "LabResultReleased": LabResultReleasedEvent;
+  "LabOrderCreated": LabOrderCreatedEvent;
+  "LabOrderStatusChanged": LabOrderStatusChangedEvent;
+  "LabCriticalEscalated": LabCriticalEscalatedEvent;
+  "LabReportCorrected": LabReportCorrectedEvent;
+  "LabInvoiceIssued": LabInvoiceIssuedEvent;
+  "LabPaymentRecorded": LabPaymentRecordedEvent;
   "subject.deleted": SubjectDeletedEvent;
   "session.revoked": SessionRevokedEvent;
   "guardian.link.changed": GuardianLinkChangedEvent;

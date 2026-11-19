@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/LabOrderCreated.schema.json",
+  "title": "LabOrderCreated",
+  "description": "Kiorly Lab created an order that came from Kiorex (KIOREX_BOOKING) or Kiorly Clinic (KIORLY_CLINIC). Not emitted for walk-in or referring-doctor orders. Draft (NH-LB-025).",
+  "x-producer": "kiorly-lab",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "LabOrderCreated"
+    },
+    "aggregateType": {
+      "const": "LabOrder"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orderNumber": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": [
+            "KIOREX_BOOKING",
+            "KIORLY_CLINIC"
+          ]
+        },
+        "sourceRef": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Caller's idempotency reference from POST /integration/v1/orders."
+        },
+        "labId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "orderId",
+        "orderNumber",
+        "source",
+        "labId"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

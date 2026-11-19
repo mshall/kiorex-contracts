@@ -2,6 +2,20 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.3.0
+
+Additive minor (no field removed or renamed). Kiorly Lab draft contracts (kiorly-lab NH-LB-025), all `x-status: v2-draft` / `draft`.
+
+- **Events** (producer `kiorly-lab`, mirroring its outbox emitters; envelope `target: KIOREX`): `LabOrderCreated`, `LabOrderStatusChanged`,
+  `LabCriticalEscalated`, `LabReportCorrected`, `LabInvoiceIssued`, `LabPaymentRecorded`. Ids, statuses and amounts only; never result
+  values (`values`/`results` are forbidden on the critical and report events). Money in these two events is a decimal in major units
+  (that is what Kiorly Lab emits today), unlike Kiorex's integer minor units.
+- **OpenAPI** `openapi/kiorly-lab.v1.openapi.json` (`x-status: draft`): inbound `POST /integration/v1/orders` (`labCreateOrder`, idempotent on
+  `sourceRef`), plus `GET /integration/v1/orders/{sourceRef}`, `POST .../cancel`, `GET /integration/v1/reports/{reportId}/pdf`. Same HMAC
+  scheme as the marketplace API. Not frozen until NH-LB-023 is approved.
+- Examples for `kiorly-lab` events now include `target: "KIOREX"` (as Kiorly Lab sends); `LabResultReleased` is unchanged.
+- Kiorly Pharmacy: not checked in this release (no emitters yet).
+
 ## 1.2.0
 
 Additive minor (no field removed or renamed). Kiorex Passport (kiorex-account) identity work KA-06/08/09/10/11.

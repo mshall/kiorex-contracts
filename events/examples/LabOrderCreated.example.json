@@ -1,0 +1,15 @@
+{
+  "eventId": "01JF3ZEVTLABORDER",
+  "type": "LabOrderCreated",
+  "aggregateType": "LabOrder",
+  "aggregateId": "lord_01JF3ZF000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "orderId": "lord_01JF3ZF000",
+    "orderNumber": "LAB-2027-000123",
+    "source": "KIOREX_BOOKING",
+    "sourceRef": "bk_01JF3ZG000",
+    "labId": "lab_01JF3Z8AAA"
+  }
+}

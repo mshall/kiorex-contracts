@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/LabReportCorrected.schema.json",
+  "title": "LabReportCorrected",
+  "description": "A corrected report (version > 1) was released. Ids and version only; the patient fetches the new version via the secure link / vault. Never raw result values.",
+  "x-producer": "kiorly-lab",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "LabReportCorrected"
+    },
+    "aggregateType": {
+      "const": "LabReport"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "reportId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reportVersion": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "values": false,
+        "results": false
+      },
+      "required": [
+        "reportId",
+        "orderId",
+        "reportVersion"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}
