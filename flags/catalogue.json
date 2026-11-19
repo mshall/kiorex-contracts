@@ -1,0 +1,666 @@
+{
+  "$schema": "./catalogue.schema.json",
+  "source": "KX-08 §09 (Rev 2.1)",
+  "defaultState": "ON",
+  "flags": [
+    {
+      "key": "clinic.kiorex_listing",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Listings PAUSED on Kiorex; confirmed bookings honoured; booking link still works",
+      "dependsOn": [
+        "kiorex.marketplace"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.commission_settlement",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Commercial",
+      "whenOff": "New commission charges stop; invoices = subscription only; confirmed charges still settle",
+      "dependsOn": [
+        "clinic.kiorex_listing"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.kiorly_pay_deposits",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Commercial",
+      "whenOff": "No new deposit requirements or links; existing deposits refund/convert per policy",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "whatsapp_reminders",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Integration",
+      "whenOff": "Reminders stop; manual call list shown",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "existing key",
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.whatsapp_inbound",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Integration",
+      "whenOff": "Replies no longer change appointments; routed to inbox",
+      "dependsOn": [
+        "whatsapp_reminders"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "instapay",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Integration",
+      "whenOff": "Method hidden at cashier; cash and other methods remain",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "existing key",
+      "keyPattern": false
+    },
+    {
+      "key": "fawry",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Integration",
+      "whenOff": "Method hidden at cashier; cash and other methods remain",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "existing key",
+      "keyPattern": false
+    },
+    {
+      "key": "card_payments",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Integration",
+      "whenOff": "Method hidden at cashier; cash and other methods remain",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "existing key",
+      "keyPattern": false
+    },
+    {
+      "key": "ai_assistant",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "AI",
+      "whenOff": "Widget hidden; chat returns 403",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "existing key",
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.ai_scribe",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "AI",
+      "whenOff": "Record button hidden; signed notes unaffected",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.whatsapp_ai_receptionist",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Inbound messages go to human inbox",
+      "dependsOn": [
+        "clinic.whatsapp_inbound"
+      ],
+      "launchLocked": true,
+      "gate": "Meta approval + consent copy",
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.no_show_risk",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "AI",
+      "whenOff": "Risk chip hidden",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.waitlist_autofill",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Waitlist kept; no automatic offers",
+      "dependsOn": [
+        "whatsapp_reminders"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.record_share_patient_app",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "No new shares; existing shares stay visible to the patient",
+      "dependsOn": [
+        "kiorex.record_vault"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.eprescription_handoff",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Rx printed / WhatsApp only",
+      "dependsOn": [
+        "pharmacy.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.lab_order_handoff",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Lab orders kept as records only",
+      "dependsOn": [
+        "lab.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.payers_tpa",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Contract prices kept; no new claims",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.specialty_templates.<code>",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Template hidden from new encounters",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "Specialty board sign-off (NH010)",
+      "note": "Pattern key: <code> is the specialty template code",
+      "keyPattern": true
+    },
+    {
+      "key": "clinic.referral_rewards",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Commercial",
+      "whenOff": "No new codes; earned credits honoured",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.field_rep_onboarding",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Commercial",
+      "whenOff": "Rep codes rejected at signup; earned commissions honoured",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.marketplace",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "Search shows clinic phone only; no new bookings; existing bookings honoured",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.pay_deposits",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Commercial",
+      "whenOff": "Deposit-required visit types bookable without deposit or hidden (per market setting)",
+      "dependsOn": [
+        "kiorex.marketplace"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.reviews",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "No new reviews; aggregates still displayed",
+      "dependsOn": [
+        "kiorex.marketplace"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.family_accounts",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "Existing dependants kept; cannot add new",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.record_vault",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "Vault read-only",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.whatsapp_booking",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Integration",
+      "whenOff": "WhatsApp replies with app link",
+      "dependsOn": [
+        "kiorex.marketplace"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.sponsored_listings",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Commercial",
+      "whenOff": "Sponsored slots removed; organic ranking only",
+      "dependsOn": [
+        "kiorex.marketplace"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.pharmacy_orders",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Pharmacy tab hidden; open orders completed or refunded",
+      "dependsOn": [
+        "pharmacy.kiorex_orders"
+      ],
+      "launchLocked": true,
+      "gate": "Merchant-of-record + counsel memo (Q5)",
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.lab_bookings",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Lab tab hidden; booked collections honoured",
+      "dependsOn": [
+        "lab.kiorex_bookings"
+      ],
+      "launchLocked": true,
+      "gate": "Counsel memo",
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.telemedicine",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Video option hidden",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "Clinical governance sign-off",
+      "keyPattern": false
+    },
+    {
+      "key": "kiorex.ai_navigation",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Plain specialty search",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "Clinical evaluation (KX11)",
+      "keyPattern": false
+    },
+    {
+      "key": "account.passkeys",
+      "product": "kiorex-account",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "OTP only",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "account.provider_sso",
+      "product": "kiorex-account",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Providers use product login",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "pharmacy.module",
+      "product": "kiorly-pharmacy",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "No new sign-ups; existing tenants read-only with export",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "pharmacy.kiorex_orders",
+      "product": "kiorly-pharmacy",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Order inbox hidden; stock not exposed",
+      "dependsOn": [
+        "pharmacy.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "pharmacy.forecasting",
+      "product": "kiorly-pharmacy",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "AI",
+      "whenOff": "Min/max reorder only",
+      "dependsOn": [
+        "pharmacy.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "pharmacy.insurer_claims",
+      "product": "kiorly-pharmacy",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Cash/self-pay only",
+      "dependsOn": [
+        "pharmacy.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "lab.module",
+      "product": "kiorly-lab",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "No new sign-ups; existing tenants read-only with export",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "lab.analyzer_interfaces",
+      "product": "kiorly-lab",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Integration",
+      "whenOff": "Manual entry with dual control",
+      "dependsOn": [
+        "lab.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "lab.home_collection",
+      "product": "kiorly-lab",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Walk-in collection only",
+      "dependsOn": [
+        "lab.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "lab.kiorex_bookings",
+      "product": "kiorly-lab",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "Not bookable from Kiorex",
+      "dependsOn": [
+        "lab.module"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "keyPattern": false
+    },
+    {
+      "key": "market.<country>.live",
+      "product": "all",
+      "scopes": [
+        "global"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "Country hidden from sign-up and search; existing tenants unaffected",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "Market pack certification + local counsel",
+      "note": "Pattern key: <country> is a lower-case ISO 3166-1 alpha-2 code, e.g. market.eg.live",
+      "keyPattern": true
+    }
+  ]
+}

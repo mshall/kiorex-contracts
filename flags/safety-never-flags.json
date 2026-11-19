@@ -1,0 +1,145 @@
+{
+  "adr": "ADR-025",
+  "source": "KX-08 \u00a709 (Not flags \u2014 never switchable)",
+  "rule": "These controls must never be gated by a feature flag. CI rejects flag keys on safety paths.",
+  "items": [
+    {
+      "id": "rx_safety_checks",
+      "label": "Rx safety checks (interactions, allergies, duplicates)",
+      "products": [
+        "kiorly-clinic",
+        "kiorly-pharmacy"
+      ],
+      "forbiddenKeyTokens": [
+        "rx_safety",
+        "interaction",
+        "allergy",
+        "duplicate_check"
+      ]
+    },
+    {
+      "id": "encounter_signoff",
+      "label": "Encounter sign-off, auto-lock and versioned amendments",
+      "products": [
+        "kiorly-clinic"
+      ],
+      "forbiddenKeyTokens": [
+        "signoff",
+        "sign_off",
+        "auto_lock",
+        "amendment"
+      ]
+    },
+    {
+      "id": "audit_logging",
+      "label": "Audit logging",
+      "products": [
+        "all"
+      ],
+      "forbiddenKeyTokens": [
+        "audit"
+      ]
+    },
+    {
+      "id": "consent_enforcement",
+      "label": "Consent enforcement",
+      "products": [
+        "all"
+      ],
+      "forbiddenKeyTokens": [
+        "consent_enforce",
+        "consent_check"
+      ]
+    },
+    {
+      "id": "tenant_record_access",
+      "label": "Record view / print / export for the tenant",
+      "products": [
+        "all"
+      ],
+      "forbiddenKeyTokens": [
+        "record_view",
+        "record_print",
+        "record_export",
+        "tenant_export"
+      ]
+    },
+    {
+      "id": "lot_expiry_recall_quarantine",
+      "label": "Lot expiry / recall / quarantine blocks",
+      "products": [
+        "kiorly-pharmacy"
+      ],
+      "forbiddenKeyTokens": [
+        "lot_expiry",
+        "recall",
+        "quarantine"
+      ]
+    },
+    {
+      "id": "pharmacist_signoff",
+      "label": "Pharmacist sign-off",
+      "products": [
+        "kiorly-pharmacy"
+      ],
+      "forbiddenKeyTokens": [
+        "pharmacist_sign"
+      ]
+    },
+    {
+      "id": "lab_qc_and_release",
+      "label": "Lab QC blocks and authorized release",
+      "products": [
+        "kiorly-lab"
+      ],
+      "forbiddenKeyTokens": [
+        "lab_qc",
+        "authorized_release",
+        "qc_block"
+      ]
+    },
+    {
+      "id": "critical_value_escalation",
+      "label": "Critical-value escalation",
+      "products": [
+        "kiorly-lab"
+      ],
+      "forbiddenKeyTokens": [
+        "critical_value"
+      ]
+    },
+    {
+      "id": "privileged_mfa",
+      "label": "Privileged MFA on production",
+      "products": [
+        "all"
+      ],
+      "forbiddenKeyTokens": [
+        "privileged_mfa",
+        "mfa"
+      ]
+    },
+    {
+      "id": "tenant_isolation_authz",
+      "label": "Tenant isolation and authorization",
+      "products": [
+        "all"
+      ],
+      "forbiddenKeyTokens": [
+        "tenant_isolation",
+        "authorization",
+        "authz"
+      ]
+    },
+    {
+      "id": "breach_response_tooling",
+      "label": "Breach-response tooling",
+      "products": [
+        "all"
+      ],
+      "forbiddenKeyTokens": [
+        "breach"
+      ]
+    }
+  ]
+}
