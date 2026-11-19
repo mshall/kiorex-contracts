@@ -36,9 +36,8 @@ clinics-management `apps/api/openapi/`), control-plane and webhook OpenAPI, even
 8. **v2 events have no producer yet** (`x-status: v2-draft`): `PrescriptionIssued`, `OrderReady`, `DispenseCompleted`,
    `OrderRejected`, `LabResultReleased`, `subject.deleted`, `session.revoked`, `flag.changed`. Their payloads are designed from
    KX-06/07/04/08 requirements (KPRX01/06, KPMKT05, KLCRIT03, KA05/07) and are the part most likely to need a minor bump once built.
-9. **Marketplace spec paths.** The OpenAPI server base is `/marketplace/v1`; the deployed URL also has the Nest global prefix
-   (`/api/v1/marketplace/v1/...`). HMAC signing uses the full path including `/api/v1`.
-10. **Marketplace OpenAPI** contains `/patients/{id}/consents`, not listed in the consumer contract or KX-09 §03 (left untouched).
+9. **Marketplace spec paths.** The OpenAPI server base is `/marketplace/v1` and that is also the deployed URL: Kiorly excludes it from the
+   Nest global prefix (`/marketplace/v1/...`, NOT `/api/v1/marketplace/v1`). HMAC signing uses the path as requested (`/marketplace/v1/...`).
 
 ### Decisions made where documents were silent (needs human confirmation)
 - Control-plane request auth reuses the marketplace canonical string but identifies the product with `X-Kiorex-Product-Key` and does
