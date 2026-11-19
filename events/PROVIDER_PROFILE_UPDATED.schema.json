@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/PROVIDER_PROFILE_UPDATED.schema.json",
+  "title": "PROVIDER_PROFILE_UPDATED",
+  "description": "Published provider profile changed. Kiorex reindexes search.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "PROVIDER_PROFILE_UPDATED"
+    },
+    "aggregateType": {
+      "const": "MarketplaceListing"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "listingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicianId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "DRAFT",
+            "PENDING_VERIFICATION",
+            "LIVE",
+            "PAUSED"
+          ]
+        },
+        "completenessPercent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "provider": {
+          "type": "object",
+          "description": "Published provider profile (see provider-profile-schema in Kiorly)."
+        },
+        "clinic": {
+          "type": "object",
+          "description": "Published clinic profile."
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "listingId",
+        "clinicId",
+        "clinicianId",
+        "status",
+        "completenessPercent",
+        "updatedAt",
+        "provider",
+        "clinic"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "eventId": "01JF3ZEVTFLAGCHAN",
+  "type": "flag.changed",
+  "aggregateType": "Flag",
+  "aggregateId": "kiorex.marketplace",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "product": "kiorly-clinic",
+    "key": "kiorex.marketplace",
+    "scope": "market",
+    "scopeId": "EG",
+    "previousValue": "INHERIT",
+    "newValue": "OFF",
+    "snapshotVersion": 42,
+    "changedAt": "2027-05-01T09:00:00.000Z",
+    "reason": "PSP incident",
+    "actor": "ops@kiorex.com"
+  }
+}

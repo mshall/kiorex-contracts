@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/APPOINTMENT_RESCHEDULED.schema.json",
+  "title": "APPOINTMENT_RESCHEDULED",
+  "description": "Appointment start time changed. Kiorly emits the type string RESCHEDULED (KX-09 names it APPOINTMENT_RESCHEDULED; both are accepted by validateEvent).",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "enum": [
+        "RESCHEDULED",
+        "APPOINTMENT_RESCHEDULED"
+      ]
+    },
+    "aggregateType": {
+      "const": "Appointment"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "appointmentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "externalReference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "appointmentId",
+        "clinicId",
+        "startsAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

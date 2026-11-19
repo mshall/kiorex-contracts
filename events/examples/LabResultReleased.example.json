@@ -1,0 +1,19 @@
+{
+  "eventId": "01JF3ZEVTLABRESUL",
+  "type": "LabResultReleased",
+  "aggregateType": "LabReport",
+  "aggregateId": "rep_01JF3ZE000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "reportId": "rep_01JF3ZE000",
+    "orderId": "lab_ord_01",
+    "labId": "lab_01",
+    "patientRef": "sub_01JF3Z0001",
+    "reportVersion": 1,
+    "signedAt": "2027-03-05T15:00:00.000Z",
+    "secureLink": "https://lab.kiorly.com/r/abc123",
+    "channels": [
+      "KIOREX_VAULT"
+    ]
+  }
+}

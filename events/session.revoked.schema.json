@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/session.revoked.schema.json",
+  "title": "session.revoked",
+  "description": "Back-channel logout (KA05): revoke the product sessions bound to this sub and/or sid.",
+  "x-producer": "kiorex-account",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "session.revoked"
+    },
+    "aggregateType": {
+      "const": "Session"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "sub": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sid": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "enum": [
+            "logout",
+            "remote_revoke",
+            "reuse_detected",
+            "password_or_credential_change",
+            "admin"
+          ]
+        }
+      },
+      "required": [
+        "sub",
+        "revokedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

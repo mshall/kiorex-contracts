@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/RECORD_SHARE_REVOKED.schema.json",
+  "title": "RECORD_SHARE_REVOKED",
+  "description": "Patient revoked a record-share scope; Kiorex must delete the shared copies. Not in KX-09 §04.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "kiorly-extra",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "RECORD_SHARE_REVOKED"
+    },
+    "aggregateType": {
+      "const": "Patient"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "enum": [
+            "VISIT_SUMMARY",
+            "PRESCRIPTIONS",
+            "LAB_RESULTS",
+            "SHARE_WITH_OTHER_CLINICS"
+          ]
+        },
+        "action": {
+          "const": "DELETE_REQUESTED"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "patientId",
+        "scope",
+        "action"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

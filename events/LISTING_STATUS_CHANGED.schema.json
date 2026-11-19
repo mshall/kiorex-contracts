@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/LISTING_STATUS_CHANGED.schema.json",
+  "title": "LISTING_STATUS_CHANGED",
+  "description": "Listing moved between DRAFT / PENDING_VERIFICATION / LIVE / PAUSED. Kiorex hides listings that are not LIVE.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "LISTING_STATUS_CHANGED"
+    },
+    "aggregateType": {
+      "const": "MarketplaceListing"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "listingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicianId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "previousStatus": {
+          "enum": [
+            "DRAFT",
+            "PENDING_VERIFICATION",
+            "LIVE",
+            "PAUSED"
+          ]
+        },
+        "nextStatus": {
+          "enum": [
+            "DRAFT",
+            "PENDING_VERIFICATION",
+            "LIVE",
+            "PAUSED"
+          ]
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "listingId",
+        "clinicId",
+        "clinicianId",
+        "previousStatus",
+        "nextStatus"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

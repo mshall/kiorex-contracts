@@ -1,0 +1,16 @@
+{
+  "eventId": "01JF3ZEVTREVIEWRE",
+  "type": "REVIEW_REPLY_POSTED",
+  "aggregateType": "KiorexReview",
+  "aggregateId": "rv_01JF3ZAAAA",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "kiorexReviewId": "kx_rv_01JF3ZABCD",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "replyText": "Thank you for your feedback.",
+    "repliedAt": "2027-03-08T12:00:00.000Z",
+    "aggregateType": "KiorexReview",
+    "aggregateId": "rv_01JF3ZAAAA"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/APPOINTMENT_CONFIRMED.schema.json",
+  "title": "APPOINTMENT_CONFIRMED",
+  "description": "Appointment became CONFIRMED (auto-confirm, staff confirm, WhatsApp confirm, waitlist autofill). Ordered per appointment aggregate.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "APPOINTMENT_CONFIRMED"
+    },
+    "aggregateType": {
+      "const": "Appointment"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "appointmentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "previousStatus": {
+          "enum": [
+            "SCHEDULED",
+            "CONFIRMED",
+            "CHECKED_IN",
+            "COMPLETED",
+            "CANCELLED",
+            "NO_SHOW"
+          ]
+        },
+        "nextStatus": {
+          "const": "CONFIRMED"
+        },
+        "bookingSource": {
+          "enum": [
+            "FRONT_DESK",
+            "PHONE",
+            "WALK_IN",
+            "CLINIC_LINK",
+            "KIOREX_MARKETPLACE",
+            "KIOREX_WHATSAPP",
+            "INTEGRATION",
+            "IMPORT"
+          ]
+        },
+        "externalReference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+        },
+        "source": {
+          "type": "string",
+          "description": "e.g. waitlist_autofill"
+        },
+        "clinicianId": {
+          "type": "string"
+        },
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "isNewPatientAtBooking": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "appointmentId",
+        "clinicId",
+        "previousStatus",
+        "nextStatus",
+        "bookingSource"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/OrderRejected.schema.json",
+  "title": "OrderRejected",
+  "description": "Pharmacy rejected the order (KPMKT02). Kiorex refunds per policy.",
+  "x-producer": "kiorly-pharmacy",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "OrderRejected"
+    },
+    "aggregateType": {
+      "const": "PharmacyOrder"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pharmacyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rejectedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reasonCode": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "orderId",
+        "pharmacyId",
+        "rejectedAt",
+        "reason"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

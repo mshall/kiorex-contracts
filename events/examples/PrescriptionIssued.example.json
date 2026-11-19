@@ -1,0 +1,24 @@
+{
+  "eventId": "01JF3ZEVTPRESCRIP",
+  "type": "PrescriptionIssued",
+  "aggregateType": "Prescription",
+  "aggregateId": "rx_01JF3ZC000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "prescriptionId": "rx_01JF3ZC000",
+    "encounterId": "enc_01JF3ZB000",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "patientRef": "sub_01JF3Z0001",
+    "prescriberId": "clin_01JF3Z7AAA",
+    "consentToken": "ct_01JF3ZC111",
+    "issuedAt": "2027-03-05T11:12:00.000Z",
+    "items": [
+      {
+        "activeIngredient": "amoxicillin",
+        "strength": "500 mg",
+        "quantity": 21
+      }
+    ]
+  }
+}

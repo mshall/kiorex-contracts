@@ -1,0 +1,12 @@
+{
+  "eventId": "01JF3ZEVTSUBJECTD",
+  "type": "subject.deleted",
+  "aggregateType": "Subject",
+  "aggregateId": "sub_01JF3Z0001",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "sub": "sub_01JF3Z0001",
+    "deletedAt": "2027-04-01T08:00:00.000Z",
+    "requestedBy": "subject"
+  }
+}

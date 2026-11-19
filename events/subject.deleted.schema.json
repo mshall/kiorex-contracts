@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/subject.deleted.schema.json",
+  "title": "subject.deleted",
+  "description": "Subject account deleted (KA07). Products must delete or anonymise non-legally-required data; legal records are retained.",
+  "x-producer": "kiorex-account",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "subject.deleted"
+    },
+    "aggregateType": {
+      "const": "Subject"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "sub": {
+          "type": "string",
+          "minLength": 1
+        },
+        "deletedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "requestedBy": {
+          "enum": [
+            "subject",
+            "operator",
+            "guardian"
+          ]
+        },
+        "retainLegalRecords": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "sub",
+        "deletedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

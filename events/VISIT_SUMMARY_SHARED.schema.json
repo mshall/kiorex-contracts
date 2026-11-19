@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/VISIT_SUMMARY_SHARED.schema.json",
+  "title": "VISIT_SUMMARY_SHARED",
+  "description": "Signed visit summary pushed to the Kiorex record vault after patient consent (KX-11). Not in KX-09 §04. Contains clinical content: never log it.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "kiorly-extra",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "VISIT_SUMMARY_SHARED"
+    },
+    "aggregateType": {
+      "const": "Encounter"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "const": "VISIT_SUMMARY"
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "encounterId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "clinicId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "signedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "soap": {
+              "type": "object",
+              "properties": {
+                "chiefComplaint": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "subjective": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "objective": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "assessment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "plan": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "required": [
+            "encounterId",
+            "clinicId",
+            "signedAt",
+            "soap"
+          ]
+        },
+        "signature": {
+          "type": "string",
+          "description": "hex HMAC-SHA256 over JSON.stringify(summary) with KIOREX_RECORD_SHARE_HMAC_SECRET."
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "patientId",
+        "scope",
+        "summary",
+        "signature"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "eventId": "01JF3ZEVTSLOTSCHA",
+  "type": "SLOTS_CHANGED",
+  "aggregateType": "Clinic",
+  "aggregateId": "clin_01JF3Z7AAA",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "clinicianId": "clin_01JF3Z7AAA",
+    "reason": "appointment_created",
+    "at": "2027-03-04T09:12:44.000Z"
+  }
+}

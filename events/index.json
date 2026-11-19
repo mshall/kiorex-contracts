@@ -1,0 +1,223 @@
+{
+  "envelope": "envelope.schema.json",
+  "events": [
+    {
+      "type": "APPOINTMENT_CONFIRMED",
+      "aliases": [],
+      "file": "APPOINTMENT_CONFIRMED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "RESCHEDULED",
+      "aliases": [
+        "APPOINTMENT_RESCHEDULED"
+      ],
+      "file": "APPOINTMENT_RESCHEDULED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "CANCELLED_BY_CLINIC",
+      "aliases": [],
+      "file": "CANCELLED_BY_CLINIC",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "CANCELLED_BY_PATIENT",
+      "aliases": [],
+      "file": "CANCELLED_BY_PATIENT",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "CHECKED_IN",
+      "aliases": [],
+      "file": "CHECKED_IN",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "CHECK_IN_REVERTED",
+      "aliases": [],
+      "file": "CHECK_IN_REVERTED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "COMPLETED",
+      "aliases": [],
+      "file": "COMPLETED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "NO_SHOW",
+      "aliases": [],
+      "file": "NO_SHOW",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "SLOTS_CHANGED",
+      "aliases": [],
+      "file": "SLOTS_CHANGED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Clinic",
+      "status": "emitted"
+    },
+    {
+      "type": "PROVIDER_PROFILE_UPDATED",
+      "aliases": [],
+      "file": "PROVIDER_PROFILE_UPDATED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "MarketplaceListing",
+      "status": "emitted"
+    },
+    {
+      "type": "LISTING_STATUS_CHANGED",
+      "aliases": [],
+      "file": "LISTING_STATUS_CHANGED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "MarketplaceListing",
+      "status": "emitted"
+    },
+    {
+      "type": "COMMISSION_CHARGE_CREATED",
+      "aliases": [],
+      "file": "COMMISSION_CHARGE_CREATED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "COMMISSION_CHARGE_REVERSED",
+      "aliases": [],
+      "file": "COMMISSION_CHARGE_REVERSED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "REVIEW_INVITATION_ELIGIBLE",
+      "aliases": [],
+      "file": "REVIEW_INVITATION_ELIGIBLE",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
+      "type": "REVIEW_REPLY_POSTED",
+      "aliases": [],
+      "file": "REVIEW_REPLY_POSTED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "KiorexReview",
+      "status": "emitted"
+    },
+    {
+      "type": "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT",
+      "aliases": [],
+      "file": "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "kiorly-extra"
+    },
+    {
+      "type": "VISIT_SUMMARY_SHARED",
+      "aliases": [],
+      "file": "VISIT_SUMMARY_SHARED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Encounter",
+      "status": "kiorly-extra"
+    },
+    {
+      "type": "PRESCRIPTION_SHARED",
+      "aliases": [],
+      "file": "PRESCRIPTION_SHARED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Encounter",
+      "status": "kiorly-extra"
+    },
+    {
+      "type": "RECORD_SHARE_REVOKED",
+      "aliases": [],
+      "file": "RECORD_SHARE_REVOKED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Patient",
+      "status": "kiorly-extra"
+    },
+    {
+      "type": "PrescriptionIssued",
+      "aliases": [],
+      "file": "PrescriptionIssued",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Prescription",
+      "status": "v2-draft"
+    },
+    {
+      "type": "OrderReady",
+      "aliases": [],
+      "file": "OrderReady",
+      "producer": "kiorly-pharmacy",
+      "aggregateType": "PharmacyOrder",
+      "status": "v2-draft"
+    },
+    {
+      "type": "DispenseCompleted",
+      "aliases": [],
+      "file": "DispenseCompleted",
+      "producer": "kiorly-pharmacy",
+      "aggregateType": "PharmacyOrder",
+      "status": "v2-draft"
+    },
+    {
+      "type": "OrderRejected",
+      "aliases": [],
+      "file": "OrderRejected",
+      "producer": "kiorly-pharmacy",
+      "aggregateType": "PharmacyOrder",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LabResultReleased",
+      "aliases": [],
+      "file": "LabResultReleased",
+      "producer": "kiorly-lab",
+      "aggregateType": "LabReport",
+      "status": "v2-draft"
+    },
+    {
+      "type": "subject.deleted",
+      "aliases": [],
+      "file": "subject.deleted",
+      "producer": "kiorex-account",
+      "aggregateType": "Subject",
+      "status": "v2-draft"
+    },
+    {
+      "type": "session.revoked",
+      "aliases": [],
+      "file": "session.revoked",
+      "producer": "kiorex-account",
+      "aggregateType": "Session",
+      "status": "v2-draft"
+    },
+    {
+      "type": "flag.changed",
+      "aliases": [],
+      "file": "flag.changed",
+      "producer": "kiorex-control-plane",
+      "aggregateType": "Flag",
+      "status": "v2-draft"
+    }
+  ]
+}

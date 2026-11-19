@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/flag.changed.schema.json",
+  "title": "flag.changed",
+  "description": "A flag changed in the control plane. Products refresh their snapshot immediately (delivered to POST /api/v1/feature-flags/kiorex/changed, HMAC).",
+  "x-producer": "kiorex-control-plane",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "flag.changed"
+    },
+    "aggregateType": {
+      "const": "Flag"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "product": {
+          "enum": [
+            "kiorly-clinic",
+            "kiorex",
+            "kiorex-account",
+            "kiorly-pharmacy",
+            "kiorly-lab"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "enum": [
+            "global",
+            "market",
+            "org"
+          ]
+        },
+        "scopeId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Market code or org id; null for global."
+        },
+        "previousValue": {
+          "enum": [
+            "ON",
+            "OFF",
+            "INHERIT"
+          ]
+        },
+        "newValue": {
+          "enum": [
+            "ON",
+            "OFF",
+            "INHERIT"
+          ]
+        },
+        "snapshotVersion": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "changedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional auto-revert time for an OFF."
+        }
+      },
+      "required": [
+        "product",
+        "key",
+        "scope",
+        "newValue",
+        "snapshotVersion",
+        "changedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

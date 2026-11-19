@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/PrescriptionIssued.schema.json",
+  "title": "PrescriptionIssued",
+  "description": "Kiorly Clinic issued an e-prescription for hand-off to Kiorly Pharmacy via Kiorex. A patient consent token is required (KPRX01).",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "PrescriptionIssued"
+    },
+    "aggregateType": {
+      "const": "Prescription"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "prescriptionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encounterId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "patientRef": {
+          "type": "string",
+          "description": "Kiorex subject or Kiorly patient reference; never a national ID."
+        },
+        "prescriberId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consentToken": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "activeIngredient": {
+                "type": "string"
+              },
+              "drugName": {
+                "type": "string"
+              },
+              "strength": {
+                "type": "string"
+              },
+              "dose": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "controlled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "activeIngredient",
+              "quantity"
+            ]
+          }
+        }
+      },
+      "required": [
+        "prescriptionId",
+        "clinicId",
+        "patientRef",
+        "prescriberId",
+        "consentToken",
+        "issuedAt",
+        "items"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

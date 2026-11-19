@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/DispenseCompleted.schema.json",
+  "title": "DispenseCompleted",
+  "description": "Order dispensed to the patient. Pharmacist sign-off must be present (KPRX06).",
+  "x-producer": "kiorly-pharmacy",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "DispenseCompleted"
+    },
+    "aggregateType": {
+      "const": "PharmacyOrder"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pharmacyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dispensedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "pharmacistSignoff": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "signedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "userId",
+            "signedAt"
+          ]
+        },
+        "partial": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "orderId",
+        "pharmacyId",
+        "dispensedAt",
+        "pharmacistSignoff"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

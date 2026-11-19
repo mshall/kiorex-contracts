@@ -1,0 +1,19 @@
+{
+  "eventId": "01JF3ZEVTCOMMISSI",
+  "type": "COMMISSION_CHARGE_REVERSED",
+  "aggregateType": "Appointment",
+  "aggregateId": "apt_01JF3Z8Q0K",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "chargeId": "chg_01JF3Z9AAA",
+    "appointmentId": "apt_01JF3Z8Q0K",
+    "amount": "75.00",
+    "currency": "EGP",
+    "status": "REVERSED",
+    "attendedAt": "2027-03-05T10:45:00.000Z",
+    "reason": "check_in_reverted",
+    "aggregateType": "Appointment",
+    "aggregateId": "apt_01JF3Z8Q0K"
+  }
+}

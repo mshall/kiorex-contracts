@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/OrderReady.schema.json",
+  "title": "OrderReady",
+  "description": "Pharmacy order is ready for pickup/delivery. Pharmacist sign-off must be present.",
+  "x-producer": "kiorly-pharmacy",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "OrderReady"
+    },
+    "aggregateType": {
+      "const": "PharmacyOrder"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pharmacyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "readyAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "pharmacistSignoff": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "signedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "userId",
+            "signedAt"
+          ]
+        }
+      },
+      "required": [
+        "orderId",
+        "pharmacyId",
+        "readyAt",
+        "pharmacistSignoff"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

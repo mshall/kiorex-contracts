@@ -1,0 +1,17 @@
+{
+  "eventId": "01JF3ZEVTPRESCRIP",
+  "type": "PRESCRIPTION_SHARED",
+  "aggregateType": "Encounter",
+  "aggregateId": "enc_01JF3ZB000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "patientId": "pat_01JF3Z0000",
+    "scope": "PRESCRIPTIONS",
+    "encounterId": "enc_01JF3ZB000",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "signedAt": "2027-03-05T11:10:00.000Z",
+    "aggregateType": "Encounter",
+    "aggregateId": "enc_01JF3ZB000"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/REVIEW_REPLY_POSTED.schema.json",
+  "title": "REVIEW_REPLY_POSTED",
+  "description": "Clinic replied to a verified review.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "REVIEW_REPLY_POSTED"
+    },
+    "aggregateType": {
+      "const": "KiorexReview"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "kiorexReviewId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replyText": {
+          "type": "string"
+        },
+        "repliedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "kiorexReviewId",
+        "clinicId",
+        "replyText",
+        "repliedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

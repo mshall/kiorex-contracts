@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/SLOTS_CHANGED.schema.json",
+  "title": "SLOTS_CHANGED",
+  "description": "Slot availability changed for a clinician. Cache invalidation only. Kiorly sets aggregateType=Clinic and aggregateId=clinicianId.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "SLOTS_CHANGED"
+    },
+    "aggregateType": {
+      "const": "Clinic"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicianId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "clinicId",
+        "clinicianId",
+        "reason",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

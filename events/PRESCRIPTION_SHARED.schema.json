@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/PRESCRIPTION_SHARED.schema.json",
+  "title": "PRESCRIPTION_SHARED",
+  "description": "Prescription of a signed encounter shared with the patient app after consent. Not in KX-09 §04.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "kiorly-extra",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "PRESCRIPTION_SHARED"
+    },
+    "aggregateType": {
+      "const": "Encounter"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "const": "PRESCRIPTIONS"
+        },
+        "encounterId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "signedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "patientId",
+        "scope",
+        "encounterId",
+        "clinicId",
+        "signedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

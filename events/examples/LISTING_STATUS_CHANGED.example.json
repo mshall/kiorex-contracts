@@ -1,0 +1,17 @@
+{
+  "eventId": "01JF3ZEVTLISTINGS",
+  "type": "LISTING_STATUS_CHANGED",
+  "aggregateType": "MarketplaceListing",
+  "aggregateId": "lst_01JF3Z7BBB",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "listingId": "lst_01JF3Z7BBB",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "clinicianId": "clin_01JF3Z7AAA",
+    "previousStatus": "LIVE",
+    "nextStatus": "PAUSED",
+    "aggregateType": "MarketplaceListing",
+    "aggregateId": "lst_01JF3Z7BBB"
+  }
+}
