@@ -1,5 +1,7 @@
 # @kiorex/contracts
 
+> **QA / demo data:** synthetic Egyptian dataset, logins, URLs and reset instructions in [TEST_DATA.md](TEST_DATA.md) (DEV ONLY).
+
 Single source of truth for everything that crosses a product boundary in Kiorex v2 (KX-09, ADR-023..025, NH-019):
 
 | Path | What |

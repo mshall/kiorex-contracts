@@ -1,0 +1,185 @@
+{
+ "$comment": "DEV ONLY synthetic personas shared by all demo seeds. OTP 000000 only works against the local dev IdP.",
+ "personas": [
+  {
+   "phone": "+201000001001",
+   "sub": "01HZKXD0000000000000001001",
+   "nameEn": "Hoda Mahmoud",
+   "nameAr": "هدى محمود",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001002",
+   "sub": "01HZKXD0000000000000001002",
+   "nameEn": "Samir Ali Nassar",
+   "nameAr": "سمير علي نصار",
+   "gender": "M",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001003",
+   "sub": "01HZKXD0000000000000001003",
+   "nameEn": "Karim Mostafa",
+   "nameAr": "كريم مصطفى",
+   "gender": "M",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001004",
+   "sub": "01HZKXD0000000000000001004",
+   "nameEn": "Nourhan Fathy",
+   "nameAr": "نورهان فتحي",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001005",
+   "sub": "01HZKXD0000000000000001005",
+   "nameEn": "Mahmoud El-Sayed",
+   "nameAr": "محمود السيد",
+   "gender": "M",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001006",
+   "sub": "01HZKXD0000000000000001006",
+   "nameEn": "Mariam Adel",
+   "nameAr": "مريم عادل",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001007",
+   "sub": "01HZKXD0000000000000001007",
+   "nameEn": "Omar Hegazy",
+   "nameAr": "عمر حجازي",
+   "gender": "M",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001008",
+   "sub": "01HZKXD0000000000000001008",
+   "nameEn": "Dalia Ibrahim",
+   "nameAr": "داليا إبراهيم",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001009",
+   "sub": "01HZKXD0000000000000001009",
+   "nameEn": "Tarek Zaki",
+   "nameAr": "طارق زكي",
+   "gender": "M",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001010",
+   "sub": "01HZKXD0000000000000001010",
+   "nameEn": "Heba Salah",
+   "nameAr": "هبة صلاح",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001011",
+   "sub": "01HZKXD0000000000000001011",
+   "nameEn": "Youssef Ramadan",
+   "nameAr": "يوسف رمضان",
+   "gender": "M",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001012",
+   "sub": "01HZKXD0000000000000001012",
+   "nameEn": "Rana Khaled",
+   "nameAr": "رنا خالد",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000002001",
+   "sub": "01HZKXD0000000000000002001",
+   "nameEn": "Ahmed Fawzy",
+   "nameAr": "أحمد فوزي",
+   "gender": "M",
+   "role": "org:owner",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000002002",
+   "sub": "01HZKXD0000000000000002002",
+   "nameEn": "Sara Lotfy",
+   "nameAr": "سارة لطفي",
+   "gender": "F",
+   "role": "org:receptionist",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000002003",
+   "sub": "01HZKXD0000000000000002003",
+   "nameEn": "Dr Amr Salem",
+   "nameAr": "د. عمرو سالم",
+   "gender": "M",
+   "role": "org:doctor",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000002004",
+   "sub": "01HZKXD0000000000000002004",
+   "nameEn": "Mostafa Reda",
+   "nameAr": "مصطفى رضا",
+   "gender": "M",
+   "role": "org:pharmacist",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000002005",
+   "sub": "01HZKXD0000000000000002005",
+   "nameEn": "Dina Wagdy",
+   "nameAr": "دينا وجدي",
+   "gender": "F",
+   "role": "org:lab_technician",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000009001",
+   "sub": "01HZKXD0000000000000009001",
+   "nameEn": "Ops Admin Demo",
+   "nameAr": "مشرف عمليات تجريبي",
+   "gender": "M",
+   "role": "ops_admin",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000009002",
+   "sub": "01HZKXD0000000000000009002",
+   "nameEn": "Ops Finance Demo",
+   "nameAr": "مالية العمليات تجريبي",
+   "gender": "F",
+   "role": "ops_admin,finance",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000009003",
+   "sub": "01HZKXD0000000000000009003",
+   "nameEn": "Ops Support Demo",
+   "nameAr": "دعم العمليات تجريبي",
+   "gender": "M",
+   "role": "ops_admin,support",
+   "otp": "000000"
+  }
+ ]
+}
