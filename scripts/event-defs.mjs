@@ -13,6 +13,10 @@ const BOOKING_SOURCE = {
 const LISTING_STATUS = { enum: ["DRAFT", "PENDING_VERIFICATION", "LIVE", "PAUSED"] };
 const LAB_SOURCE = { enum: ["KIOREX_BOOKING", "KIORLY_CLINIC"] };
 const LAB_ORDER_STATUS = { enum: ["DRAFT", "AWAITING_COLLECTION", "COLLECTED", "IN_LAB", "PARTIALLY_RESULTED", "AWAITING_VALIDATION", "VALIDATED", "RELEASED", "CANCELLED"] };
+const PROFESSION = { enum: ["PHYSICIAN", "DENTIST", "PHYSIOTHERAPIST", "NURSE"], description: "ADR-029. Market packs may extend the list in a later additive minor." };
+const SERVICE_LOCATION = { enum: ["IN_CLINIC", "HOME"] };
+// Rev 2.3: addresses, coordinates and phone numbers never travel in home-visit/safety/care-plan events (KX-09 §04, KX-08 §07 geostamp retention, ADR-013).
+const NO_LOCATION = { visitAddress: false, address: false, line1: false, lat: false, lng: false, latitude: false, longitude: false, geostamp: false, phone: false };
 const AGG = {
   aggregateType: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
   aggregateId: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
@@ -374,6 +378,168 @@ export const EVENTS = [
       required: ["product", "key", "scope", "newValue", "snapshotVersion", "changedAt"],
     },
     example: { aggregateId: "kiorex.marketplace", data: { product: "kiorly-clinic", key: "kiorex.marketplace", scope: "market", scopeId: "EG", previousValue: "INHERIT", newValue: "OFF", snapshotVersion: 42, changedAt: "2027-05-01T09:00:00.000Z", reason: "PSP incident", actor: "ops@kiorex.com" } },
+  },
+
+  // ---- Rev 2.3 home visits, safety, care plans, cross-tenant sharing (KX-09 §04 v2.3, KX-05 §08, KX-23; additive in 1.5.0) ----
+  {
+    type: "HOME_VISIT_ASSIGNED", producer: "kiorly-clinic", aggregateType: "Appointment", status: "v2-draft", group: "rev23",
+    description: "A clinician was assigned to a HOME visit (Clinic or Nurse edition; for agencies this is the dispatcher's assignment, shown to the patient before arrival, KNKX01). Carries the assignee's display name, photo URL and verification badge only. Never a phone number, address or coordinates (KX-09 §04). Ordered per appointment aggregate.",
+    data: {
+      properties: {
+        appointmentId: ID, clinicId: ID,
+        externalReference: { ...NSTR, description: "Kiorex booking reference (kx_bk_...) for marketplace bookings." },
+        serviceLocation: { const: "HOME" },
+        assignee: {
+          type: "object",
+          properties: {
+            clinicianId: ID, displayName: ID,
+            photoUrl: { type: ["string", "null"], format: "uri" },
+            badge: { ...NSTR, description: "Profession badge text, e.g. 'Verified nurse' (PRVER02)." },
+            profession: PROFESSION,
+            phone: false, mobile: false, email: false,
+          },
+          required: ["clinicianId", "displayName"],
+        },
+        assignedAt: TS,
+        ...NO_LOCATION, ...AGG,
+      },
+      required: ["appointmentId", "clinicId", "serviceLocation", "assignee", "assignedAt"],
+    },
+    example: { aggregateId: "apt_01JF3ZH001", data: { appointmentId: "apt_01JF3ZH001", clinicId: "clinic_01JF3Z7ZZZ", externalReference: "kx_bk_01JF3ZH000", serviceLocation: "HOME", assignee: { clinicianId: "clin_01JF3ZN001", displayName: "Nurse Mona Adel", photoUrl: "https://cdn.kiorly.com/p/clin_01JF3ZN001.jpg", badge: "Verified nurse", profession: "NURSE" }, assignedAt: "2027-03-05T07:30:00.000Z", aggregateType: "Appointment", aggregateId: "apt_01JF3ZH001" } },
+  },
+  {
+    type: "HOME_VISIT_EN_ROUTE", producer: "kiorly-clinic", aggregateType: "Appointment", status: "v2-draft", group: "rev23",
+    description: "The assigned clinician tapped 'On my way' (address is revealed to them at this point; it is never in this event). Ordered per appointment aggregate. Optional coarse ETA only: no coordinates, no address, no phone.",
+    data: {
+      properties: {
+        appointmentId: ID, clinicId: ID,
+        externalReference: { ...NSTR, description: "Kiorex booking reference (kx_bk_...) for marketplace bookings." },
+        serviceLocation: { const: "HOME" },
+        enRouteAt: TS,
+        etaMinutes: { type: "integer", minimum: 0, maximum: 480, description: "Optional coarse ETA in minutes from enRouteAt." },
+        ...NO_LOCATION, ...AGG,
+      },
+      required: ["appointmentId", "clinicId", "serviceLocation", "enRouteAt"],
+    },
+    example: { aggregateId: "apt_01JF3ZH001", data: { appointmentId: "apt_01JF3ZH001", clinicId: "clinic_01JF3Z7ZZZ", externalReference: "kx_bk_01JF3ZH000", serviceLocation: "HOME", enRouteAt: "2027-03-05T09:40:00.000Z", etaMinutes: 25, aggregateType: "Appointment", aggregateId: "apt_01JF3ZH001" } },
+  },
+  {
+    type: "HOME_VISIT_ABORTED_UNSAFE", producer: "kiorly-clinic", aggregateType: "Appointment", status: "v2-draft", group: "rev23",
+    description: "The clinician used 'Leave visit - unsafe' (BR61). Goes to Kiorex ops. It is never a no-show and never forfeits the deposit without human review: noShow is const false and depositAction is const HOLD_FOR_REVIEW (KX-09 §09 hold-for-review ledger state). Reason is a category only (no free text), location at district level only.",
+    data: {
+      properties: {
+        appointmentId: ID, clinicId: ID,
+        externalReference: { ...NSTR, description: "Kiorex booking reference (kx_bk_...) for marketplace bookings." },
+        serviceLocation: { const: "HOME" },
+        abortedAt: TS,
+        reasonCategory: { enum: ["THREAT_OR_VIOLENCE", "UNSAFE_ENVIRONMENT", "PATIENT_IMPAIRED_OR_AGGRESSIVE", "OTHER"], description: "Assumption: narrowest category set; no free text (may contain PHI/address)." },
+        noShow: { const: false },
+        depositAction: { const: "HOLD_FOR_REVIEW" },
+        district: { type: "string", description: "District code only." },
+        reason: false,
+        ...NO_LOCATION, ...AGG,
+      },
+      required: ["appointmentId", "clinicId", "serviceLocation", "abortedAt", "reasonCategory", "noShow", "depositAction"],
+    },
+    example: { aggregateId: "apt_01JF3ZH001", data: { appointmentId: "apt_01JF3ZH001", clinicId: "clinic_01JF3Z7ZZZ", externalReference: "kx_bk_01JF3ZH000", serviceLocation: "HOME", abortedAt: "2027-03-05T10:05:00.000Z", reasonCategory: "UNSAFE_ENVIRONMENT", noShow: false, depositAction: "HOLD_FOR_REVIEW", district: "nasr-city", aggregateType: "Appointment", aggregateId: "apt_01JF3ZH001" } },
+  },
+  {
+    type: "SAFETY_ALERT_RAISED", producer: "kiorly-clinic", aggregateType: "SafetyAlert", status: "v2-draft", group: "rev23",
+    description: "A home-visit safety alert (safety-timer expiry, SOS or unsafe abort; never a flag, ADR-025). Delivered to the organization's safety contact and, for Kiorex bookings, Kiorex ops within 60 s; the producer raises an on-call alarm if undelivered, and escalates to Kiorex ops on-call / org owner after 10 min without acknowledgement (KX-09 §08). No address, coordinates, phone or free text.",
+    data: {
+      properties: {
+        alertId: ID, clinicId: ID,
+        appointmentId: ID,
+        externalReference: { ...NSTR, description: "Kiorex booking reference (kx_bk_...) when the visit came from Kiorex." },
+        kind: { enum: ["TIMER_EXPIRED", "SOS", "UNSAFE_ABORT"] },
+        raisedAt: TS,
+        deliverTo: { type: "array", minItems: 1, uniqueItems: true, items: { enum: ["ORG_SAFETY_CONTACT", "KIOREX_OPS"] } },
+        deliverWithinSeconds: { const: 60 },
+        district: { type: "string", description: "District code only." },
+        message: false,
+        ...NO_LOCATION, ...AGG,
+      },
+      required: ["alertId", "clinicId", "kind", "raisedAt", "deliverTo", "deliverWithinSeconds"],
+    },
+    example: { aggregateId: "alert_01JF3ZS001", data: { alertId: "alert_01JF3ZS001", clinicId: "clinic_01JF3Z7ZZZ", appointmentId: "apt_01JF3ZH001", externalReference: "kx_bk_01JF3ZH000", kind: "SOS", raisedAt: "2027-03-05T09:58:00.000Z", deliverTo: ["ORG_SAFETY_CONTACT", "KIOREX_OPS"], deliverWithinSeconds: 60, district: "nasr-city", aggregateType: "SafetyAlert", aggregateId: "alert_01JF3ZS001" } },
+  },
+  {
+    type: "CARE_PLAN_CONFIRMED", producer: "kiorly-clinic", aggregateType: "CarePlan", status: "v2-draft", group: "rev23",
+    description: "DRAFT (phase P3, Nurse edition, nurse.care_plans / gate GKN1): the provider confirmed a care plan requested through POST /marketplace/v1/care-plan-requests. Carries the schedule with appointment IDs only; no clinical content, no address.",
+    data: {
+      properties: {
+        carePlanId: ID, clinicId: ID,
+        requestRef: { ...NSTR, description: "requestRef of the Kiorex care-plan request, when it originated there." },
+        edition: { const: "NURSE" },
+        confirmedAt: TS,
+        visits: {
+          type: "array", minItems: 1,
+          items: { type: "object", properties: { appointmentId: ID, startsAt: TS, endsAt: TS, serviceLocation: SERVICE_LOCATION }, required: ["appointmentId", "startsAt"] },
+        },
+        ...NO_LOCATION, ...AGG,
+      },
+      required: ["carePlanId", "clinicId", "confirmedAt", "visits"],
+    },
+    example: { aggregateId: "cp_01JF3ZP001", data: { carePlanId: "cp_01JF3ZP001", clinicId: "clinic_01JF3Z7ZZZ", requestRef: "kx_cpr_01JF3ZP000", edition: "NURSE", confirmedAt: "2027-03-05T08:00:00.000Z", visits: [{ appointmentId: "apt_01JF3ZH101", startsAt: "2027-03-06T09:00:00.000Z", endsAt: "2027-03-06T09:45:00.000Z", serviceLocation: "HOME" }, { appointmentId: "apt_01JF3ZH102", startsAt: "2027-03-07T09:00:00.000Z", endsAt: "2027-03-07T09:45:00.000Z", serviceLocation: "HOME" }], aggregateType: "CarePlan", aggregateId: "cp_01JF3ZP001" } },
+  },
+  {
+    type: "CARE_PLAN_ENDED", producer: "kiorly-clinic", aggregateType: "CarePlan", status: "v2-draft", group: "rev23",
+    description: "DRAFT (phase P3, Nurse edition): a confirmed care plan ended. Follow-up visits of a care plan are never charged a Kiorex fee (KX-23). IDs and counts only.",
+    data: {
+      properties: {
+        carePlanId: ID, clinicId: ID,
+        requestRef: { ...NSTR, description: "requestRef of the Kiorex care-plan request, when it originated there." },
+        endedAt: TS,
+        reason: { enum: ["COMPLETED", "CANCELLED_BY_PATIENT", "CANCELLED_BY_PROVIDER", "EXPIRED"], description: "Assumption: narrowest set; no clinical reason." },
+        visitsCompleted: { type: "integer", minimum: 0 },
+        cancelledAppointmentIds: { type: "array", items: ID },
+        ...NO_LOCATION, ...AGG,
+      },
+      required: ["carePlanId", "clinicId", "endedAt", "reason"],
+    },
+    example: { aggregateId: "cp_01JF3ZP001", data: { carePlanId: "cp_01JF3ZP001", clinicId: "clinic_01JF3Z7ZZZ", requestRef: "kx_cpr_01JF3ZP000", endedAt: "2027-03-12T10:00:00.000Z", reason: "COMPLETED", visitsCompleted: 7, cancelledAppointmentIds: [], aggregateType: "CarePlan", aggregateId: "cp_01JF3ZP001" } },
+  },
+  {
+    type: "ReferralIssued", producer: "kiorly-clinic", aggregateType: "Referral", status: "v2-draft", group: "rev23",
+    description: "A clinic issued a referral to a clinic of another tenant (e.g. physiotherapy, PT04) through Kiorex. A patient consent token is required (KX-09 §04). Carries a secure link and ids only; the referral content is fetched by the receiver with the consent token, never embedded here.",
+    data: {
+      properties: {
+        referralId: ID, fromClinicId: ID,
+        toClinicId: { type: "string", minLength: 1, description: "Receiving clinic when the patient chose one; otherwise the receiver is resolved by Kiorex." },
+        toProfession: PROFESSION,
+        patientRef: { type: "string", minLength: 1, description: "Kiorex subject or Kiorly patient reference; never a national ID." },
+        referrerId: ID,
+        consentToken: { type: "string", minLength: 1, description: "Opaque token derived from the patient's active record-share grant (rsc_...)." },
+        issuedAt: TS,
+        expiresAt: TS,
+        secureLink: { type: "string", format: "uri" },
+        diagnosis: false, notes: false, content: false,
+        ...AGG,
+      },
+      required: ["referralId", "fromClinicId", "patientRef", "referrerId", "consentToken", "issuedAt"],
+    },
+    example: { aggregateId: "ref_01JF3ZR001", data: { referralId: "ref_01JF3ZR001", fromClinicId: "clinic_01JF3Z7ZZZ", toProfession: "PHYSIOTHERAPIST", patientRef: "sub_01JF3Z0001", referrerId: "clin_01JF3Z7AAA", consentToken: "ct_01JF3ZR111", issuedAt: "2027-03-05T11:12:00.000Z", expiresAt: "2027-06-05T11:12:00.000Z", secureLink: "https://app.kiorly.com/r/ref_abc123", aggregateType: "Referral", aggregateId: "ref_01JF3ZR001" } },
+  },
+  {
+    type: "MedicationOrderShared", producer: "kiorly-clinic", aggregateType: "DoctorOrder", status: "v2-draft", group: "rev23",
+    description: "A doctor's signed medication order was shared with a Nurse-edition tenant through Kiorex consent (a nurse may only administer against a doctor's order, BR57; MAR checks are never a flag). Carries the signed order version, expiry and a secure link only: medicine lines, doses and clinical text are never embedded.",
+    data: {
+      properties: {
+        orderId: ID, fromClinicId: ID,
+        toClinicId: { type: "string", minLength: 1, description: "Receiving Nurse-edition tenant (organization of one for a solo nurse)." },
+        patientRef: { type: "string", minLength: 1, description: "Kiorex subject or Kiorly patient reference; never a national ID." },
+        prescriberId: ID,
+        orderVersion: { type: "integer", minimum: 1 },
+        signedAt: TS,
+        expiresAt: TS,
+        consentToken: { type: "string", minLength: 1, description: "Opaque token derived from the patient's active record-share grant (rsc_...)." },
+        secureLink: { type: "string", format: "uri" },
+        items: false, medications: false, lines: false,
+        ...AGG,
+      },
+      required: ["orderId", "fromClinicId", "patientRef", "prescriberId", "orderVersion", "signedAt", "expiresAt", "consentToken"],
+    },
+    example: { aggregateId: "ord_01JF3ZO001", data: { orderId: "ord_01JF3ZO001", fromClinicId: "clinic_01JF3Z7ZZZ", toClinicId: "clinic_01JF3ZNNNN", patientRef: "sub_01JF3Z0001", prescriberId: "clin_01JF3Z7AAA", orderVersion: 2, signedAt: "2027-03-05T11:00:00.000Z", expiresAt: "2027-03-19T11:00:00.000Z", consentToken: "ct_01JF3ZO111", secureLink: "https://app.kiorly.com/o/ord_abc123", aggregateType: "DoctorOrder", aggregateId: "ord_01JF3ZO001" } },
   },
 ];
 

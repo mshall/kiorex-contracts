@@ -14,6 +14,10 @@ for (const ev of EVENTS) {
   const file = ev.file ?? ev.type;
   w(join(out, `${file}.schema.json`), buildSchema(ev));
   w(join(out, "examples", `${file}.example.json`), buildExample(ev));
+  if (ev.group === "rev23") {
+    mkdirSync(join(root, "fixtures/events-v2.3"), { recursive: true });
+    w(join(root, "fixtures/events-v2.3", `${file}.json`), buildExample(ev));
+  }
   index.push({ type: ev.type, aliases: ev.aliases ?? [], file, producer: ev.producer, aggregateType: ev.aggregateType, status: ev.status });
 }
 w(join(out, "index.json"), { envelope: "envelope.schema.json", events: index });

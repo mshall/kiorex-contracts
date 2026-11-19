@@ -124,3 +124,70 @@ describe("record-share aggregateType (1.4.1)", () => {
     }
   });
 });
+
+describe("Rev 2.3 events (KX-09 §04 v2.3, KX-05 §08, KX-23)", () => {
+  const REV23 = ["HOME_VISIT_ASSIGNED", "HOME_VISIT_EN_ROUTE", "HOME_VISIT_ABORTED_UNSAFE", "SAFETY_ALERT_RAISED", "CARE_PLAN_CONFIRMED", "CARE_PLAN_ENDED", "ReferralIssued", "MedicationOrderShared"];
+  const ex = (t: string) => JSON.parse(JSON.stringify(readJson(`events/examples/${t}.example.json`)));
+
+  it.each(REV23)("%s: kiorly-clinic v2-draft event whose example and fixture validate", (t) => {
+    expect(isEventType(t)).toBe(true);
+    expect(EVENT_META[t as EventType]).toMatchObject({ producer: "kiorly-clinic", status: "v2-draft" });
+    expect(validateEvent(t as EventType, ex(t)).valid).toBe(true);
+    expect(readJson(`fixtures/events-v2.3/${t}.json`)).toEqual(ex(t));
+  });
+
+  it("no address, coordinate or phone number travels in home-visit / safety / care-plan events", () => {
+    for (const t of ["HOME_VISIT_ASSIGNED", "HOME_VISIT_EN_ROUTE", "HOME_VISIT_ABORTED_UNSAFE", "SAFETY_ALERT_RAISED", "CARE_PLAN_CONFIRMED", "CARE_PLAN_ENDED"]) {
+      for (const bad of [{ visitAddress: { district: "x" } }, { address: "1 Nile St" }, { lat: 30.1 }, { lng: 31.2 }, { phone: "+201000000000" }]) {
+        const e = ex(t); e.data = { ...e.data, ...bad };
+        expect(validateEvent(t as EventType, e).valid, `${t} ${Object.keys(bad)[0]}`).toBe(false);
+      }
+    }
+    const a = ex("HOME_VISIT_ASSIGNED"); a.data.assignee.phone = "+201000000000";
+    expect(validateEvent("HOME_VISIT_ASSIGNED", a).valid).toBe(false);
+    expect(JSON.stringify(EVENT_EXAMPLES)).not.toMatch(/"(visitAddress|line1|latitude|longitude)"/);
+  });
+
+  it("HOME_VISIT_ASSIGNED needs name + photo/badge shape; EN_ROUTE ETA is optional and non-negative", () => {
+    const a = ex("HOME_VISIT_ASSIGNED"); delete a.data.assignee.displayName;
+    expect(validateEvent("HOME_VISIT_ASSIGNED", a).valid).toBe(false);
+    const r = ex("HOME_VISIT_EN_ROUTE"); delete r.data.etaMinutes;
+    expect(validateEvent("HOME_VISIT_EN_ROUTE", r).valid).toBe(true);
+    r.data.etaMinutes = -1;
+    expect(validateEvent("HOME_VISIT_EN_ROUTE", r).valid).toBe(false);
+  });
+
+  it("HOME_VISIT_ABORTED_UNSAFE is never a no-show and never auto-forfeits the deposit (BR61)", () => {
+    for (const bad of [{ noShow: true }, { depositAction: "FORFEIT" }, { reason: "free text" }]) {
+      const e = ex("HOME_VISIT_ABORTED_UNSAFE"); e.data = { ...e.data, ...bad };
+      expect(validateEvent("HOME_VISIT_ABORTED_UNSAFE", e).valid, JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it("SAFETY_ALERT_RAISED: 60 s delivery, known kinds and recipients, no free text", () => {
+    const e = ex("SAFETY_ALERT_RAISED");
+    expect(e.data.deliverWithinSeconds).toBe(60);
+    for (const bad of [{ deliverWithinSeconds: 600 }, { kind: "OTHER" }, { deliverTo: [] }, { deliverTo: ["PATIENT"] }, { message: "help at flat 4" }]) {
+      expect(validateEvent("SAFETY_ALERT_RAISED", { ...e, data: { ...e.data, ...bad } }).valid, JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it("CARE_PLAN_* carry the schedule with appointment IDs only", () => {
+    const c = ex("CARE_PLAN_CONFIRMED");
+    expect(c.data.visits.every((v: any) => v.appointmentId)).toBe(true);
+    expect(validateEvent("CARE_PLAN_CONFIRMED", { ...c, data: { ...c.data, visits: [] } }).valid).toBe(false);
+    const n = ex("CARE_PLAN_ENDED");
+    expect(validateEvent("CARE_PLAN_ENDED", { ...n, data: { ...n.data, reason: "because" } }).valid).toBe(false);
+  });
+
+  it("ReferralIssued and MedicationOrderShared require the consent token and carry no clinical content", () => {
+    for (const [t, content] of [["ReferralIssued", { diagnosis: "x" }], ["MedicationOrderShared", { items: [{ drugName: "x" }] }]] as const) {
+      const e = ex(t);
+      const { consentToken: _c, ...rest } = e.data; void _c;
+      expect(validateEvent(t, { ...e, data: rest }).valid, `${t} consentToken`).toBe(false);
+      expect(validateEvent(t, { ...e, data: { ...e.data, ...content } }).valid, `${t} content`).toBe(false);
+    }
+    const m = ex("MedicationOrderShared"); delete m.data.expiresAt;
+    expect(validateEvent("MedicationOrderShared", m).valid).toBe(false);
+  });
+});

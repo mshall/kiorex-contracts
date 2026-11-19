@@ -1,0 +1,61 @@
+{
+  "_comment": "Example bodies for the Rev 2.3 additions to kiorly-marketplace.v1.openapi.json (v1.2.0). Synthetic data. Validated against the OpenAPI component schemas by test/openapi-drift.test.ts.",
+  "providerList": {
+    "schema": "ProviderList",
+    "value": {
+      "items": [
+        {
+          "clinicianId": "clin_01JF3ZN001",
+          "profession": "NURSE",
+          "edition": "NURSE",
+          "serviceLocations": ["HOME"],
+          "coverageDistricts": ["nasr-city", "heliopolis"],
+          "verification": { "register": "NURSING_PROFESSIONS_SYNDICATE" },
+          "assignsClinician": false
+        },
+        {
+          "clinicId": "clinic_01JF3ZAGNC",
+          "profession": "NURSE",
+          "edition": "NURSE",
+          "serviceLocations": ["HOME"],
+          "coverageDistricts": ["maadi"],
+          "verification": { "register": "NURSING_PROFESSIONS_SYNDICATE" },
+          "assignsClinician": true
+        }
+      ],
+      "page": 1,
+      "pageSize": 50
+    }
+  },
+  "slotsQuery": "GET /marketplace/v1/clinics/clinic_01JF3Z7ZZZ/slots?clinicianId=clin_01JF3ZN001&typeId=type_home_01&from=2027-03-06T00:00:00Z&to=2027-03-07T00:00:00Z&serviceLocation=HOME&district=nasr-city",
+  "slots": {
+    "schema": "Slot",
+    "value": { "startsAt": "2027-03-06T09:00:00.000Z", "endsAt": "2027-03-06T09:45:00.000Z", "serviceLocation": "HOME", "district": "nasr-city" }
+  },
+  "holdRequest": {
+    "schema": "SlotHoldRequest",
+    "value": {
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "clinicianId": "clin_01JF3ZN001",
+      "typeId": "type_home_01",
+      "startsAt": "2027-03-06T09:00:00.000Z",
+      "endsAt": "2027-03-06T09:45:00.000Z",
+      "externalRef": "kx_hold_01JF3ZH000",
+      "visitAddress": { "district": "nasr-city", "line1": "12 Example St", "building": "7", "floor": "3", "flat": "9", "landmark": "Next to the pharmacy", "lat": 30.0561, "lng": 31.3301 }
+    }
+  },
+  "outOfCoverage422": {
+    "schema": "OutOfCoverageError",
+    "value": { "statusCode": 422, "code": "OUT_OF_COVERAGE", "message": "District is not covered", "district": "6th-october" }
+  },
+  "carePlanRequest": {
+    "schema": "CarePlanRequest",
+    "value": {
+      "requestRef": "kx_cpr_01JF3ZP000",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "typeId": "type_home_01",
+      "preferredStartDate": "2027-03-06",
+      "patient": { "phone": "+201000000000", "firstNameEn": "Test", "lastNameEn": "Patient" }
+    }
+  }
+}

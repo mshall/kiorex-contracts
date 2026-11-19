@@ -162,7 +162,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create slot hold (KX-04) */
+        /** Create slot hold (KX-04); v1.2.0 adds optional visitAddress (required for HOME visit types) */
         post: operations["marketplaceCreateHold"];
         delete?: never;
         options?: never;
@@ -443,6 +443,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/care-plan-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** DRAFT (phase P3, Nurse edition): request a multi-visit care plan; idempotent on requestRef (KX-09 v2.3) */
+        post: operations["marketplaceCreateCarePlanRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export interface webhooks {
     kiorexOutboxEvent: {
@@ -467,7 +484,134 @@ export interface webhooks {
     };
 }
 export interface components {
-    schemas: never;
+    schemas: {
+        /**
+         * @description ADR-029. Extensible by market pack: consumers must tolerate unknown values.
+         * @enum {string}
+         */
+        Profession: "PHYSICIAN" | "DENTIST" | "PHYSIOTHERAPIST" | "NURSE";
+        /**
+         * @description Organization.edition (ADR-031). Same API and client for both editions.
+         * @enum {string}
+         */
+        Edition: "CLINIC" | "NURSE";
+        /**
+         * @description VisitType.serviceLocation (ADR-030). VIDEO is reserved and not part of this contract.
+         * @enum {string}
+         */
+        ServiceLocation: "IN_CLINIC" | "HOME";
+        /** @description Patient home address. Sent only on holds for HOME visit types; encrypted at rest and masked after 24 h by Kiorly. Never appears in events or analytics (district only). */
+        VisitAddress: {
+            /** @description District code from the provider's coverageDistricts[]. */
+            district: string;
+            line1?: string;
+            building?: string;
+            floor?: string;
+            flat?: string;
+            landmark?: string;
+            lat?: number;
+            lng?: number;
+        };
+        ProviderVerification: {
+            /** @description Professional register that verified the clinician (e.g. a syndicate register for the profession, KX-05 PRVER01). */
+            register?: string;
+        };
+        /** @description Fields added to each item of GET /providers in v1.2.0 (KX-09 Rev 2.3). All optional for backward compatibility; Kiorly Clinic emits them from v2.3. */
+        ProviderV23Fields: {
+            profession?: components["schemas"]["Profession"];
+            edition?: components["schemas"]["Edition"];
+            /** @description Locations the provider offers; HOME only when clinic.home_visits is effective. */
+            serviceLocations?: components["schemas"]["ServiceLocation"][];
+            /** @description District codes served for HOME visits. District-level only; no polygons or coordinates. */
+            coverageDistricts?: string[];
+            verification?: components["schemas"]["ProviderVerification"];
+            /** @description Agencies only: the agency assigns a clinician after booking (HOME_VISIT_ASSIGNED event). */
+            assignsClinician?: boolean;
+        };
+        /** @description Paged provider profiles. Existing fields are unchanged; only the v2.3 additions are described here and the item schema tolerates additional properties. */
+        ProviderList: {
+            items?: ({
+                [key: string]: unknown;
+            } & components["schemas"]["ProviderV23Fields"])[];
+            page?: number;
+            pageSize?: number;
+            total?: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description Bookable slot. startsAt/endsAt are unchanged; v1.2.0 adds serviceLocation and district. */
+        Slot: {
+            /** Format: date-time */
+            startsAt?: string;
+            /** Format: date-time */
+            endsAt?: string;
+            serviceLocation?: components["schemas"]["ServiceLocation"];
+            /** @description District code for HOME slots; null/absent for IN_CLINIC. */
+            district?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description visitAddress is optional in the schema but REQUIRED by Kiorly for visit types whose serviceLocation is HOME (422 otherwise). */
+        SlotHoldRequest: {
+            clinicId: string;
+            clinicianId: string;
+            typeId: string;
+            /** Format: date-time */
+            startsAt: string;
+            /** Format: date-time */
+            endsAt?: string;
+            /** @description Unique per hold (Kiorex booking reference). */
+            externalRef: string;
+            visitAddress?: components["schemas"]["VisitAddress"];
+        };
+        SlotHold: {
+            id?: string;
+            clinicId?: string;
+            clinicianId?: string;
+            /** Format: date-time */
+            expiresAt?: string;
+            visitAddress?: components["schemas"]["VisitAddress"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description The address district is not (or no longer) covered. On book: release the hold and show in-zone alternatives (KX-09 §08). */
+        OutOfCoverageError: {
+            /** @enum {unknown} */
+            statusCode?: 422;
+            /** @enum {unknown} */
+            code: "OUT_OF_COVERAGE";
+            message?: string;
+            district?: string;
+            /** @description In-zone alternatives, when Kiorly can offer them. */
+            alternatives?: components["schemas"]["Slot"][];
+        };
+        /** @description DRAFT (phase P3, Nurse edition). Narrowest shape; subject to change until ratified. */
+        CarePlanRequest: {
+            /** @description Idempotency key; a replay returns the original response. */
+            requestRef: string;
+            clinicId: string;
+            clinicianId?: string;
+            typeId?: string;
+            /** Format: date */
+            preferredStartDate?: string;
+            notes?: string;
+            visitAddress?: components["schemas"]["VisitAddress"];
+            patient: {
+                phone: string;
+                firstNameEn: string;
+                lastNameEn: string;
+            };
+        };
+        CarePlanRequestAck: {
+            requestRef?: string;
+            /** @enum {string} */
+            status?: "RECEIVED" | "DECLINED";
+            /** @description Set once the provider confirms (CARE_PLAN_CONFIRMED event). */
+            carePlanId?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -649,12 +793,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description OK. v1.2.0 adds profession, edition, serviceLocations[], coverageDistricts[], verification.register, assignsClinician (agencies). */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ProviderList"];
+                };
             };
         };
     };
@@ -685,6 +831,13 @@ export interface operations {
                 typeId: string;
                 from: string;
                 to: string;
+                /** @description v1.2.0. Defaults to IN_CLINIC. HOME requires district. */
+                serviceLocation?: components["schemas"]["ServiceLocation"];
+                /** @description v1.2.0. District code; required when serviceLocation=HOME. */
+                district?: string;
+                /** @description v1.2.0. Optional, with lng, for travel-time aware HOME slots. */
+                lat?: number;
+                lng?: number;
             };
             header?: never;
             path: {
@@ -694,12 +847,34 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description OK. Slots now carry serviceLocation and district (v1.2.0). */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
+                content: {
+                    "application/json": {
+                        slots?: components["schemas"]["Slot"][];
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Listing not LIVE */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
                 content?: never;
+            };
+            /** @description OUT_OF_COVERAGE: the address district is not covered by the provider (KX-09 v2.3) */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutOfCoverageError"];
+                };
             };
         };
     };
@@ -734,14 +909,36 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SlotHoldRequest"];
+            };
+        };
         responses: {
             /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
+                content: {
+                    "application/json": components["schemas"]["SlotHold"];
+                };
+            };
+            /** @description SLOT_TAKEN (with up to 3 alternatives) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
                 content?: never;
+            };
+            /** @description OUT_OF_COVERAGE, or visitAddress missing/invalid for a HOME visit type */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutOfCoverageError"];
+                };
             };
         };
     };
@@ -799,6 +996,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description OUT_OF_COVERAGE after a zone change (release the hold, show in-zone alternatives); the address is carried from the hold */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutOfCoverageError"];
+                };
             };
         };
     };
@@ -1283,6 +1489,44 @@ export interface operations {
             };
             /** @description Patient not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceCreateCarePlanRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CarePlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Request received (replay of the same requestRef returns the original response) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CarePlanRequestAck"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description CARE_PLANS_NOT_OFFERED (provider does not offer care plans) or OUT_OF_COVERAGE */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

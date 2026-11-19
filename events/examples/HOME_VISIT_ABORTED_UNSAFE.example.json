@@ -1,0 +1,21 @@
+{
+  "eventId": "01JF3ZEVTHOMEVISI",
+  "type": "HOME_VISIT_ABORTED_UNSAFE",
+  "aggregateType": "Appointment",
+  "aggregateId": "apt_01JF3ZH001",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "appointmentId": "apt_01JF3ZH001",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "externalReference": "kx_bk_01JF3ZH000",
+    "serviceLocation": "HOME",
+    "abortedAt": "2027-03-05T10:05:00.000Z",
+    "reasonCategory": "UNSAFE_ENVIRONMENT",
+    "noShow": false,
+    "depositAction": "HOLD_FOR_REVIEW",
+    "district": "nasr-city",
+    "aggregateType": "Appointment",
+    "aggregateId": "apt_01JF3ZH001"
+  }
+}

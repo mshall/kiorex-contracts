@@ -1,0 +1,22 @@
+{
+  "eventId": "01JF3ZEVTMEDICATI",
+  "type": "MedicationOrderShared",
+  "aggregateType": "DoctorOrder",
+  "aggregateId": "ord_01JF3ZO001",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "orderId": "ord_01JF3ZO001",
+    "fromClinicId": "clinic_01JF3Z7ZZZ",
+    "toClinicId": "clinic_01JF3ZNNNN",
+    "patientRef": "sub_01JF3Z0001",
+    "prescriberId": "clin_01JF3Z7AAA",
+    "orderVersion": 2,
+    "signedAt": "2027-03-05T11:00:00.000Z",
+    "expiresAt": "2027-03-19T11:00:00.000Z",
+    "consentToken": "ct_01JF3ZO111",
+    "secureLink": "https://app.kiorly.com/o/ord_abc123",
+    "aggregateType": "DoctorOrder",
+    "aggregateId": "ord_01JF3ZO001"
+  }
+}

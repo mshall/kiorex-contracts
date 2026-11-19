@@ -1,0 +1,24 @@
+{
+  "eventId": "01JF3ZEVTSAFETYAL",
+  "type": "SAFETY_ALERT_RAISED",
+  "aggregateType": "SafetyAlert",
+  "aggregateId": "alert_01JF3ZS001",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "alertId": "alert_01JF3ZS001",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "appointmentId": "apt_01JF3ZH001",
+    "externalReference": "kx_bk_01JF3ZH000",
+    "kind": "SOS",
+    "raisedAt": "2027-03-05T09:58:00.000Z",
+    "deliverTo": [
+      "ORG_SAFETY_CONTACT",
+      "KIOREX_OPS"
+    ],
+    "deliverWithinSeconds": 60,
+    "district": "nasr-city",
+    "aggregateType": "SafetyAlert",
+    "aggregateId": "alert_01JF3ZS001"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "eventId": "01JF3ZEVTREFERRAL",
+  "type": "ReferralIssued",
+  "aggregateType": "Referral",
+  "aggregateId": "ref_01JF3ZR001",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "referralId": "ref_01JF3ZR001",
+    "fromClinicId": "clinic_01JF3Z7ZZZ",
+    "toProfession": "PHYSIOTHERAPIST",
+    "patientRef": "sub_01JF3Z0001",
+    "referrerId": "clin_01JF3Z7AAA",
+    "consentToken": "ct_01JF3ZR111",
+    "issuedAt": "2027-03-05T11:12:00.000Z",
+    "expiresAt": "2027-06-05T11:12:00.000Z",
+    "secureLink": "https://app.kiorly.com/r/ref_abc123",
+    "aggregateType": "Referral",
+    "aggregateId": "ref_01JF3ZR001"
+  }
+}

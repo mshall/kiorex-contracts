@@ -306,6 +306,70 @@
       "producer": "kiorex-control-plane",
       "aggregateType": "Flag",
       "status": "v2-draft"
+    },
+    {
+      "type": "HOME_VISIT_ASSIGNED",
+      "aliases": [],
+      "file": "HOME_VISIT_ASSIGNED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "HOME_VISIT_EN_ROUTE",
+      "aliases": [],
+      "file": "HOME_VISIT_EN_ROUTE",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "HOME_VISIT_ABORTED_UNSAFE",
+      "aliases": [],
+      "file": "HOME_VISIT_ABORTED_UNSAFE",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "SAFETY_ALERT_RAISED",
+      "aliases": [],
+      "file": "SAFETY_ALERT_RAISED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "SafetyAlert",
+      "status": "v2-draft"
+    },
+    {
+      "type": "CARE_PLAN_CONFIRMED",
+      "aliases": [],
+      "file": "CARE_PLAN_CONFIRMED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "CarePlan",
+      "status": "v2-draft"
+    },
+    {
+      "type": "CARE_PLAN_ENDED",
+      "aliases": [],
+      "file": "CARE_PLAN_ENDED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "CarePlan",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ReferralIssued",
+      "aliases": [],
+      "file": "ReferralIssued",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Referral",
+      "status": "v2-draft"
+    },
+    {
+      "type": "MedicationOrderShared",
+      "aliases": [],
+      "file": "MedicationOrderShared",
+      "producer": "kiorly-clinic",
+      "aggregateType": "DoctorOrder",
+      "status": "v2-draft"
     }
   ]
 }

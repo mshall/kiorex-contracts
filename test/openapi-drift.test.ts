@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ROOT, listDir, readJson } from "./helpers.js";
@@ -38,15 +40,86 @@ describe("consumer contract vs Kiorly OpenAPI (drift)", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("the copied spec still equals the sibling Kiorly source when present", () => {
+  it("the pinned spec is an additive superset of the sibling Kiorly source when present (v1.2.0 adds Rev 2.3 fields Kiorly has not implemented yet)", () => {
     const src = join(ROOT, "..", "clinics-management/apps/api/openapi/marketplace.openapi.json");
     const csrc = join(ROOT, "..", "clinics-management/apps/api/openapi/kiorex-consumer-contract.json");
     try {
-      expect(readFileSync(join(ROOT, "openapi/kiorly-marketplace.v1.openapi.json"), "utf8")).toBe(readFileSync(src, "utf8"));
+      const kiorly = JSON.parse(readFileSync(src, "utf8"));
+      expect(supersetOf(spec, kiorly), "contracts spec must only ADD to the Kiorly spec (no removed/changed path, param, schema or enum value)").toEqual([]);
       expect(readFileSync(join(ROOT, "consumer/kiorex-consumer-contract.json"), "utf8")).toBe(readFileSync(csrc, "utf8"));
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e; // standalone checkout / Kiorly moved on: pinning is the point
     }
+  });
+});
+
+/** Returns the paths where `base` has something `ext` lacks or changes (arrays: every base element must have a superset match in ext). Info text/version may change. */
+function supersetOf(ext: any, base: any, at = "$"): string[] {
+  if (at === "$.info") return [];
+  if (Array.isArray(base)) {
+    if (!Array.isArray(ext)) return [at];
+    return base.flatMap((b, i) => (ext.some((e) => supersetOf(e, b, at).length === 0) ? [] : [`${at}[${i}]`]));
+  }
+  if (base && typeof base === "object") {
+    if (!ext || typeof ext !== "object") return [at];
+    return Object.keys(base).flatMap((k) => supersetOf(ext[k], base[k], `${at}.${k}`));
+  }
+  if (/\.(description|summary)$/.test(at)) return []; // wording may be refined additively
+  return ext === base ? [] : [at];
+}
+
+describe("Rev 2.3 additions to the marketplace OpenAPI (KX-09 §03 v2.3, contracts 1.5.0)", () => {
+  const op = (path: string, m: string) => spec.paths[path][m];
+  const schemas = spec.components.schemas;
+
+  it("providers sync documents profession, edition, serviceLocations[], coverageDistricts[], verification.register, assignsClinician", () => {
+    expect(Object.keys(schemas.ProviderV23Fields.properties)).toEqual(["profession", "edition", "serviceLocations", "coverageDistricts", "verification", "assignsClinician"]);
+    expect(schemas.Profession.enum).toEqual(["PHYSICIAN", "DENTIST", "PHYSIOTHERAPIST", "NURSE"]);
+    expect(schemas.Edition.enum).toEqual(["CLINIC", "NURSE"]);
+    expect(schemas.ProviderV23Fields.required).toBeUndefined(); // additive: nothing new is required
+    expect(schemas.ProviderVerification.properties.register).toBeTruthy();
+  });
+
+  it("slots take serviceLocation, district, lat, lng as OPTIONAL params; required params unchanged; 422 OUT_OF_COVERAGE", () => {
+    const params = op("/clinics/{clinicId}/slots", "get").parameters as Array<{ name: string; required?: boolean }>;
+    for (const n of ["serviceLocation", "district", "lat", "lng"]) expect(params.find((p) => p.name === n)?.required, n).toBe(false);
+    expect(params.filter((p) => p.required).map((p) => p.name)).toEqual(["clinicId", "clinicianId", "typeId", "from", "to"]);
+    expect(op("/clinics/{clinicId}/slots", "get").responses["422"]).toBeTruthy();
+    expect(schemas.ServiceLocation.enum).toEqual(["IN_CLINIC", "HOME"]);
+    expect(Object.keys(schemas.Slot.properties)).toEqual(expect.arrayContaining(["serviceLocation", "district"]));
+  });
+
+  it("holds carry optional visitAddress {district, line1, building, floor, flat, landmark, lat, lng}; 422 OUT_OF_COVERAGE on hold and booking", () => {
+    expect(Object.keys(schemas.VisitAddress.properties)).toEqual(["district", "line1", "building", "floor", "flat", "landmark", "lat", "lng"]);
+    expect(schemas.VisitAddress.required).toEqual(["district"]);
+    expect(schemas.SlotHoldRequest.required).not.toContain("visitAddress");
+    expect(schemas.SlotHoldRequest.properties.visitAddress.$ref).toBe("#/components/schemas/VisitAddress");
+    expect(JSON.stringify(op("/holds", "post").responses["422"])).toContain("OutOfCoverageError");
+    expect(JSON.stringify(op("/bookings", "post").responses["422"])).toContain("OutOfCoverageError");
+    expect(schemas.OutOfCoverageError.properties.code.enum).toEqual(["OUT_OF_COVERAGE"]);
+  });
+
+  it("POST /care-plan-requests is draft, phase P3, idempotent on requestRef, 422 when the provider offers no care plans", () => {
+    const o = op("/care-plan-requests", "post");
+    expect(o.operationId).toBe("marketplaceCreateCarePlanRequest");
+    expect(o["x-status"]).toBe("draft");
+    expect(o["x-phase"]).toBe("P3");
+    expect(schemas.CarePlanRequest.required).toContain("requestRef");
+    expect(o.responses["422"].description).toContain("CARE_PLANS_NOT_OFFERED");
+    expect(consumer.requiredOperations.some((r: any) => r.path === "/care-plan-requests")).toBe(false); // not a consumer-required op until P3 ships
+  });
+
+  it("fixtures/marketplace-v1.2-home-visit.json validates against the component schemas", () => {
+    const fx = readJson("fixtures/marketplace-v1.2-home-visit.json");
+    const ajv = new (Ajv as any).default({ strict: false, allErrors: true });
+    (addFormats as any).default(ajv);
+    for (const key of ["providerList", "slots", "holdRequest", "outOfCoverage422", "carePlanRequest"]) {
+      const { schema, value } = fx[key];
+      const validate = ajv.compile({ components: spec.components, $ref: `#/components/schemas/${schema}` });
+      expect(validate(value), `${key}: ${JSON.stringify(validate.errors)}`).toBe(true);
+    }
+    const bad = ajv.compile({ components: spec.components, $ref: "#/components/schemas/VisitAddress" });
+    expect(bad({ line1: "no district" })).toBe(false);
   });
 });
 
