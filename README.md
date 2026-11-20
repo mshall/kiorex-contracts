@@ -55,7 +55,9 @@ Types from the OpenAPI files: `import type { KiorlyMarketplaceApi, ControlPlaneA
 - Producers (Kiorly, Kiorex Pay, Account, control plane) validate outgoing payloads against `events/*.schema.json` in non-production;
   consumers validate on receipt.
 
-### Consuming from GitHub Packages
+### Consuming from GitHub Packages (not available yet)
+
+> Nothing is published: the local `gh` token has no `write:packages` scope. Until the founder approves publishing from the `publish` workflow, consumer CI installs a **vendored tarball** (see `kiorex-platform/Docs/CONTRACTS_DISTRIBUTION.md`, `scripts/vendor-contracts.sh`).
 
 ```
 # .npmrc in the consuming repo (token: a PAT/GITHUB_TOKEN with read:packages — never commit it)
