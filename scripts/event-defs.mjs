@@ -251,7 +251,7 @@ export const EVENTS = [
         // 1.6.0 (KNLAB01 / KLORD05, ratified optional fields): nurse-collected samples. Present only for originEdition NURSE.
         originEdition: ORIGIN_EDITION,
         prescriberName: { type: "string", description: "Doctor who requested the tests (nurse transcribes a doctor's order); relayed as referringDoctor.name." },
-        identifiersChecked: { type: "array", minItems: 2, items: { type: "string", minLength: 1, maxLength: 40 }, description: "Kinds of the >= 2 identifiers the nurse verified at collection (FULL_NAME, DATE_OF_BIRTH, PHONE, MRN ...). Kinds only, never values." },
+        identifiersChecked: { type: "array", minItems: 2, items: { enum: ["fullName", "dateOfBirth", "phone", "nationalId", "externalId"] }, description: "Kinds of the >= 2 DISTINCT identifiers the nurse verified against the patient record at collection (the Lab's vocabulary, plus fullName for nurse intake). Kinds only, never values." },
         patient: {
           type: "object", description: "Minimum demographics the lab needs to accession a nurse-collected sample, sent only under the consent token. Kiorex relays it to the lab and does not store it (receipt payload is redacted). Never a national id.",
           properties: { fullName: { type: "string", minLength: 2 }, dateOfBirth: S, sex: { enum: ["M", "F", "OTHER", "UNKNOWN"] }, phone: S, preferredLocale: { enum: ["ar", "en"] } }, required: ["fullName"],

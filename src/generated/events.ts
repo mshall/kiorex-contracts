@@ -2061,11 +2061,15 @@ export const EVENT_SCHEMAS = {
             "type": "array",
             "minItems": 2,
             "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 40
+              "enum": [
+                "fullName",
+                "dateOfBirth",
+                "phone",
+                "nationalId",
+                "externalId"
+              ]
             },
-            "description": "Kinds of the >= 2 identifiers the nurse verified at collection (FULL_NAME, DATE_OF_BIRTH, PHONE, MRN ...). Kinds only, never values."
+            "description": "Kinds of the >= 2 DISTINCT identifiers the nurse verified against the patient record at collection (the Lab's vocabulary, plus fullName for nurse intake). Kinds only, never values."
           },
           "patient": {
             "type": "object",
@@ -5274,7 +5278,7 @@ export type WaitlistOfferData = { "offerId": string; "waitlistRef": string; "cli
 export type WaitlistOfferEvent = EventEnvelope<"WAITLIST_OFFER", WaitlistOfferData>;
 export type PrescriptionIssuedData = { "prescriptionId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "prescriberId": string; "consentToken": string; "issuedAt": string; "aggregateType"?: string; "aggregateId"?: string; "items": Array<{ "activeIngredient": string; "drugName"?: string; "strength"?: string; "dose"?: string; "quantity": number; "controlled"?: boolean; [k: string]: unknown }>; [k: string]: unknown };
 export type PrescriptionIssuedEvent = EventEnvelope<"PrescriptionIssued", PrescriptionIssuedData>;
-export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "orderingClinicianId"?: string; "consentToken": string; "orderedAt": string; "items": Array<{ "code"?: string; "nameEn": string; "nameAr"?: string; [k: string]: unknown }>; "notes"?: string; "preferredLabId"?: string; "aggregateType"?: string; "aggregateId"?: string; "originEdition"?: "CLINIC" | "NURSE"; "prescriberName"?: string; "identifiersChecked"?: Array<string>; "patient"?: { "fullName": string; "dateOfBirth"?: string; "sex"?: "M" | "F" | "OTHER" | "UNKNOWN"; "phone"?: string; "preferredLocale"?: "ar" | "en"; [k: string]: unknown }; "nurseCollection"?: { "visitRef": string; "collectorRef": string; "collectorName"?: string; "collectedAt": string; "handedOverAt"?: string; "temperatureC"?: number; "samples": Array<{ "label": string; "specimenType": string; "container"?: string; [k: string]: unknown }>; [k: string]: unknown }; [k: string]: unknown };
+export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "orderingClinicianId"?: string; "consentToken": string; "orderedAt": string; "items": Array<{ "code"?: string; "nameEn": string; "nameAr"?: string; [k: string]: unknown }>; "notes"?: string; "preferredLabId"?: string; "aggregateType"?: string; "aggregateId"?: string; "originEdition"?: "CLINIC" | "NURSE"; "prescriberName"?: string; "identifiersChecked"?: Array<"fullName" | "dateOfBirth" | "phone" | "nationalId" | "externalId">; "patient"?: { "fullName": string; "dateOfBirth"?: string; "sex"?: "M" | "F" | "OTHER" | "UNKNOWN"; "phone"?: string; "preferredLocale"?: "ar" | "en"; [k: string]: unknown }; "nurseCollection"?: { "visitRef": string; "collectorRef": string; "collectorName"?: string; "collectedAt": string; "handedOverAt"?: string; "temperatureC"?: number; "samples": Array<{ "label": string; "specimenType": string; "container"?: string; [k: string]: unknown }>; [k: string]: unknown }; [k: string]: unknown };
 export type LabOrderPlacedEvent = EventEnvelope<"LabOrderPlaced", LabOrderPlacedData>;
 export type OrderReadyData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "readyAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; [k: string]: unknown };
 export type OrderReadyEvent = EventEnvelope<"OrderReady", OrderReadyData>;

@@ -21,8 +21,8 @@
     "originEdition": "NURSE",
     "prescriberName": "Dr Hesham Nabil",
     "identifiersChecked": [
-      "FULL_NAME",
-      "DATE_OF_BIRTH"
+      "fullName",
+      "dateOfBirth"
     ],
     "patient": {
       "fullName": "Amira Samy",

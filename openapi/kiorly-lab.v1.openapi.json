@@ -1079,10 +1079,15 @@
             "minItems": 2,
             "items": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 40
+              "enum": [
+                "fullName",
+                "dateOfBirth",
+                "phone",
+                "nationalId",
+                "externalId"
+              ]
             },
-            "description": "KLORD05: kinds of the two identifiers the nurse verified at collection (e.g. FULL_NAME, DATE_OF_BIRTH, PHONE, MRN). Kinds only, never the values."
+            "description": "KLORD05: kinds of the >= 2 DISTINCT identifiers the nurse verified at collection, each present on the order's patient (fullName is accepted for KIORLY_NURSE intake only; the doorstep/desk flows keep dateOfBirth, phone, nationalId, externalId). Kinds only, never the values."
           },
           "nurseCollection": {
             "$ref": "#/components/schemas/NurseCollection"

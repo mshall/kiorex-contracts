@@ -204,7 +204,8 @@ describe("Nurse-collected lab hand-off (1.6.0, KNLAB01 / KLORD05)", () => {
     const bad = (patch: any) => validateEvent("LabOrderPlaced", { ...fx, data: { ...fx.data, ...patch } }).valid;
     expect(bad({ nurseCollection: { ...fx.data.nurseCollection, samples: [{ label: "a b", specimenType: "BLOOD" }] } })).toBe(false);
     expect(bad({ nurseCollection: { ...fx.data.nurseCollection, samples: [] } })).toBe(false);
-    expect(bad({ identifiersChecked: ["FULL_NAME"] })).toBe(false);
+    expect(bad({ identifiersChecked: ["fullName"] })).toBe(false);
+    expect(bad({ identifiersChecked: ["FULL_NAME", "DATE_OF_BIRTH"] })).toBe(false); // the vocabulary is the lab's (camelCase)
     expect(bad({ originEdition: "PHARMACY" })).toBe(false);
     const { consentToken: _c, ...noConsent } = fx.data;
     void _c;
