@@ -17,7 +17,9 @@ Additive minor (no field, type string, path or flag removed or renamed). Ratifie
 - New `GET /integration/v1/orders/{sourceRef}/custody` (`labGetOrderCustody`, schema `LabOrderCustody`): per specimen custody events (type, time, temperature, `by: NURSE | LAB`), no names, no PHI; KIORLY_NURSE / KIORLY_CLINIC clients, own orders only.
 
 ### OpenAPI `openapi/kiorly-marketplace.v1.openapi.json` 1.2.0 -> 1.3.0
-- New `POST /lab-orders/{orderId}/status` (`marketplaceLabOrderStatus`): Kiorex relays the lab status of a hand-off to the Kiorly tenant (status, sanitized custody events, and on release the report id + secure link). No results, no PHI. Idempotent and monotonic.
+- New `POST /lab-orders/{orderId}/status` (`marketplaceLabOrderStatus`): Kiorex relays the lab status of a hand-off to the Kiorly tenant (status, sanitized custody events, and on release the report id + secure link). No results, no PHI. Idempotent; the headline status is monotonic (a stale push answers 200 `applied:false`).
+
+- `PARTNER_DEV_DEFAULTS.labNurse` (dev client `kl_dev_nurse`, KIORLY_NURSE source): Kiorex's second registration at the Lab.
 
 ### Tests
 - Nurse `LabOrderPlaced` example validates, malformed tube label / no samples / single identifier / unknown edition / missing consent token are refused; `originEdition` on the Lab events; strict-order relaxation limited to the three ratified fields; custody `by` enum; marketplace status push.

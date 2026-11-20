@@ -471,7 +471,7 @@ export interface paths {
         put?: never;
         /**
          * KNLAB01 (Nurse edition, contracts 1.6.0): Kiorex relays the lab's status for a hand-off, with the sanitized chain of custody and (on release) the secure link
-         * @description Idempotent and monotonic on `status`. `orderId` is the Kiorly LabOrderPlaced orderId (the ClinicalOrder id). Carries no results and no PHI: a status, custody events (type, time, temperature, NURSE|LAB) and, when RELEASED, reportId + secure link.
+         * @description Idempotent; the headline `status` is monotonic (a stale push answers 200 applied:false). `orderId` is the Kiorly LabOrderPlaced orderId (the ClinicalOrder id). Carries no results and no PHI: a status, custody events (type, time, temperature, NURSE|LAB) and, when RELEASED, reportId + secure link.
          */
         post: operations["marketplaceLabOrderStatus"];
         delete?: never;
@@ -1592,22 +1592,20 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Applied or already applied */
+            /** @description Applied, or already applied. Body {applied:boolean,status}: applied=false when a stale push would have moved the status backwards (custody still refreshes). */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        applied: boolean;
+                        status: string;
+                    };
+                };
             };
             /** @description Unknown hand-off for this tenant */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Status would move backwards (ignored, reported) */
-            409: {
                 headers: {
                     [name: string]: unknown;
                 };

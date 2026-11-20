@@ -196,6 +196,8 @@ export const PARTNER_WEBHOOK_PATH = { pharmacy: "/api/v1/webhooks/pharmacy", lab
 export const PARTNER_DEV_DEFAULTS = {
   pharmacy: { baseUrl: "http://localhost:3100", clientKey: "kx_dev_pharmacy_client", clientSecret: "kx_dev_pharmacy_secret_change_me", webhookSecret: "kx_dev_pharmacy_webhook_secret" },
   lab: { baseUrl: "http://localhost:3200", clientKey: "kl_dev_kiorex", clientSecret: "dev_kiorex_secret_change_me", webhookSecret: "kx_dev_lab_webhook_secret" },
+  /** 1.6.0 (KNLAB01): Kiorex's second registration at the Lab, with the KIORLY_NURSE client source (outbound only: the lab signs every webhook with the KIOREX_BOOKING client). */
+  labNurse: { baseUrl: "http://localhost:3200", clientKey: "kl_dev_nurse", clientSecret: "dev_nurse_secret_change_me" },
 } as const;
 
 /** hex HMAC-SHA256(secret, `${timestampSeconds}.${body}`) — OutboxDeliveryService.signBody. */
