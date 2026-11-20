@@ -7,7 +7,7 @@
 **The single source of truth for everything that crosses a product boundary in Kiorex v2.**
 OpenAPI, event JSON Schemas, feature-flag catalogue, HMAC helpers and a typed TypeScript SDK.
 
-![Node](https://img.shields.io/badge/node-%3E%3D22-3730A3?logo=node.js&logoColor=white)
+![Node](https://img.shields.io/badge/node-%3E%3D26.13-3730A3?logo=node.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-SDK-0369A1?logo=typescript&logoColor=white)
 ![OpenAPI](https://img.shields.io/badge/OpenAPI-3-3730A3)
 ![JSON Schema](https://img.shields.io/badge/JSON%20Schema-2020--12-0369A1)
@@ -137,7 +137,7 @@ More examples, `file:` tarball consumption, and the release steps: [docs/USAGE.m
 | `npm test` | Vitest: event schemas and examples, HMAC vectors (produced by running Kiorly's own functions), flag evaluation, flag catalogue, OpenAPI drift, ADR-025 |
 | `npm run generate` then `git diff --exit-code` | CI fails when generated files are stale |
 
-Requires Node 22 or newer. Event schemas are edited **only** in `scripts/event-defs.mjs`; the marketplace OpenAPI and consumer contract are copies of Kiorly's files, so change them in `clinics-management` first, then re-copy and bump the version.
+Requires Node 26 (Active LTS) or newer. Event schemas are edited **only** in `scripts/event-defs.mjs`; the marketplace OpenAPI and consumer contract are copies of Kiorly's files, so change them in `clinics-management` first, then re-copy and bump the version.
 
 ## Folder map
 

@@ -6,7 +6,7 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  target: "node22",
+  target: "node26",
   platform: "node",
   external: ["ajv", "ajv-formats"],
 });
