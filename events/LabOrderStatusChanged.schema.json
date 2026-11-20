@@ -35,6 +35,12 @@
             "KIORLY_CLINIC"
           ]
         },
+        "originEdition": {
+          "enum": [
+            "NURSE"
+          ],
+          "description": "Present when the order was collected by Kiorly Nurse (KIORLY_NURSE inbound client); source stays KIORLY_CLINIC (ADR-031). Additive in 1.6.0."
+        },
         "sourceRef": {
           "type": [
             "string",

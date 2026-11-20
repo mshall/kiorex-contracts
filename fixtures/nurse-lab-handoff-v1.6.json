@@ -1,0 +1,52 @@
+{
+  "eventId": "01JF3ZNLABHANDOFF",
+  "type": "LabOrderPlaced",
+  "aggregateType": "LabOrder",
+  "aggregateId": "lord_01JF3ZN000",
+  "occurredAt": "2027-03-05T11:20:00.000Z",
+  "data": {
+    "orderId": "lord_01JF3ZN000",
+    "encounterId": "enc_01JF3ZB000",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "patientRef": "pat_01JF3Z0000",
+    "orderingClinicianId": "usr_nurse_01",
+    "consentToken": "rsc_0123456789abcdef0123456789abcdef",
+    "orderedAt": "2027-03-05T10:40:00.000Z",
+    "items": [
+      {
+        "code": "CBC",
+        "nameEn": "Complete blood count"
+      }
+    ],
+    "originEdition": "NURSE",
+    "prescriberName": "Dr Hesham Nabil",
+    "identifiersChecked": [
+      "FULL_NAME",
+      "DATE_OF_BIRTH"
+    ],
+    "patient": {
+      "fullName": "Amira Samy",
+      "dateOfBirth": "1990-04-12",
+      "sex": "F",
+      "phone": "+201000000001",
+      "preferredLocale": "ar"
+    },
+    "nurseCollection": {
+      "visitRef": "appt_01JF3ZN111",
+      "collectorRef": "usr_nurse_01",
+      "collectedAt": "2027-03-05T11:00:00.000Z",
+      "handedOverAt": "2027-03-05T11:15:00.000Z",
+      "temperatureC": 5,
+      "samples": [
+        {
+          "label": "NRS-0001-A",
+          "specimenType": "BLOOD",
+          "container": "EDTA"
+        }
+      ]
+    },
+    "aggregateType": "LabOrder",
+    "aggregateId": "lord_01JF3ZN000"
+  },
+  "target": "KIOREX"
+}

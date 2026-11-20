@@ -1,6 +1,6 @@
 {
   "name": "@kiorex/contracts",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Kiorex v2 integration contracts: OpenAPI specs, event JSON Schemas, feature-flag catalogue, HMAC helpers and flag evaluator (KX-09).",
   "license": "UNLICENSED",
   "private": false,

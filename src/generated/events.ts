@@ -1961,7 +1961,7 @@ export const EVENT_SCHEMAS = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/events/LabOrderPlaced.schema.json",
     "title": "LabOrderPlaced",
-    "description": "Kiorly Clinic handed a lab order to Kiorly Lab via Kiorex (KCV204, clinic.lab_order_handoff). A patient consent token (LAB_RESULTS record-share grant) is required. One event per order. Additive in 1.1.0.",
+    "description": "Kiorly Clinic handed a lab order to Kiorly Lab via Kiorex (KCV204, clinic.lab_order_handoff). A patient consent token (LAB_RESULTS record-share grant) is required. One event per order. Additive in 1.1.0; 1.6.0 adds the optional Nurse-edition fields (originEdition, prescriberName, identifiersChecked, patient, nurseCollection).",
     "x-producer": "kiorly-clinic",
     "x-status": "emitted",
     "allOf": [
@@ -2045,6 +2045,122 @@ export const EVENT_SCHEMAS = {
           "aggregateId": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "originEdition": {
+            "enum": [
+              "CLINIC",
+              "NURSE"
+            ],
+            "description": "Edition that produced the hand-off (ADR-031). Additive in 1.6.0."
+          },
+          "prescriberName": {
+            "type": "string",
+            "description": "Doctor who requested the tests (nurse transcribes a doctor's order); relayed as referringDoctor.name."
+          },
+          "identifiersChecked": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "description": "Kinds of the >= 2 identifiers the nurse verified at collection (FULL_NAME, DATE_OF_BIRTH, PHONE, MRN ...). Kinds only, never values."
+          },
+          "patient": {
+            "type": "object",
+            "description": "Minimum demographics the lab needs to accession a nurse-collected sample, sent only under the consent token. Kiorex relays it to the lab and does not store it (receipt payload is redacted). Never a national id.",
+            "properties": {
+              "fullName": {
+                "type": "string",
+                "minLength": 2
+              },
+              "dateOfBirth": {
+                "type": "string"
+              },
+              "sex": {
+                "enum": [
+                  "M",
+                  "F",
+                  "OTHER",
+                  "UNKNOWN"
+                ]
+              },
+              "phone": {
+                "type": "string"
+              },
+              "preferredLocale": {
+                "enum": [
+                  "ar",
+                  "en"
+                ]
+              }
+            },
+            "required": [
+              "fullName"
+            ]
+          },
+          "nurseCollection": {
+            "type": "object",
+            "description": "The collection facts recorded by the nurse (tube labels become specimen barcodes; chain of custody starts at collectedAt).",
+            "properties": {
+              "visitRef": {
+                "type": "string",
+                "minLength": 1
+              },
+              "collectorRef": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Opaque collector reference; never a phone number or national id."
+              },
+              "collectorName": {
+                "type": "string"
+              },
+              "collectedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "handedOverAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "temperatureC": {
+                "type": "number",
+                "minimum": -40,
+                "maximum": 60
+              },
+              "samples": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": {
+                      "type": "string",
+                      "pattern": "^[\\x21-\\x7e]{3,40}$"
+                    },
+                    "specimenType": {
+                      "type": "string",
+                      "minLength": 2
+                    },
+                    "container": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "label",
+                    "specimenType"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "visitRef",
+              "collectorRef",
+              "collectedAt",
+              "samples"
+            ]
           }
         },
         "required": [
@@ -2384,6 +2500,12 @@ export const EVENT_SCHEMAS = {
               "KIORLY_CLINIC"
             ]
           },
+          "originEdition": {
+            "enum": [
+              "NURSE"
+            ],
+            "description": "Present when the order was collected by Kiorly Nurse (KIORLY_NURSE inbound client); source stays KIORLY_CLINIC (ADR-031). Additive in 1.6.0."
+          },
           "sourceRef": {
             "type": [
               "string",
@@ -2446,6 +2568,12 @@ export const EVENT_SCHEMAS = {
               "KIOREX_BOOKING",
               "KIORLY_CLINIC"
             ]
+          },
+          "originEdition": {
+            "enum": [
+              "NURSE"
+            ],
+            "description": "Present when the order was collected by Kiorly Nurse (KIORLY_NURSE inbound client); source stays KIORLY_CLINIC (ADR-031). Additive in 1.6.0."
           },
           "sourceRef": {
             "type": [
@@ -5146,7 +5274,7 @@ export type WaitlistOfferData = { "offerId": string; "waitlistRef": string; "cli
 export type WaitlistOfferEvent = EventEnvelope<"WAITLIST_OFFER", WaitlistOfferData>;
 export type PrescriptionIssuedData = { "prescriptionId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "prescriberId": string; "consentToken": string; "issuedAt": string; "aggregateType"?: string; "aggregateId"?: string; "items": Array<{ "activeIngredient": string; "drugName"?: string; "strength"?: string; "dose"?: string; "quantity": number; "controlled"?: boolean; [k: string]: unknown }>; [k: string]: unknown };
 export type PrescriptionIssuedEvent = EventEnvelope<"PrescriptionIssued", PrescriptionIssuedData>;
-export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "orderingClinicianId"?: string; "consentToken": string; "orderedAt": string; "items": Array<{ "code"?: string; "nameEn": string; "nameAr"?: string; [k: string]: unknown }>; "notes"?: string; "preferredLabId"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "orderingClinicianId"?: string; "consentToken": string; "orderedAt": string; "items": Array<{ "code"?: string; "nameEn": string; "nameAr"?: string; [k: string]: unknown }>; "notes"?: string; "preferredLabId"?: string; "aggregateType"?: string; "aggregateId"?: string; "originEdition"?: "CLINIC" | "NURSE"; "prescriberName"?: string; "identifiersChecked"?: Array<string>; "patient"?: { "fullName": string; "dateOfBirth"?: string; "sex"?: "M" | "F" | "OTHER" | "UNKNOWN"; "phone"?: string; "preferredLocale"?: "ar" | "en"; [k: string]: unknown }; "nurseCollection"?: { "visitRef": string; "collectorRef": string; "collectorName"?: string; "collectedAt": string; "handedOverAt"?: string; "temperatureC"?: number; "samples": Array<{ "label": string; "specimenType": string; "container"?: string; [k: string]: unknown }>; [k: string]: unknown }; [k: string]: unknown };
 export type LabOrderPlacedEvent = EventEnvelope<"LabOrderPlaced", LabOrderPlacedData>;
 export type OrderReadyData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "readyAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; [k: string]: unknown };
 export type OrderReadyEvent = EventEnvelope<"OrderReady", OrderReadyData>;
@@ -5156,9 +5284,9 @@ export type OrderRejectedData = { "orderId": string; "pharmacyId": string; "reje
 export type OrderRejectedEvent = EventEnvelope<"OrderRejected", OrderRejectedData>;
 export type LabResultReleasedData = { "reportId": string; "orderId": string; "labId": string; "patientRef": string; "reportVersion": number; "signedAt": string; "secureLink": string; "channels"?: Array<"PATIENT_LINK" | "KIOREX_VAULT" | "KIORLY_CLINIC" | "PRINTED">; "values"?: never; "results"?: never; [k: string]: unknown };
 export type LabResultReleasedEvent = EventEnvelope<"LabResultReleased", LabResultReleasedData>;
-export type LabOrderCreatedData = { "orderId": string; "orderNumber": string; "source": "KIOREX_BOOKING" | "KIORLY_CLINIC"; "sourceRef"?: string | null; "labId": string; [k: string]: unknown };
+export type LabOrderCreatedData = { "orderId": string; "orderNumber": string; "source": "KIOREX_BOOKING" | "KIORLY_CLINIC"; "originEdition"?: "NURSE"; "sourceRef"?: string | null; "labId": string; [k: string]: unknown };
 export type LabOrderCreatedEvent = EventEnvelope<"LabOrderCreated", LabOrderCreatedData>;
-export type LabOrderStatusChangedData = { "orderId": string; "orderNumber": string; "source": "KIOREX_BOOKING" | "KIORLY_CLINIC"; "sourceRef"?: string | null; "previousStatus": "DRAFT" | "AWAITING_COLLECTION" | "COLLECTED" | "IN_LAB" | "PARTIALLY_RESULTED" | "AWAITING_VALIDATION" | "VALIDATED" | "RELEASED" | "CANCELLED"; "nextStatus": "DRAFT" | "AWAITING_COLLECTION" | "COLLECTED" | "IN_LAB" | "PARTIALLY_RESULTED" | "AWAITING_VALIDATION" | "VALIDATED" | "RELEASED" | "CANCELLED"; [k: string]: unknown };
+export type LabOrderStatusChangedData = { "orderId": string; "orderNumber": string; "source": "KIOREX_BOOKING" | "KIORLY_CLINIC"; "originEdition"?: "NURSE"; "sourceRef"?: string | null; "previousStatus": "DRAFT" | "AWAITING_COLLECTION" | "COLLECTED" | "IN_LAB" | "PARTIALLY_RESULTED" | "AWAITING_VALIDATION" | "VALIDATED" | "RELEASED" | "CANCELLED"; "nextStatus": "DRAFT" | "AWAITING_COLLECTION" | "COLLECTED" | "IN_LAB" | "PARTIALLY_RESULTED" | "AWAITING_VALIDATION" | "VALIDATED" | "RELEASED" | "CANCELLED"; [k: string]: unknown };
 export type LabOrderStatusChangedEvent = EventEnvelope<"LabOrderStatusChanged", LabOrderStatusChangedData>;
 export type LabCriticalEscalatedData = { "alertId": string; "orderId"?: string | null; "level": number; "values"?: never; "results"?: never; [k: string]: unknown };
 export type LabCriticalEscalatedEvent = EventEnvelope<"LabCriticalEscalated", LabCriticalEscalatedData>;

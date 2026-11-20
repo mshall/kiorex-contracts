@@ -191,3 +191,31 @@ describe("Rev 2.3 events (KX-09 §04 v2.3, KX-05 §08, KX-23)", () => {
     expect(validateEvent("MedicationOrderShared", m).valid).toBe(false);
   });
 });
+
+describe("Nurse-collected lab hand-off (1.6.0, KNLAB01 / KLORD05)", () => {
+  const fx = readJson("fixtures/nurse-lab-handoff-v1.6.json");
+  it("the Nurse LabOrderPlaced example validates and the Clinic example is unchanged (all new fields optional)", () => {
+    expect(validateEvent("LabOrderPlaced", fx).valid).toBe(true);
+    const plain = readJson("events/examples/LabOrderPlaced.example.json");
+    expect(validateEvent("LabOrderPlaced", plain).valid).toBe(true);
+    expect(plain.data.nurseCollection).toBeUndefined();
+  });
+  it("refuses a malformed tube label, a missing sample and a single identifier", () => {
+    const bad = (patch: any) => validateEvent("LabOrderPlaced", { ...fx, data: { ...fx.data, ...patch } }).valid;
+    expect(bad({ nurseCollection: { ...fx.data.nurseCollection, samples: [{ label: "a b", specimenType: "BLOOD" }] } })).toBe(false);
+    expect(bad({ nurseCollection: { ...fx.data.nurseCollection, samples: [] } })).toBe(false);
+    expect(bad({ identifiersChecked: ["FULL_NAME"] })).toBe(false);
+    expect(bad({ originEdition: "PHARMACY" })).toBe(false);
+    const { consentToken: _c, ...noConsent } = fx.data;
+    void _c;
+    expect(validateEvent("LabOrderPlaced", { ...fx, data: noConsent }).valid).toBe(false);
+  });
+  it("Lab order events carry the optional originEdition NURSE while source stays KIORLY_CLINIC", () => {
+    for (const t of ["LabOrderCreated", "LabOrderStatusChanged"] as const) {
+      const ex = readJson(`events/examples/${t}.example.json`);
+      expect(validateEvent(t, { ...ex, data: { ...ex.data, source: "KIORLY_CLINIC", originEdition: "NURSE" } }).valid).toBe(true);
+      expect(validateEvent(t, { ...ex, data: { ...ex.data, source: "KIORLY_NURSE" } }).valid).toBe(false);
+      expect(validateEvent(t, { ...ex, data: { ...ex.data, originEdition: "CLINIC" } }).valid).toBe(false);
+    }
+  });
+});

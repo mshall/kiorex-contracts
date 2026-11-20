@@ -3,8 +3,8 @@
   "x-status": "draft",
   "info": {
     "title": "Kiorly Lab Integration API (draft)",
-    "version": "0.2.0",
-    "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists. 1.4.0: catalogue, quote and slots endpoints for the Kiorex marketplace (additive); the client key binds the tenant (no org header); outbox events go to Kiorex /api/v1/webhooks/lab signed with the webhook scheme + X-Kiorly-Client-Key."
+    "version": "0.3.0",
+    "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists. 1.4.0: catalogue, quote and slots endpoints for the Kiorex marketplace (additive); the client key binds the tenant (no org header); outbox events go to Kiorex /api/v1/webhooks/lab signed with the webhook scheme + X-Kiorly-Client-Key. 0.3.0 (contracts 1.6.0): ratified Nurse-edition additions (KNLAB01/KLORD05): third client source KIORLY_NURSE (Kiorly Nurse is an edition of Kiorly Clinic, ADR-031; Kiorex holds the registration and relays), optional `nurseCollection`, `identifiersChecked` and `collection.districtId` on the inbound order, and the custody read `GET /integration/v1/orders/{sourceRef}/custody`."
   },
   "servers": [
     {
@@ -24,8 +24,8 @@
         "tags": [
           "integration"
         ],
-        "summary": "Create (idempotent on sourceRef) a lab order from Kiorex or Kiorly Clinic",
-        "description": "Replaying the same `sourceRef` for the same client returns the existing order with `created: false`. Unknown fields are rejected (strict). Flag lab.kiorex_bookings gates KIOREX_BOOKING orders.",
+        "summary": "Create (idempotent on sourceRef) a lab order from Kiorex, Kiorly Clinic or Kiorly Nurse",
+        "description": "Replaying the same `sourceRef` for the same client returns the existing order with `created: false`. Unknown fields are rejected (strict). Flag lab.kiorex_bookings gates KIOREX_BOOKING orders. KIORLY_NURSE clients submit only nurse-collected orders (400 NURSE_COLLECTION_REQUIRED without `nurseCollection`; 400 NURSE_ORDER_CANNOT_BE_HOME_COLLECTION). Refusals for nurse orders: 400/422 CONSENT_REQUIRED, 422 TWO_IDENTIFIERS_REQUIRED, COLLECTED_IN_FUTURE, HANDOVER_TIME_INVALID, SAMPLE_MISSING_FOR_TEST, SAMPLE_UNMATCHED, SAMPLE_DUPLICATE_GROUP, 409 ACCESSION_DUPLICATE (the whole ingest rolls back).",
         "parameters": [
           {
             "name": "X-Kiorly-Client-Key",
@@ -121,6 +121,26 @@
           },
           "401": {
             "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "ACCESSION_DUPLICATE (a tube label already exists at this lab)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Nurse-collected order refused: CONSENT_REQUIRED | TWO_IDENTIFIERS_REQUIRED | COLLECTED_IN_FUTURE | HANDOVER_TIME_INVALID | SAMPLE_MISSING_FOR_TEST | SAMPLE_UNMATCHED | SAMPLE_DUPLICATE_GROUP",
             "content": {
               "application/json": {
                 "schema": {
@@ -773,6 +793,94 @@
           }
         }
       }
+    },
+    "/integration/v1/orders/{sourceRef}/custody": {
+      "get": {
+        "operationId": "labGetOrderCustody",
+        "tags": [
+          "integration"
+        ],
+        "summary": "Chain of custody for an order the caller placed (KIORLY_NURSE / KIORLY_CLINIC clients only)",
+        "description": "Event type, time, temperature and who (NURSE | LAB) per specimen. Never staff names, never PHI. 404 NOT_AVAILABLE_FOR_CLIENT for a Kiorex booking client; 404 ORDER_NOT_FOUND for another client's order.",
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Integration client key (created by a lab owner via POST /integration-clients)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC-SHA256 over `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)` (query string stripped); same scheme as kiorly-marketplace."
+          },
+          {
+            "name": "sourceRef",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Custody",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabOrderCustody"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ORDER_NOT_FOUND | NOT_AVAILABLE_FOR_CLIENT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -945,6 +1053,10 @@
               },
               "contactPhone": {
                 "type": "string"
+              },
+              "districtId": {
+                "type": "string",
+                "description": "Coarse district code for HOME collections (coverage check); never a full address in events."
               }
             }
           },
@@ -956,12 +1068,27 @@
                 "PRINTED",
                 "PATIENT_LINK_OTP",
                 "KIORLY_CLINIC_IMPORT",
+                "KIORLY_NURSE_IMPORT",
                 "KIOREX_VAULT"
               ]
             },
             "description": "Result-release consent; with none recorded nothing is released on any channel."
+          },
+          "identifiersChecked": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "description": "KLORD05: kinds of the two identifiers the nurse verified at collection (e.g. FULL_NAME, DATE_OF_BIRTH, PHONE, MRN). Kinds only, never the values."
+          },
+          "nurseCollection": {
+            "$ref": "#/components/schemas/NurseCollection"
           }
-        }
+        },
+        "description": "Strict inbound order (unknown fields are rejected). `nurseCollection` is accepted only from a KIORLY_NURSE client (and is required from it); `identifiersChecked` (>= 2 kinds, never values) is required with it."
       },
       "InboundLabOrderResult": {
         "type": "object",
@@ -1176,7 +1303,186 @@
         "required": [
           "slots"
         ]
+      },
+      "NurseCollection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "visitRef",
+          "collectorRef",
+          "collectedAt",
+          "consentToken",
+          "samples"
+        ],
+        "description": "A sample the nurse already collected (KNLAB01). The tube label becomes the specimen barcode; chain of custody starts at `collectedAt`. The consent token is the patient's LAB_RESULTS record-share grant (the lab stores only its SHA-256).",
+        "properties": {
+          "visitRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "collectorRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Opaque collector reference; never a phone number or national id."
+          },
+          "collectorName": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "collectedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Not in the future."
+          },
+          "handedOverAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Between collectedAt and now."
+          },
+          "temperatureC": {
+            "type": "number",
+            "minimum": -40,
+            "maximum": 60
+          },
+          "consentToken": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 512
+          },
+          "samples": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "label",
+                "specimenType"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "pattern": "^[\\x21-\\x7e]{3,40}$",
+                  "description": "Tube label / barcode, 3-40 printable ASCII, unique per lab."
+                },
+                "specimenType": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 60
+                },
+                "container": {
+                  "type": "string",
+                  "maxLength": 60
+                }
+              }
+            }
+          }
+        }
+      },
+      "LabOrderCustody": {
+        "type": "object",
+        "required": [
+          "sourceRef",
+          "orderNumber",
+          "status",
+          "specimens"
+        ],
+        "properties": {
+          "sourceRef": {
+            "type": "string"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LabOrderStatusEnum"
+          },
+          "collectedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "receivedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "specimens": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "label",
+                "status",
+                "custody"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "accessionNumber": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "custody": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "type",
+                      "occurredAt",
+                      "by"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "COLLECTED | TRANSPORT_STARTED | RECEIVED | LABEL_MISMATCH_BLOCKED | ..."
+                      },
+                      "occurredAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "by": {
+                        "type": "string",
+                        "enum": [
+                          "NURSE",
+                          "LAB"
+                        ]
+                      },
+                      "temperatureC": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "location": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
-  }
+  },
+  "x-client-sources": [
+    "KIOREX_BOOKING",
+    "KIORLY_CLINIC",
+    "KIORLY_NURSE"
+  ]
 }

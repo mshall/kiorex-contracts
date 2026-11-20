@@ -2,6 +2,26 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.6.0
+
+Additive minor (no field, type string, path or flag removed or renamed). Ratifies the Kiorly Lab proposals of `kiorly-lab/Docs/NURSE_SAMPLES.md` (NH-LB-034) for KNLAB01 / KLORD05: a nurse-collected sample handed to Kiorly Lab through Kiorex. Kiorly Nurse stays an EDITION of Kiorly Clinic (ADR-031): no new repository, producer or event type. No tax-authority fields. Consumers pin 1.6.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.6.0.tgz`).
+
+### Events
+- `LabOrderPlaced` (producer kiorly-clinic): new OPTIONAL `originEdition` (CLINIC | NURSE), `prescriberName`, `identifiersChecked` (>= 2 identifier KINDS, never values), `patient` (minimum demographics `fullName`, `dateOfBirth`, `sex`, `phone`, `preferredLocale`; sent only under the consent token, relayed by Kiorex and not retained, never a national id) and `nurseCollection` (`visitRef`, `collectorRef`, `collectorName`, `collectedAt`, `handedOverAt`, `temperatureC`, `samples[{label, specimenType, container}]` with the tube-label pattern `^[\x21-\x7e]{3,40}$`). A Clinic-edition event is unchanged.
+- `LabOrderCreated` / `LabOrderStatusChanged` (producer kiorly-lab): new OPTIONAL `originEdition: "NURSE"`; `source` stays `KIORLY_CLINIC` (the enum is not widened).
+- Example: `fixtures/nurse-lab-handoff-v1.6.json`.
+
+### OpenAPI `openapi/kiorly-lab.v1.openapi.json` 0.2.0 -> 0.3.0 (still `x-status: draft`)
+- `InboundLabOrder` stays strict (`additionalProperties: false`), relaxed ONLY for the new optional `nurseCollection` (schema `NurseCollection`, strict), `identifiersChecked` (min 2) and `collection.districtId`; `consentChannels` gains `KIORLY_NURSE_IMPORT`.
+- Third client source `KIORLY_NURSE` (`x-client-sources`): submits only nurse-collected orders; documented 409 `ACCESSION_DUPLICATE` and 422 refusals (`CONSENT_REQUIRED`, `TWO_IDENTIFIERS_REQUIRED`, `COLLECTED_IN_FUTURE`, `HANDOVER_TIME_INVALID`, `SAMPLE_*`).
+- New `GET /integration/v1/orders/{sourceRef}/custody` (`labGetOrderCustody`, schema `LabOrderCustody`): per specimen custody events (type, time, temperature, `by: NURSE | LAB`), no names, no PHI; KIORLY_NURSE / KIORLY_CLINIC clients, own orders only.
+
+### OpenAPI `openapi/kiorly-marketplace.v1.openapi.json` 1.2.0 -> 1.3.0
+- New `POST /lab-orders/{orderId}/status` (`marketplaceLabOrderStatus`): Kiorex relays the lab status of a hand-off to the Kiorly tenant (status, sanitized custody events, and on release the report id + secure link). No results, no PHI. Idempotent and monotonic.
+
+### Tests
+- Nurse `LabOrderPlaced` example validates, malformed tube label / no samples / single identifier / unknown edition / missing consent token are refused; `originEdition` on the Lab events; strict-order relaxation limited to the three ratified fields; custody `by` enum; marketplace status push.
+
 ## 1.5.0
 
 Additive minor (no field, type string, path or flag removed or renamed). Rev 2.3 contracts (KX-09 v2.3 §03/§04/§08, backlog item 1 of `_docs/CHANGES_2.2_to_2.3.md`; Kiorly Nurse is an edition of Kiorly Clinic, KX-23 / ADR-031, so there is no new repository, client or endpoint set). No tax-authority fields anywhere. Consumers pin 1.5.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.5.0.tgz`).

@@ -190,6 +190,31 @@ describe("Kiorly Lab draft OpenAPI (NH-LB-025)", () => {
   });
 });
 
+describe("Nurse-edition ratified additions (1.6.0, KNLAB01 / KLORD05)", () => {
+  const lab = readJson("openapi/kiorly-lab.v1.openapi.json");
+  const order = lab.components.schemas.InboundLabOrder;
+  it("relaxes the strict inbound order ONLY for nurseCollection, identifiersChecked and collection.districtId", () => {
+    expect(order.additionalProperties).toBe(false);
+    expect(order.required).toEqual(["sourceRef", "patient"]);
+    expect(Object.keys(order.properties)).toEqual(expect.arrayContaining(["nurseCollection", "identifiersChecked"]));
+    expect(order.properties.collection.additionalProperties).toBe(false);
+    expect(order.properties.collection.properties.districtId).toBeTruthy();
+    expect(lab.components.schemas.NurseCollection.additionalProperties).toBe(false);
+    expect(lab.components.schemas.NurseCollection.required).toEqual(expect.arrayContaining(["collectedAt", "consentToken", "samples"]));
+    expect(order.properties.identifiersChecked.minItems).toBe(2);
+    expect(order.properties.consentChannels.items.enum).toContain("KIORLY_NURSE_IMPORT");
+  });
+  it("documents the KIORLY_NURSE client source and the custody read (no PHI: NURSE|LAB, no names)", () => {
+    expect(lab["x-client-sources"]).toEqual(["KIOREX_BOOKING", "KIORLY_CLINIC", "KIORLY_NURSE"]);
+    expect(lab.paths["/integration/v1/orders/{sourceRef}/custody"].get.operationId).toBe("labGetOrderCustody");
+    const ev = lab.components.schemas.LabOrderCustody.properties.specimens.items.properties.custody.items.properties.by;
+    expect(ev.enum).toEqual(["NURSE", "LAB"]);
+  });
+  it("marketplace spec carries the Kiorex -> Kiorly lab status push", () => {
+    expect(spec.paths["/lab-orders/{orderId}/status"].post.operationId).toBe("marketplaceLabOrderStatus");
+  });
+});
+
 describe("Kiorly Pharmacy draft OpenAPI + partner addressing (1.4.0)", () => {
   const ph = readJson("openapi/kiorly-pharmacy.v1.openapi.json");
   it("documents the order intent, Rx validation, quote and catalogue operations with HMAC headers", () => {

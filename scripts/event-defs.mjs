@@ -12,6 +12,9 @@ const BOOKING_SOURCE = {
 };
 const LISTING_STATUS = { enum: ["DRAFT", "PENDING_VERIFICATION", "LIVE", "PAUSED"] };
 const LAB_SOURCE = { enum: ["KIOREX_BOOKING", "KIORLY_CLINIC"] };
+// 1.6.0: Kiorly Nurse is an EDITION of Kiorly Clinic (ADR-031), so nurse-collected orders keep source KIORLY_CLINIC and add this optional marker.
+const LAB_ORIGIN_EDITION = { enum: ["NURSE"], description: "Present when the order was collected by Kiorly Nurse (KIORLY_NURSE inbound client); source stays KIORLY_CLINIC (ADR-031). Additive in 1.6.0." };
+const ORIGIN_EDITION = { enum: ["CLINIC", "NURSE"], description: "Edition that produced the hand-off (ADR-031). Additive in 1.6.0." };
 const LAB_ORDER_STATUS = { enum: ["DRAFT", "AWAITING_COLLECTION", "COLLECTED", "IN_LAB", "PARTIALLY_RESULTED", "AWAITING_VALIDATION", "VALIDATED", "RELEASED", "CANCELLED"] };
 const PROFESSION = { enum: ["PHYSICIAN", "DENTIST", "PHYSIOTHERAPIST", "NURSE"], description: "ADR-029. Market packs may extend the list in a later additive minor." };
 const SERVICE_LOCATION = { enum: ["IN_CLINIC", "HOME"] };
@@ -238,13 +241,30 @@ export const EVENTS = [
   },
   {
     type: "LabOrderPlaced", producer: "kiorly-clinic", aggregateType: "LabOrder", status: "emitted",
-    description: "Kiorly Clinic handed a lab order to Kiorly Lab via Kiorex (KCV204, clinic.lab_order_handoff). A patient consent token (LAB_RESULTS record-share grant) is required. One event per order. Additive in 1.1.0.",
+    description: "Kiorly Clinic handed a lab order to Kiorly Lab via Kiorex (KCV204, clinic.lab_order_handoff). A patient consent token (LAB_RESULTS record-share grant) is required. One event per order. Additive in 1.1.0; 1.6.0 adds the optional Nurse-edition fields (originEdition, prescriberName, identifiersChecked, patient, nurseCollection).",
     data: {
       properties: {
         orderId: ID, encounterId: ID, clinicId: ID, patientRef: { type: "string", minLength: 1, description: "Kiorly patient reference; never a national ID." },
         orderingClinicianId: ID, consentToken: { type: "string", minLength: 1 }, orderedAt: TS,
         items: { type: "array", minItems: 1, items: { type: "object", properties: { code: S, nameEn: { type: "string", minLength: 1 }, nameAr: S }, required: ["nameEn"] } },
         notes: S, preferredLabId: ID, ...AGG,
+        // 1.6.0 (KNLAB01 / KLORD05, ratified optional fields): nurse-collected samples. Present only for originEdition NURSE.
+        originEdition: ORIGIN_EDITION,
+        prescriberName: { type: "string", description: "Doctor who requested the tests (nurse transcribes a doctor's order); relayed as referringDoctor.name." },
+        identifiersChecked: { type: "array", minItems: 2, items: { type: "string", minLength: 1, maxLength: 40 }, description: "Kinds of the >= 2 identifiers the nurse verified at collection (FULL_NAME, DATE_OF_BIRTH, PHONE, MRN ...). Kinds only, never values." },
+        patient: {
+          type: "object", description: "Minimum demographics the lab needs to accession a nurse-collected sample, sent only under the consent token. Kiorex relays it to the lab and does not store it (receipt payload is redacted). Never a national id.",
+          properties: { fullName: { type: "string", minLength: 2 }, dateOfBirth: S, sex: { enum: ["M", "F", "OTHER", "UNKNOWN"] }, phone: S, preferredLocale: { enum: ["ar", "en"] } }, required: ["fullName"],
+        },
+        nurseCollection: {
+          type: "object", description: "The collection facts recorded by the nurse (tube labels become specimen barcodes; chain of custody starts at collectedAt).",
+          properties: {
+            visitRef: ID, collectorRef: { type: "string", minLength: 1, description: "Opaque collector reference; never a phone number or national id." }, collectorName: S,
+            collectedAt: TS, handedOverAt: TS, temperatureC: { type: "number", minimum: -40, maximum: 60 },
+            samples: { type: "array", minItems: 1, maxItems: 20, items: { type: "object", properties: { label: { type: "string", pattern: "^[\\x21-\\x7e]{3,40}$" }, specimenType: { type: "string", minLength: 2 }, container: S }, required: ["label", "specimenType"] } },
+          },
+          required: ["visitRef", "collectorRef", "collectedAt", "samples"],
+        },
       },
       required: ["orderId", "clinicId", "patientRef", "consentToken", "orderedAt", "items"],
     },
@@ -278,13 +298,13 @@ export const EVENTS = [
   {
     type: "LabOrderCreated", producer: "kiorly-lab", aggregateType: "LabOrder", status: "v2-draft",
     description: "Kiorly Lab created an order that came from Kiorex (KIOREX_BOOKING) or Kiorly Clinic (KIORLY_CLINIC). Not emitted for walk-in or referring-doctor orders. Draft (NH-LB-025).",
-    data: { properties: { orderId: ID, orderNumber: ID, source: LAB_SOURCE, sourceRef: { type: ["string", "null"], description: "Caller's idempotency reference from POST /integration/v1/orders." }, labId: ID }, required: ["orderId", "orderNumber", "source", "labId"] },
+    data: { properties: { orderId: ID, orderNumber: ID, source: LAB_SOURCE, originEdition: LAB_ORIGIN_EDITION, sourceRef: { type: ["string", "null"], description: "Caller's idempotency reference from POST /integration/v1/orders." }, labId: ID }, required: ["orderId", "orderNumber", "source", "labId"] },
     example: { aggregateId: "lord_01JF3ZF000", data: { orderId: "lord_01JF3ZF000", orderNumber: "LAB-2027-000123", source: "KIOREX_BOOKING", sourceRef: "bk_01JF3ZG000", labId: "lab_01JF3Z8AAA" } },
   },
   {
     type: "LabOrderStatusChanged", producer: "kiorly-lab", aggregateType: "LabOrder", status: "v2-draft",
     description: "Derived order status moved (only for KIOREX_BOOKING / KIORLY_CLINIC orders). Event id is deterministic per (order, nextStatus). Draft (NH-LB-025).",
-    data: { properties: { orderId: ID, orderNumber: ID, source: LAB_SOURCE, sourceRef: { type: ["string", "null"] }, previousStatus: LAB_ORDER_STATUS, nextStatus: LAB_ORDER_STATUS }, required: ["orderId", "orderNumber", "source", "previousStatus", "nextStatus"] },
+    data: { properties: { orderId: ID, orderNumber: ID, source: LAB_SOURCE, originEdition: LAB_ORIGIN_EDITION, sourceRef: { type: ["string", "null"] }, previousStatus: LAB_ORDER_STATUS, nextStatus: LAB_ORDER_STATUS }, required: ["orderId", "orderNumber", "source", "previousStatus", "nextStatus"] },
     example: { aggregateId: "lord_01JF3ZF000", data: { orderId: "lord_01JF3ZF000", orderNumber: "LAB-2027-000123", source: "KIOREX_BOOKING", sourceRef: "bk_01JF3ZG000", previousStatus: "AWAITING_COLLECTION", nextStatus: "COLLECTED" } },
   },
   {

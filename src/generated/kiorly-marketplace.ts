@@ -460,6 +460,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/lab-orders/{orderId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * KNLAB01 (Nurse edition, contracts 1.6.0): Kiorex relays the lab's status for a hand-off, with the sanitized chain of custody and (on release) the secure link
+         * @description Idempotent and monotonic on `status`. `orderId` is the Kiorly LabOrderPlaced orderId (the ClinicalOrder id). Carries no results and no PHI: a status, custody events (type, time, temperature, NURSE|LAB) and, when RELEASED, reportId + secure link.
+         */
+        post: operations["marketplaceLabOrderStatus"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export interface webhooks {
     kiorexOutboxEvent: {
@@ -1527,6 +1547,67 @@ export interface operations {
             };
             /** @description CARE_PLANS_NOT_OFFERED (provider does not offer care plans) or OUT_OF_COVERAGE */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceLabOrderStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    status: "REJECTED_BY_LAB" | "ACCEPTED" | "COLLECTED" | "IN_LAB" | "PARTIALLY_RESULTED" | "AWAITING_VALIDATION" | "VALIDATED" | "RELEASED" | "CANCELLED";
+                    labOrderNumber?: string;
+                    labId?: string;
+                    /** Format: date-time */
+                    occurredAt?: string;
+                    rejectionCode?: string;
+                    reportId?: string;
+                    reportVersion?: number;
+                    /** Format: uri */
+                    secureLink?: string;
+                    /** Format: date-time */
+                    signedAt?: string;
+                    custody?: {
+                        label?: string;
+                        type: string;
+                        /** Format: date-time */
+                        occurredAt: string;
+                        /** @enum {string} */
+                        by: "NURSE" | "LAB";
+                        temperatureC?: number | null;
+                    }[];
+                };
+            };
+        };
+        responses: {
+            /** @description Applied or already applied */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown hand-off for this tenant */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Status would move backwards (ignored, reported) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
