@@ -1,5 +1,5 @@
 {
- "$comment": "DEV ONLY synthetic personas shared by all demo seeds. OTP 000000 only works against the local dev IdP.",
+ "$comment": "DEV ONLY synthetic personas shared by all demo seeds (all 35 accounts of the Passport seed, kiorex-account/config/seed-users.json: phones, subs and roles are the real seed values; nameEn/nameAr/gender are the display values of the Kiorly seeds). OTP 000000 only works against the local dev IdP.",
  "personas": [
   {
    "phone": "+201000001001",
@@ -179,6 +179,141 @@
    "nameAr": "دعم العمليات تجريبي",
    "gender": "M",
    "role": "ops_admin,support",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000000001",
+   "sub": "01HZKX00000000000000000001",
+   "nameEn": "Amira",
+   "nameAr": "أميرة",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000000002",
+   "sub": "01HZKX00000000000000000002",
+   "nameEn": "Hassan",
+   "nameAr": "حسن",
+   "gender": "M",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000000099",
+   "sub": "01HZKX00000000000000000099",
+   "nameEn": "Ops Super Admin",
+   "nameAr": "مشرف عمليات عام",
+   "gender": "M",
+   "role": "ops_admin,super_admin",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000001013",
+   "sub": "01HZKXD0000000000000001013",
+   "nameEn": "Nabila Hamdy",
+   "nameAr": "نبيلة حمدي",
+   "gender": "F",
+   "role": "patient",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003001",
+   "sub": "01HZKXD0000000000000003001",
+   "nameEn": "Mona Adel",
+   "nameAr": "منى عادل",
+   "gender": "F",
+   "role": "org:owner",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003002",
+   "sub": "01HZKXD0000000000000003002",
+   "nameEn": "Agency Owner",
+   "nameAr": "مالك الوكالة",
+   "gender": "M",
+   "role": "org:owner",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003003",
+   "sub": "01HZKXD0000000000000003003",
+   "nameEn": "Dina Dispatcher",
+   "nameAr": "دينا (منسقة)",
+   "gender": "F",
+   "role": "org:dispatcher",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003004",
+   "sub": "01HZKXD0000000000000003004",
+   "nameEn": "Heba Nurse",
+   "nameAr": "هبة",
+   "gender": "F",
+   "role": "org:nurse",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003005",
+   "sub": "01HZKXD0000000000000003005",
+   "nameEn": "Salma Nurse",
+   "nameAr": "سلمى",
+   "gender": "F",
+   "role": "org:nurse",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003006",
+   "sub": "01HZKXD0000000000000003006",
+   "nameEn": "Aya Aide",
+   "nameAr": "آية",
+   "gender": "F",
+   "role": "org:aide",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003007",
+   "sub": "01HZKXD0000000000000003007",
+   "nameEn": "Nadine Nurse",
+   "nameAr": "نادين",
+   "gender": "F",
+   "role": "org:nurse",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003008",
+   "sub": "01HZKXD0000000000000003008",
+   "nameEn": "Rawan Nurse",
+   "nameAr": "روان",
+   "gender": "F",
+   "role": "org:nurse",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003009",
+   "sub": "01HZKXD0000000000000003009",
+   "nameEn": "Yara Nurse",
+   "nameAr": "يارا",
+   "gender": "F",
+   "role": "org:nurse",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003010",
+   "sub": "01HZKXD0000000000000003010",
+   "nameEn": "Dr Mai Hassan",
+   "nameAr": "د. مي حسن",
+   "gender": "F",
+   "role": "org:physiotherapist",
+   "otp": "000000"
+  },
+  {
+   "phone": "+201000003011",
+   "sub": "01HZKXD0000000000000003011",
+   "nameEn": "Noha Nurse (pending invite)",
+   "nameAr": "نهى (دعوة معلقة)",
+   "gender": "F",
+   "role": "org:invitee",
    "otp": "000000"
   }
  ]

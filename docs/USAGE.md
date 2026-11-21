@@ -10,8 +10,9 @@ import {
   validateEvent, evaluateFlag, featureDisabledBody, FLAGS,
 } from "@kiorex/contracts";
 
-// Kiorex -> Kiorly (path = full path incl. /api/v1; query ignored)
-const { headers } = signKiorlyRequest({ clientKey, clientSecret, method: "POST", path: "/api/v1/marketplace/v1/holds", body: json });
+// Kiorex -> Kiorly (path = the path the server receives, query ignored). The marketplace API is NOT under /api/v1: it answers at /marketplace/v1/...
+// (signing "/marketplace/v1/providers" gets 200 from the Kiorly API; "/api/v1/marketplace/v1/providers" is a 404)
+const { headers } = signKiorlyRequest({ clientKey, clientSecret, method: "POST", path: "/marketplace/v1/holds", body: json });
 
 // Kiorly -> Kiorex receiver: verify the RAW body, then de-duplicate on eventId
 const ok = verifyWebhook({ secret, body: rawBody, timestamp: req.headers["x-kiorly-timestamp"], signature: req.headers["x-kiorly-signature"] });
