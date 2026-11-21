@@ -20,6 +20,7 @@ OpenAPI, event JSON Schemas, feature-flag catalogue, HMAC helpers and a typed Ty
 </div>
 
 > **Synthetic data only.** QA fixtures and dev logins are listed in [TEST_DATA.md](TEST_DATA.md) (DEV ONLY).
+> **Demo data for manual testing** (personas, counts, click-path test scripts, role checklists): [DEMO_DATA.md](DEMO_DATA.md) (DEV ONLY).
 
 ---
 
