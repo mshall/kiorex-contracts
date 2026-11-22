@@ -11,7 +11,7 @@ OpenAPI, event JSON Schemas, feature-flag catalogue, HMAC helpers and a typed Ty
 ![TypeScript](https://img.shields.io/badge/TypeScript-SDK-0369A1?logo=typescript&logoColor=white)
 ![OpenAPI](https://img.shields.io/badge/OpenAPI-3-3730A3)
 ![JSON Schema](https://img.shields.io/badge/JSON%20Schema-2020--12-0369A1)
-![Version](https://img.shields.io/badge/version-1.6.0-E8735E)
+![Version](https://img.shields.io/badge/version-1.7.0-E8735E)
 ![Status](https://img.shields.io/badge/status-active-3730A3)
 ![License](https://img.shields.io/badge/license-private-lightgrey)
 
@@ -34,11 +34,12 @@ Kiorex v2 is several products (Kiorex marketplace, Kiorex Passport, Kiorly Clini
 
 | | |
 |---|---|
-| **Package** | `@kiorex/contracts` 1.6.0 (ESM + CJS + `.d.ts`) |
+| **Package** | `@kiorex/contracts` 1.7.0 (ESM + CJS + `.d.ts`) |
 | **OpenAPI specs** | 5 (Kiorly marketplace 1.3.0, control plane 1.0.0, webhooks 1.1.0, pharmacy 0.1.0 draft, lab 0.3.0 draft) |
 | **Event schemas** | 46 types plus the envelope, JSON Schema 2020-12, with examples |
 | **Feature flags** | 57 catalogued (classes: Module, Commercial, Integration, AI, Launch-locked) |
 | **Helpers** | `signKiorlyRequest`, `verifyKiorlyRequest`, `signWebhook`, `verifyWebhook`, `validateEvent`, `evaluateFlag`, `featureDisabledBody`, typed `FLAGS` |
+| **Notification layer** | `@kiorex/contracts/notify`: pure-TS layer above the SMS / Email / WhatsApp / Push / in-app adapters (intents, ar/en templates, PHI guard, routing + fallback, consent gate, normalized status, audit shape). See [docs/NOTIFICATION_LAYER.md](docs/NOTIFICATION_LAYER.md) |
 | **Distribution** | Vendored tarball today (`npm run pack:local`); GitHub Packages publish needs founder approval |
 | **Rule of thumb** | Additive = minor. Remove, rename or tighten = major, with a 90-day parallel run |
 
@@ -128,6 +129,8 @@ const d = evaluateFlag(snapshot, FLAGS.KIOREX_MARKETPLACE, { market: "EG", orgId
 if (!d.enabled) throw new ForbiddenException(featureDisabledBody(d));        // 403 FEATURE_DISABLED
 ```
 
+Notification layer (`@kiorex/contracts/notify`): `new NotificationService({ adapters, registry, preferences, audit })` then `dispatch({ type, recipient, params, severity, idempotencyKey })`; see [docs/NOTIFICATION_LAYER.md](docs/NOTIFICATION_LAYER.md).
+
 More examples, `file:` tarball consumption, and the release steps: [docs/USAGE.md](docs/USAGE.md).
 
 ## Tests and requirements
@@ -188,6 +191,7 @@ kiorex-contracts/
 |---|---|
 | [docs/INDEX.md](docs/INDEX.md) | Index of everything in this repo |
 | [docs/USAGE.md](docs/USAGE.md) | Imports, pinning, tarball use, releasing |
+| [docs/NOTIFICATION_LAYER.md](docs/NOTIFICATION_LAYER.md) | Notification layer: interface, templates, routing, consent, status model, migration order |
 | [docs/EVENTS.md](docs/EVENTS.md) | Event catalogue |
 | [docs/FLAGS.md](docs/FLAGS.md) | Flag catalogue |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |

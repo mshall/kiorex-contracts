@@ -2,6 +2,30 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.7.0
+
+Additive minor (no field, type string, path or flag removed or renamed; the root entry point is unchanged). Adds the shared **notification layer** as a new subpath export `@kiorex/contracts/notify` (ESM + CJS + types): pure TypeScript, no I/O, designed to sit above each product's channel adapters (SMS, Email, WhatsApp, Push, in-app inbox). Full guide: `docs/NOTIFICATION_LAYER.md`. Consumers pin 1.7.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.7.0.tgz`).
+
+### Added (`src/notify/`)
+- `NotificationIntent` (type code, recipient `{id, phone?, email?, deviceIds?, locale ar|en}`, params, severity ROUTINE | IMPORTANT | CRITICAL, `idempotencyKey`, `dedupe`).
+- `TemplateRegistry` and `simpleTemplate`: per intent, per-channel renderers with ar/en (SMS text with segment check, email subject/html/text, WhatsApp template name + vars or free text, push title/body/deep-link `data`, in-app inbox item), `validate()` for CI.
+- PHI-free guard: templates declare `allowedParams` (undeclared keys rejected), `PhiGuard` rejects configured patterns in SMS, push and WhatsApp bodies.
+- `RoutingPolicy` (`DEFAULT_ROUTING`): ordered channels per severity, fallback after no delivery receipt within a timeout, CRITICAL fans out in parallel; the in-app inbox is a sidecar written first.
+- Preference and consent gate (`PreferenceStore`, `evaluateGate`, `quietUntil`): consent, opt-out, quiet hours with CRITICAL / `quietBypass` override, WhatsApp 24 h window and template rule, missing-address skip with a recorded reason.
+- Normalized `DeliveryStatus` (QUEUED, SENT, DELIVERED, READ, FAILED, SKIPPED), forward-only `mergeStatus`, per-channel vendor normalizers, `parseNeutralStatusBody`.
+- One `AuditRecord` shape and `AuditSink`; `DispatchStore` (idempotency, dedupe, provider-ref index, due list) with `MemoryDispatchStore`.
+- `ChannelAdapter` interface (`send`, `parseWebhook`, `verify`) and `NotificationService` (`dispatch`, `tick`, `applyStatus`, `handleWebhook`) taking injected adapters, preference store, audit sink, store and clock.
+- `MockChannelAdapter` and `createMockAdapters` for tests.
+
+### Package
+- `exports["./notify"]` plus `typesVersions` (node-resolution consumers); tsup builds a second entry (`dist/notify.{js,cjs,d.ts,d.cts}`). `CONTRACTS_VERSION` = 1.7.0.
+
+### Tests
+- `test/notify/` (60 tests): routing, fallback timing with a fake clock, CRITICAL fan-out, consent, opt-out, quiet hours, WhatsApp window, PHI guard, idempotency and dedupe, status normalization, webhook replay and out-of-order, ar/en rendering, audit shape. 100 % statements, branches, functions and lines on `src/notify`.
+
+### Adoption
+- kiorex-platform adopts it first (see `docs/NOTIFICATION_LAYER.md`); clinic, pharmacy, lab and passport are NOT migrated yet, the migration order is documented.
+
 ## 1.6.0
 
 Additive minor (no field, type string, path or flag removed or renamed). Ratifies the Kiorly Lab proposals of `kiorly-lab/Docs/NURSE_SAMPLES.md` (NH-LB-034) for KNLAB01 / KLORD05: a nurse-collected sample handed to Kiorly Lab through Kiorex. Kiorly Nurse stays an EDITION of Kiorly Clinic (ADR-031): no new repository, producer or event type. No tax-authority fields. Consumers pin 1.6.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.6.0.tgz`).

@@ -13,4 +13,4 @@ export type * from "./generated/events.js";
 export type * as KiorlyMarketplaceApi from "./generated/kiorly-marketplace.js";
 export type * as ControlPlaneApi from "./generated/control-plane.js";
 export type * as WebhooksApi from "./generated/webhooks.js";
-export const CONTRACTS_VERSION = "1.6.0";
+export const CONTRACTS_VERSION = "1.7.0";
