@@ -277,9 +277,23 @@ export const EVENTS = [
     example: { aggregateId: "ord_01JF3ZD000", data: { orderId: "ord_01JF3ZD000", pharmacyId: "ph_01", branchId: "br_01", readyAt: "2027-03-05T12:00:00.000Z", pharmacistSignoff: { userId: "usr_01", signedAt: "2027-03-05T11:59:00.000Z" } } },
   },
   {
+    type: "OrderOutForDelivery", producer: "kiorly-pharmacy", aggregateType: "PharmacyOrder", status: "v2-draft",
+    description: "Pharmacy handed a READY DELIVERY order to the courier (1.8.0, additive). Sits between OrderReady and DispenseCompleted; Kiorex mirrors it as OUT_FOR_DELIVERY and notifies the patient. Only for deliveryMethod DELIVERY. Carries no address and no courier contact (no PHI).",
+    data: { properties: { orderId: ID, pharmacyId: ID, branchId: ID, outForDeliveryAt: TS, estimatedDeliveryMinutes: { type: "integer", minimum: 1, maximum: 1440, description: "Optional courier ETA in minutes from outForDeliveryAt." }, dispatchedBy: { type: "object", properties: { userId: ID }, required: ["userId"], description: "Pharmacy staff user who dispatched the order." } }, required: ["orderId", "pharmacyId", "outForDeliveryAt"] },
+    example: { aggregateId: "ord_01JF3ZD000", data: { orderId: "ord_01JF3ZD000", pharmacyId: "ph_01", branchId: "br_01", outForDeliveryAt: "2027-03-05T12:10:00.000Z", estimatedDeliveryMinutes: 45, dispatchedBy: { userId: "usr_01" } } },
+  },
+  {
     type: "DispenseCompleted", producer: "kiorly-pharmacy", aggregateType: "PharmacyOrder", status: "v2-draft",
     description: "Order dispensed to the patient. Pharmacist sign-off must be present (KPRX06).",
-    data: { properties: { orderId: ID, pharmacyId: ID, branchId: ID, dispensedAt: TS, pharmacistSignoff: { type: "object", properties: { userId: ID, signedAt: TS }, required: ["userId", "signedAt"] }, partial: { type: "boolean" } }, required: ["orderId", "pharmacyId", "dispensedAt", "pharmacistSignoff"] },
+    data: {
+      properties: {
+        orderId: ID, pharmacyId: ID, branchId: ID, dispensedAt: TS, pharmacistSignoff: { type: "object", properties: { userId: ID, signedAt: TS }, required: ["userId", "signedAt"] }, partial: { type: "boolean" },
+        // 1.8.0 (additive, optional): per-line fulfilment so Kiorex can refund the rejected/unavailable lines pro-rata (partial-fulfilment policy). Absent => Kiorex parks the order in PARTIAL_REVIEW (ops decides).
+        lines: { type: "array", description: "Per-line fulfilment (1.8.0). `sku` = the catalogue sku of the order line; `quantityDispensed` <= `quantityRequested`.", items: { type: "object", properties: { sku: ID, quantityRequested: { type: "integer", minimum: 1 }, quantityDispensed: { type: "integer", minimum: 0 } }, required: ["sku", "quantityRequested", "quantityDispensed"] } },
+        deliveryMade: { type: "boolean", description: "1.8.0: DELIVERY orders only. false = the pharmacy did not deliver (Kiorex refunds the delivery fee per the market policy). Absent = delivered / not applicable." },
+      },
+      required: ["orderId", "pharmacyId", "dispensedAt", "pharmacistSignoff"],
+    },
     example: { aggregateId: "ord_01JF3ZD000", data: { orderId: "ord_01JF3ZD000", pharmacyId: "ph_01", dispensedAt: "2027-03-05T12:30:00.000Z", pharmacistSignoff: { userId: "usr_01", signedAt: "2027-03-05T12:29:00.000Z" } } },
   },
   {

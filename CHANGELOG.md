@@ -2,6 +2,24 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.8.0
+
+Additive minor (no field, type string, path or flag removed or renamed; every new field is optional). Founder-delegated decisions of 23 Nov 2026 (`PROPOSED_DEFAULT delegated by founder 23 Nov 2026` where a policy is involved). Consumers pin 1.8.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.8.0.tgz`).
+
+### Arabic names (partner catalogues)
+- `kiorly-pharmacy.v1.openapi.json` 0.1.0 -> 0.2.0: `CatalogueItem` and the `Quote` items gain optional `nameAr`, `formAr` (Arabic dosage form), `strength`/`form` (quote) and `activeIngredient` (catalogue). Absent => clients fall back to `name` / `form` (never blank). Search on both partners already matches Arabic and English; GET `/catalogue?q=` accepts either script.
+- `kiorly-lab.v1.openapi.json` 0.3.0 -> 0.4.0: `GET /tests` items gain optional `nameAr`, `preparationAr`, `sampleTypeAr`; `POST /tests/quote` tests gain optional `nameAr`.
+
+### OUT_FOR_DELIVERY
+- New event `OrderOutForDelivery` (producer kiorly-pharmacy, `v2-draft`): `orderId`, `pharmacyId`, `branchId?`, `outForDeliveryAt`, `estimatedDeliveryMinutes?`, `dispatchedBy?`. Sits between `OrderReady` and `DispenseCompleted`, DELIVERY orders only, no address or courier contact. Kiorex mirrors it as `OUT_FOR_DELIVERY`; a Kiorex that does not know the event ignores it (unknown order types are acknowledged and dropped), and `DispenseCompleted` still completes the order, so old consumers keep working.
+- `OrderResult.status` (pharmacy OpenAPI) may now be `OUT_FOR_DELIVERY` (consumers must tolerate unknown values, as before).
+
+### Partial fulfilment
+- `DispenseCompleted` gains optional `lines[{sku, quantityRequested, quantityDispensed}]` and `deliveryMade`. With `partial: true` and `lines`, Kiorex refunds the rejected/unavailable lines pro-rata (policy `PROPOSED_DEFAULT`, configurable per market/org); without `lines` the order still parks in `PARTIAL_REVIEW` exactly as before.
+
+### Package
+- `CONTRACTS_VERSION` = 1.8.0. Tests: `test/schemas.test.ts` (OrderOutForDelivery, old and new DispenseCompleted payloads), `test/partner-additive.test.ts` (Arabic fields optional and non-required, OUT_FOR_DELIVERY in the status enum, 1.7.0 payloads still validate).
+
 ## 1.7.0
 
 Additive minor (no field, type string, path or flag removed or renamed; the root entry point is unchanged). Adds the shared **notification layer** as a new subpath export `@kiorex/contracts/notify` (ESM + CJS + types): pure TypeScript, no I/O, designed to sit above each product's channel adapters (SMS, Email, WhatsApp, Push, in-app inbox). Full guide: `docs/NOTIFICATION_LAYER.md`. Consumers pin 1.7.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.7.0.tgz`).

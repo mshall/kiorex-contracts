@@ -3,8 +3,8 @@
   "x-status": "draft",
   "info": {
     "title": "Kiorly Lab Integration API (draft)",
-    "version": "0.3.0",
-    "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists. 1.4.0: catalogue, quote and slots endpoints for the Kiorex marketplace (additive); the client key binds the tenant (no org header); outbox events go to Kiorex /api/v1/webhooks/lab signed with the webhook scheme + X-Kiorly-Client-Key. 0.3.0 (contracts 1.6.0): ratified Nurse-edition additions (KNLAB01/KLORD05): third client source KIORLY_NURSE (Kiorly Nurse is an edition of Kiorly Clinic, ADR-031; Kiorex holds the registration and relays), optional `nurseCollection`, `identifiersChecked` and `collection.districtId` on the inbound order, and the custody read `GET /integration/v1/orders/{sourceRef}/custody`."
+    "version": "0.4.0",
+    "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists. 1.4.0: catalogue, quote and slots endpoints for the Kiorex marketplace (additive); the client key binds the tenant (no org header); outbox events go to Kiorex /api/v1/webhooks/lab signed with the webhook scheme + X-Kiorly-Client-Key. 0.3.0 (contracts 1.6.0): ratified Nurse-edition additions (KNLAB01/KLORD05): third client source KIORLY_NURSE (Kiorly Nurse is an edition of Kiorly Clinic, ADR-031; Kiorex holds the registration and relays), optional `nurseCollection`, `identifiersChecked` and `collection.districtId` on the inbound order, and the custody read `GET /integration/v1/orders/{sourceRef}/custody`. 0.4.0 / 1.8.0 (additive): optional Arabic test names and preparation text (nameAr, preparationAr, sampleTypeAr) on GET /tests and POST /tests/quote."
   },
   "servers": [
     {
@@ -1205,6 +1205,18 @@
                 },
                 "preparation": {
                   "type": "string"
+                },
+                "nameAr": {
+                  "type": "string",
+                  "description": "Arabic test name (1.8.0, optional). Clients fall back to `name`."
+                },
+                "preparationAr": {
+                  "type": "string",
+                  "description": "Arabic preparation instructions (1.8.0, optional). Fall back to `preparation`."
+                },
+                "sampleTypeAr": {
+                  "type": "string",
+                  "description": "Arabic specimen type (1.8.0, optional). Fall back to `sampleType`."
                 }
               },
               "required": [
@@ -1260,6 +1272,10 @@
                 },
                 "priceMinor": {
                   "type": "integer"
+                },
+                "nameAr": {
+                  "type": "string",
+                  "description": "Arabic test name (1.8.0, optional)."
                 }
               },
               "required": [

@@ -70,8 +70,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Kiorly Pharmacy outbox event receiver (OrderReady / DispenseCompleted / OrderRejected).
-         * @description Kiorly Pharmacy outbox event receiver (OrderReady / DispenseCompleted / OrderRejected). Same signature scheme and eventId de-duplication as /webhooks/kiorly, but the secret is PER PARTNER: the sender adds `X-Kiorly-Client-Key` (its integration client key) and Kiorex verifies with that partner registration's webhook secret (dev: kx_dev_pharmacy_webhook_secret). Unknown client key => 401.
+         * Kiorly Pharmacy outbox event receiver (OrderReady / OrderOutForDelivery / DispenseCompleted / OrderRejected).
+         * @description Kiorly Pharmacy outbox event receiver (OrderReady / OrderOutForDelivery / DispenseCompleted / OrderRejected). Same signature scheme and eventId de-duplication as /webhooks/kiorly, but the secret is PER PARTNER: the sender adds `X-Kiorly-Client-Key` (its integration client key) and Kiorex verifies with that partner registration's webhook secret (dev: kx_dev_pharmacy_webhook_secret). Unknown client key => 401.
          */
         post: operations["receivePharmacyWebhook"];
         delete?: never;

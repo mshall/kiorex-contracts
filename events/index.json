@@ -188,6 +188,14 @@
       "status": "v2-draft"
     },
     {
+      "type": "OrderOutForDelivery",
+      "aliases": [],
+      "file": "OrderOutForDelivery",
+      "producer": "kiorly-pharmacy",
+      "aggregateType": "PharmacyOrder",
+      "status": "v2-draft"
+    },
+    {
       "type": "DispenseCompleted",
       "aliases": [],
       "file": "DispenseCompleted",

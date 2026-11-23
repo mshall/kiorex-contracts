@@ -2254,6 +2254,78 @@ export const EVENT_SCHEMAS = {
       "data"
     ]
   },
+  "OrderOutForDelivery": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/OrderOutForDelivery.schema.json",
+    "title": "OrderOutForDelivery",
+    "description": "Pharmacy handed a READY DELIVERY order to the courier (1.8.0, additive). Sits between OrderReady and DispenseCompleted; Kiorex mirrors it as OUT_FOR_DELIVERY and notifies the patient. Only for deliveryMethod DELIVERY. Carries no address and no courier contact (no PHI).",
+    "x-producer": "kiorly-pharmacy",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "OrderOutForDelivery"
+      },
+      "aggregateType": {
+        "const": "PharmacyOrder"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "pharmacyId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "branchId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "outForDeliveryAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "estimatedDeliveryMinutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440,
+            "description": "Optional courier ETA in minutes from outForDeliveryAt."
+          },
+          "dispatchedBy": {
+            "type": "object",
+            "properties": {
+              "userId": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "userId"
+            ],
+            "description": "Pharmacy staff user who dispatched the order."
+          }
+        },
+        "required": [
+          "orderId",
+          "pharmacyId",
+          "outForDeliveryAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
   "DispenseCompleted": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/events/DispenseCompleted.schema.json",
@@ -2312,6 +2384,36 @@ export const EVENT_SCHEMAS = {
           },
           "partial": {
             "type": "boolean"
+          },
+          "lines": {
+            "type": "array",
+            "description": "Per-line fulfilment (1.8.0). `sku` = the catalogue sku of the order line; `quantityDispensed` <= `quantityRequested`.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "quantityRequested": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "quantityDispensed": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "sku",
+                "quantityRequested",
+                "quantityDispensed"
+              ]
+            }
+          },
+          "deliveryMade": {
+            "type": "boolean",
+            "description": "1.8.0: DELIVERY orders only. false = the pharmacy did not deliver (Kiorex refunds the delivery fee per the market policy). Absent = delivered / not applicable."
           }
         },
         "required": [
@@ -4531,6 +4633,23 @@ export const EVENT_EXAMPLES = {
       }
     }
   },
+  "OrderOutForDelivery": {
+    "eventId": "01JF3ZEVTORDEROUT",
+    "type": "OrderOutForDelivery",
+    "aggregateType": "PharmacyOrder",
+    "aggregateId": "ord_01JF3ZD000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "orderId": "ord_01JF3ZD000",
+      "pharmacyId": "ph_01",
+      "branchId": "br_01",
+      "outForDeliveryAt": "2027-03-05T12:10:00.000Z",
+      "estimatedDeliveryMinutes": 45,
+      "dispatchedBy": {
+        "userId": "usr_01"
+      }
+    }
+  },
   "DispenseCompleted": {
     "eventId": "01JF3ZEVTDISPENSE",
     "type": "DispenseCompleted",
@@ -5084,6 +5203,12 @@ export const EVENT_META = {
     "status": "v2-draft",
     "schemaFile": "OrderReady.schema.json"
   },
+  "OrderOutForDelivery": {
+    "producer": "kiorly-pharmacy",
+    "aggregateType": "PharmacyOrder",
+    "status": "v2-draft",
+    "schemaFile": "OrderOutForDelivery.schema.json"
+  },
   "DispenseCompleted": {
     "producer": "kiorly-pharmacy",
     "aggregateType": "PharmacyOrder",
@@ -5224,7 +5349,7 @@ export const EVENT_META = {
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -5282,7 +5407,9 @@ export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "c
 export type LabOrderPlacedEvent = EventEnvelope<"LabOrderPlaced", LabOrderPlacedData>;
 export type OrderReadyData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "readyAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; [k: string]: unknown };
 export type OrderReadyEvent = EventEnvelope<"OrderReady", OrderReadyData>;
-export type DispenseCompletedData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "dispensedAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; "partial"?: boolean; [k: string]: unknown };
+export type OrderOutForDeliveryData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "outForDeliveryAt": string; "estimatedDeliveryMinutes"?: number; "dispatchedBy"?: { "userId": string; [k: string]: unknown }; [k: string]: unknown };
+export type OrderOutForDeliveryEvent = EventEnvelope<"OrderOutForDelivery", OrderOutForDeliveryData>;
+export type DispenseCompletedData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "dispensedAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; "partial"?: boolean; "lines"?: Array<{ "sku": string; "quantityRequested": number; "quantityDispensed": number; [k: string]: unknown }>; "deliveryMade"?: boolean; [k: string]: unknown };
 export type DispenseCompletedEvent = EventEnvelope<"DispenseCompleted", DispenseCompletedData>;
 export type OrderRejectedData = { "orderId": string; "pharmacyId": string; "rejectedAt": string; "reason": string; "reasonCode"?: string; [k: string]: unknown };
 export type OrderRejectedEvent = EventEnvelope<"OrderRejected", OrderRejectedData>;
@@ -5353,6 +5480,7 @@ export interface EventMap {
   "PrescriptionIssued": PrescriptionIssuedEvent;
   "LabOrderPlaced": LabOrderPlacedEvent;
   "OrderReady": OrderReadyEvent;
+  "OrderOutForDelivery": OrderOutForDeliveryEvent;
   "DispenseCompleted": DispenseCompletedEvent;
   "OrderRejected": OrderRejectedEvent;
   "LabResultReleased": LabResultReleasedEvent;

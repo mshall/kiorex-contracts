@@ -3,8 +3,8 @@
   "x-status": "draft",
   "info": {
     "title": "Kiorly Pharmacy Marketplace API (draft)",
-    "version": "0.1.0",
-    "description": "Kiorex -> Kiorly Pharmacy machine API (kiorly-pharmacy apps/api src/modules/marketplace), reconciled in 1.4.0 against the running services (NH-PH-024, NH-023). Auth: Kiorly HMAC request scheme with a per-pharmacy integration client key (the key IS the tenant address, no X-Kiorex-Org-Id). Pharmacy -> Kiorex events (OrderReady, DispenseCompleted, OrderRejected) are signed with the webhook scheme plus X-Kiorly-Client-Key and posted to Kiorex /api/v1/webhooks/pharmacy. Money: Kiorex Pay captures first; OrderRejected triggers a full refund; partial dispense parks in PARTIAL_REVIEW. No tax-authority reporting."
+    "version": "0.2.0",
+    "description": "Kiorex -> Kiorly Pharmacy machine API (kiorly-pharmacy apps/api src/modules/marketplace), reconciled in 1.4.0 against the running services (NH-PH-024, NH-023). Auth: Kiorly HMAC request scheme with a per-pharmacy integration client key (the key IS the tenant address, no X-Kiorex-Org-Id). Pharmacy -> Kiorex events (OrderReady, DispenseCompleted, OrderRejected) are signed with the webhook scheme plus X-Kiorly-Client-Key and posted to Kiorex /api/v1/webhooks/pharmacy. Money: Kiorex Pay captures first; OrderRejected triggers a full refund; partial dispense parks in PARTIAL_REVIEW. No tax-authority reporting. 1.8.0 (additive): optional Arabic names (nameAr, formAr) on CatalogueItem and Quote items; OrderResult.status may be OUT_FOR_DELIVERY for DELIVERY orders; new outbound event OrderOutForDelivery; DispenseCompleted gains optional per-line fulfilment (lines, deliveryMade)."
   },
   "servers": [
     {
@@ -827,6 +827,18 @@
           },
           "availableQty": {
             "type": "integer"
+          },
+          "nameAr": {
+            "type": "string",
+            "description": "Arabic brand name (1.8.0, optional). Clients fall back to `name` when absent. Search matches both."
+          },
+          "formAr": {
+            "type": "string",
+            "description": "Arabic dosage form, e.g. أقراص (1.8.0, optional). Fall back to `form`."
+          },
+          "activeIngredient": {
+            "type": "string",
+            "description": "Generic (active ingredient) name (1.8.0, optional)."
           }
         },
         "required": [
@@ -910,6 +922,22 @@
                 },
                 "available": {
                   "type": "boolean"
+                },
+                "nameAr": {
+                  "type": "string",
+                  "description": "Arabic brand name (1.8.0, optional)."
+                },
+                "formAr": {
+                  "type": "string",
+                  "description": "Arabic dosage form (1.8.0, optional)."
+                },
+                "strength": {
+                  "type": "string",
+                  "description": "Strength, e.g. 500 mg (1.8.0, optional)."
+                },
+                "form": {
+                  "type": "string",
+                  "description": "Dosage form (1.8.0, optional)."
                 }
               },
               "required": [
@@ -1068,11 +1096,13 @@
               "ACCEPTED",
               "PARTIALLY_ACCEPTED",
               "READY",
+              "OUT_FOR_DELIVERY",
               "DISPENSED",
               "REJECTED",
               "CANCELLED",
               "EXPIRED"
-            ]
+            ],
+            "description": "OUT_FOR_DELIVERY (1.8.0): DELIVERY orders after OrderOutForDelivery; consumers must tolerate unknown values."
           },
           "slaDueAt": {
             "type": "string",

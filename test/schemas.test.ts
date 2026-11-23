@@ -220,3 +220,24 @@ describe("Nurse-collected lab hand-off (1.6.0, KNLAB01 / KLORD05)", () => {
     }
   });
 });
+
+describe("1.8.0 additive pharmacy events", () => {
+  it("OrderOutForDelivery is a known pharmacy event with a valid example and needs no address or courier contact", () => {
+    expect(isEventType("OrderOutForDelivery")).toBe(true);
+    expect(EVENT_META.OrderOutForDelivery.producer).toBe("kiorly-pharmacy");
+    const ex = readJson("events/examples/OrderOutForDelivery.example.json");
+    expect(validateEvent("OrderOutForDelivery", ex.data ?? ex).valid || validateEvent("OrderOutForDelivery", ex).valid).toBe(true);
+    const minimal = { orderId: "o1", pharmacyId: "ph", outForDeliveryAt: "2027-03-05T12:10:00.000Z" };
+    expect(validateEvent("OrderOutForDelivery", { ...ex, data: minimal }).valid).toBe(true);
+    expect(validateEvent("OrderOutForDelivery", { ...ex, data: { orderId: "o1", pharmacyId: "ph" } }).valid).toBe(false);
+  });
+
+  it("DispenseCompleted: the 1.7.0 payload (no lines) still validates; lines + deliveryMade are optional and typed", () => {
+    const ex = readJson("events/examples/DispenseCompleted.example.json");
+    expect(validateEvent("DispenseCompleted", ex).valid).toBe(true);
+    const withLines = { ...ex, data: { ...ex.data, partial: true, deliveryMade: true, lines: [{ sku: "d1", quantityRequested: 2, quantityDispensed: 1 }] } };
+    expect(validateEvent("DispenseCompleted", withLines).valid).toBe(true);
+    const bad = { ...ex, data: { ...ex.data, lines: [{ sku: "d1", quantityRequested: 2, quantityDispensed: -1 }] } };
+    expect(validateEvent("DispenseCompleted", bad).valid).toBe(false);
+  });
+});

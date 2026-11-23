@@ -56,6 +56,36 @@
         },
         "partial": {
           "type": "boolean"
+        },
+        "lines": {
+          "type": "array",
+          "description": "Per-line fulfilment (1.8.0). `sku` = the catalogue sku of the order line; `quantityDispensed` <= `quantityRequested`.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sku": {
+                "type": "string",
+                "minLength": 1
+              },
+              "quantityRequested": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "quantityDispensed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "sku",
+              "quantityRequested",
+              "quantityDispensed"
+            ]
+          }
+        },
+        "deliveryMade": {
+          "type": "boolean",
+          "description": "1.8.0: DELIVERY orders only. false = the pharmacy did not deliver (Kiorex refunds the delivery fee per the market policy). Absent = delivered / not applicable."
         }
       },
       "required": [

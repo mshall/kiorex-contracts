@@ -27,6 +27,7 @@ Generated from `events/index.json` and `flags/catalogue.json` (documentation sna
 | `PrescriptionIssued` | kiorly-clinic | Prescription | emitted |  | [PrescriptionIssued.schema.json](../events/PrescriptionIssued.schema.json) |
 | `LabOrderPlaced` | kiorly-clinic | LabOrder | emitted |  | [LabOrderPlaced.schema.json](../events/LabOrderPlaced.schema.json) |
 | `OrderReady` | kiorly-pharmacy | PharmacyOrder | v2-draft |  | [OrderReady.schema.json](../events/OrderReady.schema.json) |
+| `OrderOutForDelivery` | kiorly-pharmacy | PharmacyOrder | v2-draft |  | [OrderOutForDelivery.schema.json](../events/OrderOutForDelivery.schema.json) |
 | `DispenseCompleted` | kiorly-pharmacy | PharmacyOrder | v2-draft |  | [DispenseCompleted.schema.json](../events/DispenseCompleted.schema.json) |
 | `OrderRejected` | kiorly-pharmacy | PharmacyOrder | v2-draft |  | [OrderRejected.schema.json](../events/OrderRejected.schema.json) |
 | `LabResultReleased` | kiorly-lab | LabReport | v2-draft |  | [LabResultReleased.schema.json](../events/LabResultReleased.schema.json) |

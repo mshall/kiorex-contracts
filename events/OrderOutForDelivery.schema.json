@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/OrderOutForDelivery.schema.json",
+  "title": "OrderOutForDelivery",
+  "description": "Pharmacy handed a READY DELIVERY order to the courier (1.8.0, additive). Sits between OrderReady and DispenseCompleted; Kiorex mirrors it as OUT_FOR_DELIVERY and notifies the patient. Only for deliveryMethod DELIVERY. Carries no address and no courier contact (no PHI).",
+  "x-producer": "kiorly-pharmacy",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "OrderOutForDelivery"
+    },
+    "aggregateType": {
+      "const": "PharmacyOrder"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pharmacyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outForDeliveryAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "estimatedDeliveryMinutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1440,
+          "description": "Optional courier ETA in minutes from outForDeliveryAt."
+        },
+        "dispatchedBy": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "userId"
+          ],
+          "description": "Pharmacy staff user who dispatched the order."
+        }
+      },
+      "required": [
+        "orderId",
+        "pharmacyId",
+        "outForDeliveryAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}
