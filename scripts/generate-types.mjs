@@ -10,6 +10,7 @@ const specs = [
   ["openapi/kiorly-marketplace.v1.openapi.json", "kiorly-marketplace"],
   ["openapi/kiorex-control-plane.v1.openapi.json", "control-plane"],
   ["openapi/kiorex-webhooks.v1.openapi.json", "webhooks"],
+  ["openapi/kiorex-partner-intake.v1.openapi.json", "partner-intake"],
 ];
 for (const [file, name] of specs) {
   const ast = await openapiTS(pathToFileURL(join(root, file)));

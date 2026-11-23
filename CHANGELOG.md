@@ -2,6 +2,21 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.9.0
+
+Additive minor (no field, type string, path or flag removed or renamed). Publishes the partner **connection intake** that kiorex-platform has served since ADR-040 and secures it. Consumers pin 1.9.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.9.0.tgz`).
+
+### Added
+- `openapi/kiorex-partner-intake.v1.openapi.json` 1.0.0: `POST /partners/v1/connection-requests` (`submitConnectionRequest`) and `GET /partners/v1/connection-requests/{id}` (`getConnectionRequestStatus`), request/response schemas (strict, `additionalProperties: false`), error codes (`INVALID_JSON`, `INVALID_REQUEST`, `INVALID_KIND`, `INVALID_BASE_URL`, `CREDENTIALS_REQUIRED`, `READINESS_TOO_LARGE`, `INTAKE_UNAUTHORIZED`, `PAYLOAD_TOO_LARGE`, `RATE_LIMITED` with `Retry-After`, `PARTNER_CONNECTION_NOT_FOUND`). Generated types: `PartnerIntakeApi`.
+- `src/intake.ts`: `deriveIntakeSigningKey`, `signIntakeRequest`, `verifyIntakeSignature`, `generateEnrolmentCode`, `generateIntakeKey`, `newIntakeNonce`, `enrolmentIdOf`, constants (`INTAKE_MAX_BODY_BYTES` 64 KiB, 5 minute window, nonce pattern).
+- Test `test/partner-intake.test.ts` (spec shape, fixed signing vector, sign/verify, replay window).
+
+### Behaviour change on an existing, previously unpublished endpoint (documented, not a published-contract break)
+- The first request of an organisation must be signed with a one-time **enrolment code** created by Kiorex ops (`X-Kiorex-Enrolment: kxe_<id>`); the response returns an **intake key** once, which signs every later request. Clinic and Nurse no longer sign with the shared Kiorly webhook secret; Pharmacy and Lab no longer sign with the webhook secret they submit (that secret only configures their own outbound webhooks). Single use, expiry (default 7 days, max 14), revocable, audited, stored as sha256 only. Replay protection: 5 minute timestamp window plus a single-use signed `nonce`. Every authentication failure is the same 401 `INTAKE_UNAUTHORIZED`. Rate limits per IP and per orgRef; 429 carries `Retry-After`.
+
+### Package
+- `CONTRACTS_VERSION` = 1.9.0.
+
 ## 1.8.0
 
 Additive minor (no field, type string, path or flag removed or renamed; every new field is optional). Founder-delegated decisions of 23 Nov 2026 (`PROPOSED_DEFAULT delegated by founder 23 Nov 2026` where a policy is involved). Consumers pin 1.8.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.8.0.tgz`).

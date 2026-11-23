@@ -1,0 +1,469 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kiorex Partner Connection Intake API",
+    "version": "1.0.0",
+    "description": "Additive in contracts 1.9.0. A partner product (Kiorly Clinic, Nurse, Pharmacy, Lab) asks to join the Kiorex marketplace and polls its own status. PHI-free. Authentication: a one-time ENROLMENT CODE created by Kiorex ops signs the FIRST request; the INTAKE KEY issued in the response signs every later request. Kiorex stores only the derived signing key (hex sha256 of the secret). Signature `X-Kiorly-Signature: sha256=HMAC-SHA256(hex(sha256(secret)), \"<X-Kiorly-Timestamp>.<rawBody>\")`, timestamp in unix seconds within 5 minutes, single-use `nonce` in the signed body. All authentication failures (unknown, expired, used or revoked code, bad signature, stale timestamp, replayed nonce, wrong kind or organisation) answer the same 401 INTAKE_UNAUTHORIZED, so nothing can be enumerated. Rate limited per IP and per orgRef (429 RATE_LIMITED with Retry-After). Body limit 64 KiB (413)."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000/api/v1"
+    }
+  ],
+  "paths": {
+    "/partners/v1/connection-requests": {
+      "post": {
+        "operationId": "submitConnectionRequest",
+        "tags": [
+          "partner-connections"
+        ],
+        "summary": "Submit or re-submit a connection request (idempotent per kind and orgRef)",
+        "security": [
+          {
+            "enrolmentHmac": []
+          },
+          {
+            "intakeKeyHmac": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix seconds; accepted within +/- 5 minutes."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^sha256=[0-9a-f]{64}$"
+            }
+          },
+          {
+            "name": "X-Kiorex-Enrolment",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^kxe_[A-Za-z0-9_-]{8,16}$"
+            },
+            "description": "Id part of the enrolment code. Required for the first request of an organisation (and for a recovery re-enrolment); later requests are signed with the issued intake key and omit it."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted. `statusToken` is returned once and only when the partner did not supply its own; `intakeKey` is returned once, on creation (or recovery re-enrolment) only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionRequestAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body is not valid (strict: unknown fields are refused)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INVALID_REQUEST",
+                  "message": "Body is not valid (strict: unknown fields are refused)"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Request could not be authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INTAKE_UNAUTHORIZED",
+                  "message": "Request could not be authenticated"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body is too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "PAYLOAD_TOO_LARGE",
+                  "message": "Request body is too large"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "RATE_LIMITED",
+                  "message": "Too many requests",
+                  "retryAfterSec": 30
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Seconds to wait"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/partners/v1/connection-requests/{id}": {
+      "get": {
+        "operationId": "getConnectionRequestStatus",
+        "tags": [
+          "partner-connections"
+        ],
+        "summary": "Partner polls its own status",
+        "security": [
+          {
+            "statusToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-connection-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The status token (supplied by the partner or returned once at creation)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Coarse, non-internal status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectionStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Connection request not found (also for a wrong token)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "PARTNER_CONNECTION_NOT_FOUND",
+                  "message": "Connection request not found (also for a wrong token)"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "RATE_LIMITED",
+                  "message": "Too many requests",
+                  "retryAfterSec": 30
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "enrolmentHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorly-Signature",
+        "description": "First request: HMAC key = hex(sha256(enrolment code)); the code is `kxe_<id>.<secret>`, created by Kiorex ops, shown once, single use, expiring, revocable."
+      },
+      "intakeKeyHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorly-Signature",
+        "description": "Later requests: HMAC key = hex(sha256(intake key)); the key is `kxi_<secret>`, issued once in the first response."
+      },
+      "statusToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-connection-token"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "INVALID_JSON",
+              "INVALID_REQUEST",
+              "INVALID_KIND",
+              "INVALID_BASE_URL",
+              "CREDENTIALS_REQUIRED",
+              "READINESS_TOO_LARGE",
+              "INTAKE_UNAUTHORIZED",
+              "PAYLOAD_TOO_LARGE",
+              "RATE_LIMITED",
+              "PARTNER_CONNECTION_NOT_FOUND"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "retryAfterSec": {
+            "type": "integer"
+          }
+        }
+      },
+      "ConnectionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nonce",
+          "kind",
+          "orgRef",
+          "name"
+        ],
+        "properties": {
+          "nonce": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{16,64}$",
+            "description": "Single use within 15 minutes; part of the signed body."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "CLINIC",
+              "NURSE",
+              "PHARMACY",
+              "LAB"
+            ]
+          },
+          "orgRef": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.:-]{1,80}$",
+            "description": "The partner product's own organisation id."
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "nameAr": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{2}$",
+            "default": "EG"
+          },
+          "contactEmail": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 160
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "ar",
+              "en"
+            ]
+          },
+          "statusToken": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 128,
+            "description": "Optional: the partner derives its own status token so it never has to store one."
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "PHARMACY and LAB: host of the partner API, no path."
+          },
+          "clientKey": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "clientSecret": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "webhookSecret": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "readiness": {
+            "type": "object",
+            "description": "PHI-free checklist snapshot, at most 8000 bytes serialised.",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ConnectionRequestAccepted": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "created"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SUBMITTED",
+              "IN_REVIEW",
+              "CHANGES_REQUESTED",
+              "AWAITING_APPROVAL",
+              "APPROVED",
+              "LIVE",
+              "PAUSED",
+              "REJECTED"
+            ]
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "statusToken": {
+            "type": "string"
+          },
+          "intakeKey": {
+            "type": "string",
+            "description": "`kxi_...`; shown once; signs every later request."
+          }
+        }
+      },
+      "ConnectionStatus": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "progress",
+          "steps"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "decisionReason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "progress": {
+            "type": "integer"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "key",
+                "type",
+                "state"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "AUTO",
+                    "HUMAN"
+                  ]
+                },
+                "state": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "liveAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

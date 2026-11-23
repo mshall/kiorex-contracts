@@ -10,7 +10,7 @@
 | [UPGRADE_NOTES.md](UPGRADE_NOTES.md) | Toolchain/dependency versions, pinned items and verification |
 | [../CHANGELOG.md](../CHANGELOG.md) | Version history and where Kiorly's code differs from KX-09 (the code wins) |
 | [../TEST_DATA.md](../TEST_DATA.md) | Synthetic QA fixtures (DEV ONLY) |
-| [../openapi/](../openapi) | Five OpenAPI 3 files (marketplace, control plane, webhooks, pharmacy, lab) |
+| [../openapi/](../openapi) | Six OpenAPI 3 files (marketplace, control plane, webhooks, pharmacy, lab, partner intake) |
 | [../events/](../events) | JSON Schema 2020-12 per event + `examples/` |
 | [../flags/](../flags) | `catalogue.json`, `safety-never-flags.json` (ADR-025) |
 | [../consumer/](../consumer) | Kiorex consumer-driven contract of the Kiorly API |

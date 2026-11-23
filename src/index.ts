@@ -1,4 +1,5 @@
 export * from "./hmac.js";
+export * from "./intake.js";
 export * from "./events.js";
 export * from "./flags.js";
 export {
@@ -13,4 +14,5 @@ export type * from "./generated/events.js";
 export type * as KiorlyMarketplaceApi from "./generated/kiorly-marketplace.js";
 export type * as ControlPlaneApi from "./generated/control-plane.js";
 export type * as WebhooksApi from "./generated/webhooks.js";
-export const CONTRACTS_VERSION = "1.8.0";
+export type * as PartnerIntakeApi from "./generated/partner-intake.js";
+export const CONTRACTS_VERSION = "1.9.0";
