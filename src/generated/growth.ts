@@ -114,7 +114,7 @@ export interface components {
                 kind: "GCLID" | "FBCLID" | "TTCLID" | "MSCLKID" | "WBRAID" | "GBRAID";
                 value: string;
             };
-            /** @description Provider link code or patient referral code. Unknown codes are ignored. */
+            /** @description Provider link code (8 Crockford base32 characters) or patient referral code. Unknown codes are ignored. */
             ref?: string;
             /** @description Signed, short-lived link token issued by the provider's booking page (<= 30 minutes). */
             lt?: string;

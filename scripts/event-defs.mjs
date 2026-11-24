@@ -635,8 +635,8 @@ export const EVENTS = [
   {
     type: "ReferralLinkCreated", producer: "kiorly-clinic", aggregateType: "ProviderReferralLink", status: "v2-draft", group: "growth",
     description: "INTERNAL (Clinic audit/outbox; mirrored to Kiorex only as an aggregate when the org is connected). A provider created a referral link or QR. Link code, scope and channel only: never patient data.",
-    data: { properties: { linkCode: { type: "string", pattern: "^[A-Za-z0-9]{6,16}$" }, ownerScope: { enum: ["ORG", "CLINIC", "BRANCH", "DOCTOR", "DESK"] }, channelKind: { enum: ["WEB_LINK", "QR_POSTER", "QR_DESK", "SOCIAL", "SMS", "WHATSAPP_SHARE", "EMAIL_SIG", "GOOGLE_PROFILE"] }, createdAt: TS, ...AGG }, required: ["linkCode", "ownerScope", "channelKind"] },
-    example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "k7Q2mX9a", ownerScope: "DOCTOR", channelKind: "QR_DESK", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
+    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2." }, ownerScope: { enum: ["ORG", "CLINIC", "BRANCH", "DOCTOR", "DESK"] }, channelKind: { enum: ["WEB_LINK", "QR_POSTER", "QR_DESK", "SOCIAL", "SMS", "WHATSAPP_SHARE", "EMAIL_SIG", "GOOGLE_PROFILE"] }, createdAt: TS, ...AGG }, required: ["linkCode", "ownerScope", "channelKind"] },
+    example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "7K2M9X4Q", ownerScope: "DOCTOR", channelKind: "QR_DESK", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
   },
 ];
 

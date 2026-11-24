@@ -4655,7 +4655,8 @@ export const EVENT_SCHEMAS = {
         "properties": {
           "linkCode": {
             "type": "string",
-            "pattern": "^[A-Za-z0-9]{6,16}$"
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$",
+            "description": "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2."
           },
           "ownerScope": {
             "enum": [
@@ -5648,7 +5649,7 @@ export const EVENT_EXAMPLES = {
     "target": "KIOREX",
     "occurredAt": "2027-03-04T09:12:44.000Z",
     "data": {
-      "linkCode": "k7Q2mX9a",
+      "linkCode": "7K2M9X4Q",
       "ownerScope": "DOCTOR",
       "channelKind": "QR_DESK",
       "createdAt": "2027-03-04T09:12:44.000Z",

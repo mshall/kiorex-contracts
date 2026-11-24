@@ -51,7 +51,7 @@
                 "providerLink": {
                   "value": {
                     "landingKind": "PROVIDER_LINK",
-                    "ref": "k7Q2mX9a",
+                    "ref": "7K2M9X4Q",
                     "dwellMs": 1800
                   }
                 },
@@ -448,8 +448,8 @@
           },
           "ref": {
             "type": "string",
-            "pattern": "^[A-Za-z0-9]{4,16}$",
-            "description": "Provider link code or patient referral code. Unknown codes are ignored."
+            "pattern": "^[0-9A-Za-z]{4,16}$",
+            "description": "Provider link code (8 Crockford base32 characters) or patient referral code. Unknown codes are ignored."
           },
           "lt": {
             "type": "string",

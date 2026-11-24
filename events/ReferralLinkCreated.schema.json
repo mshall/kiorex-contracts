@@ -23,7 +23,8 @@
       "properties": {
         "linkCode": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9]{6,16}$"
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$",
+          "description": "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2."
         },
         "ownerScope": {
           "enum": [

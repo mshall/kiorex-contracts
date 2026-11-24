@@ -205,7 +205,7 @@ describe("growth names and codes", () => {
     (addFormats as any).default(ajv);
     ajv.addSchema({ $id: "g", ...growth.components.schemas.TouchRequest });
     const v = ajv.getSchema("g");
-    expect(v({ landingKind: "PROVIDER_LINK", ref: "k7Q2mX9a", dwellMs: 1800 })).toBe(true);
+    expect(v({ landingKind: "PROVIDER_LINK", ref: "7K2M9X4Q", dwellMs: 1800 })).toBe(true);
     expect(v({ landingKind: "SPECIALTY_CITY", utm: { source: "google", medium: "organic" } })).toBe(true);
     expect(v({ landingKind: "HOME", utm: { source: "a@b.com" } })).toBe(false);
     expect(v({ landingKind: "HOME", utm: { source: "x".repeat(65) } })).toBe(false);
@@ -294,5 +294,15 @@ describe("tarball surface", () => {
     const pkg = readJson("package.json");
     expect(pkg.exports["./growth-config/*"]).toBe("./src/growth-config/*");
     expect(pkg.files).toEqual(expect.arrayContaining(["src/growth-config", "fixtures/growth-v1.10"]));
+  });
+});
+
+describe("provider link codes (ARCH section 4.2)", () => {
+  it("ReferralLinkCreated accepts 8-character Crockford codes only", () => {
+    const ex = readJson("events/examples/ReferralLinkCreated.example.json");
+    expect(validateEvent("ReferralLinkCreated", ex).valid).toBe(true);
+    for (const bad of ["7k2m9x4q", "7K2M9X4I", "7K2M9X4O", "7K2M9X4L", "7K2M9X4U", "7K2M9X4", "7K2M9X4QQ"]) {
+      expect(validateEvent("ReferralLinkCreated", { ...ex, data: { ...ex.data, linkCode: bad } }).valid, bad).toBe(false);
+    }
   });
 });
