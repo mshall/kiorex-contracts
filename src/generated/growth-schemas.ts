@@ -1036,31 +1036,195 @@ export const GROWTH_CONFIG_SCHEMAS = {
         "maximum": 100000000000,
         "description": "Total this rule version may issue."
       },
-      "redemption": {
+      "redemptionMaxBp": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10000,
+        "description": "Largest share of the deposit (basis points) a reward may pay. PROPOSED_DEFAULT 10000."
+      },
+      "minPayableMinor": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100000000,
+        "description": "Smallest amount the patient must still pay by card. PROPOSED_DEFAULT 0."
+      },
+      "postToPayLedger": {
+        "type": "boolean",
+        "description": "Post redemptions to the pay ledger (balanced PROMO_FUNDED posting). PROPOSED_DEFAULT false (finance decision)."
+      },
+      "reversalWindowDays": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 365,
+        "description": "A refund or cancellation of the qualifying booking inside this window reverses the reward. PROPOSED_DEFAULT 30."
+      },
+      "holdMaxDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 365,
+        "description": "A HOLD on a lot is released automatically after this many days without a decision. PROPOSED_DEFAULT 14."
+      },
+      "manualApprovalAboveMinor": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100000000,
+        "description": "Manual issuance above this needs a second approver. PROPOSED_DEFAULT 20000."
+      },
+      "manualDailyCapPerActorMinor": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1000000000,
+        "description": "Manual issuance cap per actor per day. PROPOSED_DEFAULT 50000."
+      },
+      "issueOn": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "enum": [
+            "COMPLETED_VISIT",
+            "COMPLETED_NTH_VISIT",
+            "SUPPORT_APPROVED",
+            "REFUND_CHOICE"
+          ]
+        },
+        "description": "Verified events an issuance may follow. SIGNUP and BOOKING_CREATED are not valid values (safety rule S4). PROPOSED_DEFAULT [COMPLETED_VISIT]."
+      },
+      "credit": {
         "type": "object",
         "additionalProperties": false,
+        "description": "PATIENT credit block (Rev 2.6, ADR-048 Proposed). Only meaningful in CREDIT mode behind the locked flags growth.patient_credit, growth.refund_as_credit and growth.family_credit.",
         "properties": {
-          "maxPercentOfDeposit": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100,
-            "description": "PROPOSED_DEFAULT 100."
-          },
-          "minPayableMinor": {
+          "maxOpenBalanceMinor": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 100000000,
-            "description": "Smallest amount the patient must still pay."
+            "maximum": 100000000000,
+            "description": "Maximum open balance per patient and per household. PROPOSED_DEFAULT 200000 (EGP 2,000), counsel to confirm."
           },
-          "postToPayLedger": {
-            "type": "boolean",
-            "description": "Post redemptions to the pay ledger. PROPOSED_DEFAULT false."
+          "refundAsCredit": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "refundCreditExpiryMonths": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 60
+              },
+              "refundCreditOnExpiry": {
+                "enum": [
+                  "REFUND_TO_ORIGINAL",
+                  "FORFEIT"
+                ],
+                "description": "PROPOSED_DEFAULT REFUND_TO_ORIGINAL: it is the patient's own money."
+              },
+              "restoredLotMinDays": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 365,
+                "description": "A credit restored after a refund keeps at least this many days. PROPOSED_DEFAULT 90."
+              }
+            },
+            "required": [
+              "enabled",
+              "refundCreditExpiryMonths",
+              "refundCreditOnExpiry",
+              "restoredLotMinDays"
+            ]
+          },
+          "family": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "enabled"
+            ]
+          },
+          "goodwill": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "reasons": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "PROVIDER_LATE_CANCEL",
+                    "LONG_WAIT",
+                    "FAILED_BOOKING",
+                    "PAYMENT_ISSUE",
+                    "OTHER_APPROVED"
+                  ]
+                }
+              },
+              "perAgentDailyCapMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000
+              },
+              "perPatient90dCapMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000
+              },
+              "perReasonMaxMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000
+              },
+              "approvalAboveMinor": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000
+              }
+            },
+            "required": [
+              "reasons",
+              "perAgentDailyCapMinor",
+              "perPatient90dCapMinor",
+              "perReasonMaxMinor",
+              "approvalAboveMinor"
+            ]
+          },
+          "campaignScope": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "serviceKinds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "IN_CLINIC",
+                    "VIDEO",
+                    "HOME_VISIT"
+                  ]
+                }
+              },
+              "specialtyAllowlist": {
+                "type": "array",
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{1,40}$"
+                },
+                "description": "Counsel-approved non-sensitive specialties where a campaign credit may be SPENT. A scope is never a targeting attribute."
+              }
+            },
+            "required": [
+              "serviceKinds"
+            ]
           }
         },
         "required": [
-          "maxPercentOfDeposit",
-          "minPayableMinor",
-          "postToPayLedger"
+          "maxOpenBalanceMinor"
         ]
       }
     },
@@ -1072,7 +1236,9 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "perUserAnnualCapMinor",
       "perCampaignCapMinor",
       "ruleBudgetCeilingMinor",
-      "redemption"
+      "redemptionMaxBp",
+      "minPayableMinor",
+      "postToPayLedger"
     ]
   },
   "SEO": {
@@ -1730,6 +1896,94 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "delistedGoneAfterDays",
       "reviewMarkupEnabled",
       "districtPagesEnabled"
+    ]
+  },
+  "SPONSORED_PROMOTION_POLICY": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/SPONSORED_PROMOTION_POLICY.schema.json",
+    "title": "Growth config: SPONSORED_PROMOTION_POLICY",
+    "description": "Rules of provider-sponsored promotions (GRW-P2-S, ADR-048 Proposed): the commission basis, the high-value review thresholds and the funding defaults. The clinic funds its own promotion; it is never a Kiorex discount and never a conversion of credit. Money relevant: effective at least 7 days after approval, two approvers. Added in contracts 1.12.0 (Rev 2.6). PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "commissionBasis": {
+        "enum": [
+          "GROSS_BEFORE_SPONSORED",
+          "NET_AFTER_SPONSORED"
+        ],
+        "description": "GROSS_BEFORE_SPONSORED (default): the Kiorex fee is computed on the fee before any sponsored discount. NET_AFTER_SPONSORED exists for a future percentage model only."
+      },
+      "highValueBudgetMinor": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100000000000,
+        "description": "A promotion budget cap at or above this needs a second approver."
+      },
+      "highValuePerBookingMinor": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100000000,
+        "description": "A per-booking discount at or above this needs a second approver."
+      },
+      "maxDiscountBp": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10000,
+        "description": "A percent discount above this needs a second approver. PROPOSED_DEFAULT 3000."
+      },
+      "allowedCareTypes": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "enum": [
+            "IN_CLINIC",
+            "VIDEO",
+            "HOME_VISIT"
+          ]
+        }
+      },
+      "defaultFundingMode": {
+        "enum": [
+          "WALLET_ONLY",
+          "WALLET_THEN_INVOICE"
+        ]
+      },
+      "postToPayLedger": {
+        "type": "boolean",
+        "description": "PROPOSED_DEFAULT false (finance decision)."
+      },
+      "reservationTtlGraceMinutes": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 1440,
+        "description": "Reservation lives as long as the hold plus this grace."
+      },
+      "reviewRequired": {
+        "type": "boolean",
+        "description": "Every promotion version goes through the advertising review. PROPOSED_DEFAULT true; not switchable off in production."
+      },
+      "fraudRuleWeights": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "maxProperties": 30,
+        "description": "Shadow-mode weights of the promotion fraud signals."
+      }
+    },
+    "required": [
+      "commissionBasis",
+      "highValueBudgetMinor",
+      "highValuePerBookingMinor",
+      "maxDiscountBp",
+      "allowedCareTypes",
+      "defaultFundingMode",
+      "postToPayLedger",
+      "reservationTtlGraceMinutes",
+      "reviewRequired"
     ]
   },
   "WIDGET_POLICY": {

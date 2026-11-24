@@ -1,0 +1,19 @@
+{
+  "eventId": "01JF3ZEVTPROVIDER",
+  "type": "ProviderCreditGranted",
+  "aggregateType": "CreditWallet",
+  "aggregateId": "cwl_01JF3ZR000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "walletRef": "cwl_01JF3ZR000",
+    "orgRef": "ten_01JF3Z0000",
+    "category": "FEE_OFFSET",
+    "reason": "DISPUTE_WON",
+    "amountMinor": 4000,
+    "currency": "EGP",
+    "at": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "CreditWallet",
+    "aggregateId": "cwl_01JF3ZR000"
+  }
+}

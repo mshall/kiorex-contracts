@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/PROVIDER_PROMOTION_UPDATED.schema.json",
+  "title": "PROVIDER_PROMOTION_UPDATED",
+  "description": "A clinic created, changed, paused or ended a provider-sponsored promotion; Kiorex keeps a projection of the ACTIVE ones to show 'Discount sponsored by <clinic>' and to quote (1.12.0, work package P2-S). The patient copy is public advertising text, reviewed before activation; never clinical content.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "PROVIDER_PROMOTION_UPDATED"
+    },
+    "aggregateType": {
+      "const": "SponsoredPromotion"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "promotionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "orgRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "DRAFT",
+            "SUBMITTED",
+            "IN_REVIEW",
+            "APPROVED",
+            "ACTIVE",
+            "PAUSED",
+            "EXHAUSTED",
+            "EXPIRED",
+            "REJECTED",
+            "ARCHIVED"
+          ]
+        },
+        "discount": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "FIXED_MINOR",
+                "PERCENT_BP"
+              ]
+            },
+            "value": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxPerBookingMinor": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ]
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "doctorIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "maxItems": 200
+            },
+            "appointmentTypeIds": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "maxItems": 200
+            },
+            "careTypes": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "IN_CLINIC",
+                  "VIDEO",
+                  "HOME_VISIT"
+                ]
+              }
+            }
+          }
+        },
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "patientCopy": {
+          "type": "object",
+          "properties": {
+            "ar": {
+              "type": "string",
+              "maxLength": 300
+            },
+            "en": {
+              "type": "string",
+              "maxLength": 300
+            }
+          }
+        },
+        "contentHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "promotionId",
+        "version",
+        "orgRef",
+        "status",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

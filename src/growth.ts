@@ -72,7 +72,7 @@ export const REFERRAL_LINK_STATUSES = ["ACTIVE", "PAUSED", "REVOKED"] as const;
 export const GROWTH_CONFIG_KINDS = [
   "ATTRIBUTION_POLICY", "SEO", "WIDGET_POLICY", "CONSENT_DEFAULTS", "COMMS_CAPS", "CAMPAIGN_GUARDRAILS", "REWARDS", "INTEGRATIONS", "EXPERIMENT_GUARDRAILS", "MARKET_GROWTH",
   // 1.12.0 (additive): Phase 2 kinds. The older proposed names above stay for compatibility; Phase 2 uses the names below.
-  "CAMPAIGN_POLICY", "REFERRAL_RULES", "REWARD_RULES", "LIFECYCLE_POLICY", "ASSISTANT_POLICY", "INTEGRATION",
+  "CAMPAIGN_POLICY", "REFERRAL_RULES", "REWARD_RULES", "LIFECYCLE_POLICY", "ASSISTANT_POLICY", "INTEGRATION", "SPONSORED_PROMOTION_POLICY",
 ] as const;
 export type GrowthConfigKind = (typeof GROWTH_CONFIG_KINDS)[number];
 /** Kinds with a JSON Schema in 1.10.0; the others are Phase 2 and 3 and ship their schema with their phase. */
@@ -228,6 +228,20 @@ export const REFERRAL_STATUSES = ["INVITED", "SIGNED_UP", "BOOKED", "QUALIFIED",
 /** Reward ledger vocabulary (AD-2). Rewards never change an attribution decision or a commission. */
 export const REWARD_MODES = ["COUPON", "CREDIT"] as const;
 export const REWARD_KINDS = ["REFERRER", "REFEREE", "REPEAT", "PROMO", "CORPORATE", "LOYALTY"] as const;
+/** Patient credit (Rev 2.6, ADR-048 Proposed): additional lot kinds, funding labels, refund destinations and the closed reason lists. Patient credit and provider credit are two separate systems: nothing converts between them. */
+export const REWARD_KINDS_V2 = [...REWARD_KINDS, "WELCOME", "GOODWILL", "CAMPAIGN", "REFUND_CREDIT", "RESTORED"] as const;
+export const REWARD_FUNDING = ["PLATFORM_MARKETING", "PLATFORM_SERVICE_RECOVERY", "PATIENT_REFUND"] as const;
+export const REFUND_DESTINATIONS = ["ORIGINAL", "CREDIT"] as const;
+export type RefundDestination = (typeof REFUND_DESTINATIONS)[number];
+/** Absent or unknown means ORIGINAL: the default can never become credit by accident. */
+export const refundDestinationOf = (v: unknown): RefundDestination => (v === "CREDIT" ? "CREDIT" : "ORIGINAL");
+export const GOODWILL_REASONS = ["PROVIDER_LATE_CANCEL", "LONG_WAIT", "FAILED_BOOKING", "PAYMENT_ISSUE", "OTHER_APPROVED"] as const;
+export const REWARD_ISSUE_ON = ["COMPLETED_VISIT", "COMPLETED_NTH_VISIT", "SUPPORT_APPROVED", "REFUND_CHOICE"] as const;
+/** Checkout line codes in the order they are applied: a price reduction first, then credit, a held deposit, and the card last. */
+export const CHECKOUT_LINE_CODES = ["PRICE", "SPONSORED_DISCOUNT", "PATIENT_CREDIT", "DEPOSIT_HELD", "CARD"] as const;
+export const PROMOTION_STATUSES = ["DRAFT", "SUBMITTED", "IN_REVIEW", "APPROVED", "ACTIVE", "PAUSED", "EXHAUSTED", "EXPIRED", "REJECTED", "ARCHIVED"] as const;
+export const PROMOTION_RESERVE_REJECTIONS = ["BUDGET_EXHAUSTED", "NOT_ELIGIBLE", "PAUSED", "WALLET_INSUFFICIENT", "LIMIT_REACHED"] as const;
+export const PROMOTION_BUDGET_ENTRY_TYPES = ["RESERVE", "RELEASE", "DEBIT", "REVERSE_DEBIT"] as const;
 export const REWARD_ENTRY_TYPES = ["ISSUE", "HOLD", "RELEASE_HOLD", "RESERVE", "UNRESERVE", "REDEEM", "REVERSE", "EXPIRE"] as const;
 export type RewardEntryType = (typeof REWARD_ENTRY_TYPES)[number];
 export const REWARD_REASON_CODES = [

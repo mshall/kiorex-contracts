@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/SponsoredDiscountDebited.schema.json",
+  "title": "SponsoredDiscountDebited",
+  "description": "The Clinic tells Kiorex the state of the budget entry of a sponsored discount for one booking: SponsoredDiscountDebited. Opaque booking and reservation references and amounts only; never a patient identity (1.12.0, work package P2-S). Kiorex keeps one BookingSponsoredDiscount per booking and compares it with the Clinic ledger every day.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "SponsoredDiscountDebited"
+    },
+    "aggregateType": {
+      "const": "SponsoredPromotion"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "promotionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reservationRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bookingRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amountMinor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "promotionId",
+        "version",
+        "reservationRef",
+        "bookingRef",
+        "amountMinor",
+        "currency",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

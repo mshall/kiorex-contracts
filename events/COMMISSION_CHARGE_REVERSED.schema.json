@@ -72,6 +72,22 @@
           "maxLength": 64,
           "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
         },
+        "feeBasisMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)."
+        },
+        "sponsoredDiscountMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Provider-sponsored discount on the booking, informational (additive, 1.12.0)."
+        },
+        "basisPolicyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
+        },
         "reason": {
           "type": "string"
         },

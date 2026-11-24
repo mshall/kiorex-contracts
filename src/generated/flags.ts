@@ -1406,6 +1406,123 @@ export const FLAG_CATALOGUE = [
     "gate": null,
     "keyPattern": false,
     "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.patient_credit",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "Only coupon mode exists: no patient credit balance is created or applied; existing balances stay visible and expire per policy",
+    "dependsOn": [
+      "growth.rewards"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel opinion that closed-loop patient credit is outside stored-value licensing (H-23, NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
+  },
+  {
+    "key": "growth.refund_as_credit",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "The 'keep as credit' option disappears from the refund flow; every refund goes to the original payment method",
+    "dependsOn": [
+      "growth.patient_credit"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel opinion on refund-as-credit (H-23, NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
+  },
+  {
+    "key": "growth.family_credit",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "Household sharing of patient credit stops; members lose access to the owner's credit, nothing moves",
+    "dependsOn": [
+      "growth.patient_credit"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel opinion on household credit (H-23, NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
+  },
+  {
+    "key": "growth.support_goodwill",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "Support can no longer grant goodwill coupons or credit; existing grants stay valid",
+    "dependsOn": [
+      "growth.rewards"
+    ],
+    "launchLocked": true,
+    "gate": "Locked together with growth.rewards (counsel, NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
+  },
+  {
+    "key": "growth.sponsored_promotions",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "No provider-sponsored promotion is quoted or reserved; running bookings keep their reservation and are settled normally",
+    "dependsOn": [
+      "growth.attribution"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel on advertising and accounting for sponsored discounts (H-26 to H-28, NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
+  },
+  {
+    "key": "clinic.provider_credit_v2",
+    "product": "kiorly-clinic",
+    "scopes": [
+      "global",
+      "market",
+      "org"
+    ],
+    "class": "Module",
+    "whenOff": "Fee draw-down, dispute-win credit, grants and credit statements are hidden; the credit wallet itself (CR-05) is unchanged",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
+  },
+  {
+    "key": "clinic.usage_bundles",
+    "product": "kiorly-clinic",
+    "scopes": [
+      "global",
+      "market",
+      "org"
+    ],
+    "class": "Commercial",
+    "whenOff": "The prepaid usage bundle skeleton is hidden; no bundle can be bought",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
   }
 ] as const satisfies readonly FlagCatalogueEntry[];
 
@@ -1493,7 +1610,14 @@ export const FLAG_KEYS = [
   "growth.integrations.tiktok",
   "growth.integrations.whatsappcloud",
   "growth.integrations.fcmapns",
-  "growth.integrations.crux"
+  "growth.integrations.crux",
+  "growth.patient_credit",
+  "growth.refund_as_credit",
+  "growth.family_credit",
+  "growth.support_goodwill",
+  "growth.sponsored_promotions",
+  "clinic.provider_credit_v2",
+  "clinic.usage_bundles"
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
 
@@ -1582,6 +1706,13 @@ export const FLAGS = {
   GROWTH_INTEGRATIONS_WHATSAPPCLOUD: "growth.integrations.whatsappcloud",
   GROWTH_INTEGRATIONS_FCMAPNS: "growth.integrations.fcmapns",
   GROWTH_INTEGRATIONS_CRUX: "growth.integrations.crux",
+  GROWTH_PATIENT_CREDIT: "growth.patient_credit",
+  GROWTH_REFUND_AS_CREDIT: "growth.refund_as_credit",
+  GROWTH_FAMILY_CREDIT: "growth.family_credit",
+  GROWTH_SUPPORT_GOODWILL: "growth.support_goodwill",
+  GROWTH_SPONSORED_PROMOTIONS: "growth.sponsored_promotions",
+  CLINIC_PROVIDER_CREDIT_V2: "clinic.provider_credit_v2",
+  CLINIC_USAGE_BUNDLES: "clinic.usage_bundles",
 } as const;
 
 /** Pattern keys: clinic.specialty_templates.<code>, market.<country>.live. */

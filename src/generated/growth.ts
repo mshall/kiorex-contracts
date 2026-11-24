@@ -215,6 +215,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/growth/v1/credit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My credit: open balance and lots with expiry */
+        get: operations["growthCreditSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/credit/household": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My household (owner and members) */
+        get: operations["growthCreditHousehold"];
+        put?: never;
+        /** Let a dependant draw from my credit */
+        post: operations["growthCreditHouseholdAdd"];
+        /** Stop a member drawing from my credit */
+        delete: operations["growthCreditHouseholdRemove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/rewards/quote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Checkout lines for a deposit: price, sponsored discount, credit, held deposit, card */
+        post: operations["growthRewardsQuote"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/pay/v1/refunds/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Both refund destinations with the exact amounts ('original payment method' preselected) */
+        post: operations["payRefundPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -400,6 +470,53 @@ export interface components {
             reminders?: boolean;
             /** @enum {unknown} */
             language?: "ar" | "en";
+        };
+        /**
+         * @description Where a refund of card money goes. Absent means ORIGINAL; CREDIT is an option the patient picks, never a default. Immutable once the refund executed.
+         * @enum {unknown}
+         */
+        RefundDestination: "ORIGINAL" | "CREDIT";
+        CheckoutLine: {
+            /** @enum {unknown} */
+            code: "PRICE" | "SPONSORED_DISCOUNT" | "PATIENT_CREDIT" | "DEPOSIT_HELD" | "CARD";
+            amountMinor: number;
+            labelKey?: string;
+        };
+        RewardQuoteRequest: {
+            amountMinor: number;
+            bookingRef?: string;
+            /** @enum {unknown} */
+            careType?: "IN_CLINIC" | "VIDEO" | "HOME_VISIT";
+        };
+        RewardQuote: {
+            lines: components["schemas"]["CheckoutLine"][];
+            payableMinor: number;
+            applicableMinor?: number;
+        };
+        CreditSummary: {
+            openBalanceMinor: number;
+            currency: string;
+            lots: {
+                id: string;
+                kind: string;
+                remainingMinor: number;
+                /** Format: date-time */
+                expiresAt: string;
+                scopeText?: string;
+            }[];
+            household?: {
+                ownerIsMe?: boolean;
+                members?: number;
+            } | null;
+        };
+        RefundPreview: {
+            options: {
+                destination: components["schemas"]["RefundDestination"];
+                amountMinor: number;
+                isDefault: boolean;
+            }[];
+            creditRestoredMinor?: number;
+            sponsoredVoidedMinor?: number;
         };
     };
     responses: never;
@@ -982,6 +1099,219 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthCreditSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreditSummary"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.patient_credit, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthCreditHousehold: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.family_credit, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthCreditHouseholdAdd: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    dependantId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description FEATURE_DISABLED {key: growth.family_credit, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthCreditHouseholdRemove: {
+        parameters: {
+            query: {
+                memberId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description FEATURE_DISABLED {key: growth.family_credit, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthRewardsQuote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RewardQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RewardQuote"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.rewards, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    payRefundPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    bookingRef: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundPreview"];
                 };
             };
             /** @description Unauthenticated */

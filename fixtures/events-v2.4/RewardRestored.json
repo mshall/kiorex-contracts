@@ -1,0 +1,17 @@
+{
+  "eventId": "01JF3ZEVTREWARDRE",
+  "type": "RewardRestored",
+  "aggregateType": "RewardLot",
+  "aggregateId": "rwl_01JF3ZH000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "lotRef": "rwl_01JF3ZH000",
+    "market": "EG",
+    "amountMinor": 15000,
+    "currency": "EGP",
+    "reasonCode": "BOOKING_CANCELLED",
+    "at": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "RewardLot",
+    "aggregateId": "rwl_01JF3ZH000"
+  }
+}

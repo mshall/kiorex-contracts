@@ -1,0 +1,19 @@
+{
+  "eventId": "01JF3ZEVTREFUNDDE",
+  "type": "RefundDestinationChosen",
+  "aggregateType": "RefundDestinationChoice",
+  "aggregateId": "rdc_01JF3ZP000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "choiceRef": "rdc_01JF3ZP000",
+    "market": "EG",
+    "refundRef": "rfd_01JF3ZP111",
+    "choice": "ORIGINAL",
+    "amountMinor": 25000,
+    "currency": "EGP",
+    "source": "PATIENT_CANCEL",
+    "chosenAt": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "RefundDestinationChoice",
+    "aggregateId": "rdc_01JF3ZP000"
+  }
+}

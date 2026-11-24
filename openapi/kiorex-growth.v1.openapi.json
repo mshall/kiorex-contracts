@@ -3,7 +3,7 @@
   "info": {
     "title": "Kiorex Growth API",
     "version": "1.1.0",
-    "description": "Additive in contracts 1.10.0 (PROPOSED, ARCH sections 6 and 8). Public, first-party, consent-aware endpoints of the Kiorex growth module. Rules: no IP address, full user agent, full referrer URL, unknown query parameter, health data, search text, specialty-by-visitor join or provider id in the visitor stream is ever stored; rate limited per rotating ipHash (429 with Retry-After); OFF flag answers 403 FEATURE_DISABLED {key, scope}. The visitor key cookie `kxv` (host-only, Secure, SameSite=Lax, 180 days max) is set only when the request carries `X-KX-Consent: analytics`. v1.1.0 (contracts 1.12.0, additive): public campaign UTM resolve (GET /growth/v1/campaign/resolve: landing target and a campaign token only, never a budget), patient referral endpoints (me, invites, rewards, claim), assistant secure booking link verification, and message-class preference additions. Referral and reward endpoints are launch-locked behind growth.patient_referral and growth.rewards; the assistant link behind kiorex.whatsapp_ai_assistant. Nothing here carries health data."
+    "description": "Additive in contracts 1.10.0 (PROPOSED, ARCH sections 6 and 8). Public, first-party, consent-aware endpoints of the Kiorex growth module. Rules: no IP address, full user agent, full referrer URL, unknown query parameter, health data, search text, specialty-by-visitor join or provider id in the visitor stream is ever stored; rate limited per rotating ipHash (429 with Retry-After); OFF flag answers 403 FEATURE_DISABLED {key, scope}. The visitor key cookie `kxv` (host-only, Secure, SameSite=Lax, 180 days max) is set only when the request carries `X-KX-Consent: analytics`. v1.1.0 (contracts 1.12.0, additive): public campaign UTM resolve (GET /growth/v1/campaign/resolve: landing target and a campaign token only, never a budget), patient referral endpoints (me, invites, rewards, claim), assistant secure booking link verification, and message-class preference additions. Referral and reward endpoints are launch-locked behind growth.patient_referral and growth.rewards; the assistant link behind kiorex.whatsapp_ai_assistant. Nothing here carries health data. Rev 2.6 additions (still 1.1.0, additive): patient credit endpoints (`/growth/v1/credit`, `/credit/household`, `/rewards/quote`), the refund preview `POST /pay/v1/refunds/preview` and the shared `RefundDestination` enum (the cancel and refund requests of the Kiorex patient API carry an optional `refundDestination`, default ORIGINAL). All credit endpoints are launch-locked behind growth.patient_credit, growth.refund_as_credit and growth.family_credit; rewards never reach a clinic."
   },
   "servers": [
     {
@@ -818,6 +818,285 @@
           }
         }
       }
+    },
+    "/growth/v1/credit": {
+      "get": {
+        "operationId": "growthCreditSummary",
+        "tags": [
+          "growth-credit"
+        ],
+        "summary": "My credit: open balance and lots with expiry",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditSummary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.patient_credit, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/credit/household": {
+      "get": {
+        "operationId": "growthCreditHousehold",
+        "tags": [
+          "growth-credit"
+        ],
+        "summary": "My household (owner and members)",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.family_credit, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "growthCreditHouseholdAdd",
+        "tags": [
+          "growth-credit"
+        ],
+        "summary": "Let a dependant draw from my credit",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "dependantId"
+                ],
+                "properties": {
+                  "dependantId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.family_credit, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "growthCreditHouseholdRemove",
+        "tags": [
+          "growth-credit"
+        ],
+        "summary": "Stop a member drawing from my credit",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "memberId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.family_credit, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/rewards/quote": {
+      "post": {
+        "operationId": "growthRewardsQuote",
+        "tags": [
+          "growth-credit"
+        ],
+        "summary": "Checkout lines for a deposit: price, sponsored discount, credit, held deposit, card",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewardQuoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardQuote"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.rewards, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pay/v1/refunds/preview": {
+      "post": {
+        "operationId": "payRefundPreview",
+        "tags": [
+          "growth-credit"
+        ],
+        "summary": "Both refund destinations with the exact amounts ('original payment method' preselected)",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bookingRef"
+                ],
+                "properties": {
+                  "bookingRef": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundPreview"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1523,6 +1802,183 @@
               "ar",
               "en"
             ]
+          }
+        }
+      },
+      "RefundDestination": {
+        "enum": [
+          "ORIGINAL",
+          "CREDIT"
+        ],
+        "description": "Where a refund of card money goes. Absent means ORIGINAL; CREDIT is an option the patient picks, never a default. Immutable once the refund executed."
+      },
+      "CheckoutLine": {
+        "type": "object",
+        "required": [
+          "code",
+          "amountMinor"
+        ],
+        "properties": {
+          "code": {
+            "enum": [
+              "PRICE",
+              "SPONSORED_DISCOUNT",
+              "PATIENT_CREDIT",
+              "DEPOSIT_HELD",
+              "CARD"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer"
+          },
+          "labelKey": {
+            "type": "string"
+          }
+        }
+      },
+      "RewardQuoteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "amountMinor"
+        ],
+        "properties": {
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "bookingRef": {
+            "type": "string"
+          },
+          "careType": {
+            "enum": [
+              "IN_CLINIC",
+              "VIDEO",
+              "HOME_VISIT"
+            ]
+          }
+        }
+      },
+      "RewardQuote": {
+        "type": "object",
+        "required": [
+          "lines",
+          "payableMinor"
+        ],
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutLine"
+            }
+          },
+          "payableMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "applicableMinor": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "CreditSummary": {
+        "type": "object",
+        "required": [
+          "openBalanceMinor",
+          "currency",
+          "lots"
+        ],
+        "properties": {
+          "openBalanceMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string"
+          },
+          "lots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "kind",
+                "remainingMinor",
+                "expiresAt"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "remainingMinor": {
+                  "type": "integer"
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "scopeText": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "household": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "ownerIsMe": {
+                "type": "boolean"
+              },
+              "members": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "RefundPreview": {
+        "type": "object",
+        "required": [
+          "options"
+        ],
+        "properties": {
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "destination",
+                "amountMinor",
+                "isDefault"
+              ],
+              "properties": {
+                "destination": {
+                  "$ref": "#/components/schemas/RefundDestination"
+                },
+                "amountMinor": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "isDefault": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "creditRestoredMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sponsoredVoidedMinor": {
+            "type": "integer",
+            "minimum": 0
           }
         }
       }

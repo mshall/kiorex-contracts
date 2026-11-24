@@ -602,6 +602,102 @@
       "producer": "kiorly-clinic",
       "aggregateType": "WaitlistOffer",
       "status": "v2-draft"
+    },
+    {
+      "type": "RefundDestinationChosen",
+      "aliases": [],
+      "file": "RefundDestinationChosen",
+      "producer": "kiorex",
+      "aggregateType": "RefundDestinationChoice",
+      "status": "v2-draft"
+    },
+    {
+      "type": "RewardRestored",
+      "aliases": [],
+      "file": "RewardRestored",
+      "producer": "kiorex",
+      "aggregateType": "RewardLot",
+      "status": "v2-draft"
+    },
+    {
+      "type": "GoodwillGranted",
+      "aliases": [],
+      "file": "GoodwillGranted",
+      "producer": "kiorex",
+      "aggregateType": "GoodwillGrant",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ProviderCreditGranted",
+      "aliases": [],
+      "file": "ProviderCreditGranted",
+      "producer": "kiorly-clinic",
+      "aggregateType": "CreditWallet",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ProviderCreditConsumed",
+      "aliases": [],
+      "file": "ProviderCreditConsumed",
+      "producer": "kiorly-clinic",
+      "aggregateType": "CreditWallet",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ProviderCreditExpired",
+      "aliases": [],
+      "file": "ProviderCreditExpired",
+      "producer": "kiorly-clinic",
+      "aggregateType": "CreditWallet",
+      "status": "v2-draft"
+    },
+    {
+      "type": "PROVIDER_PROMOTION_UPDATED",
+      "aliases": [],
+      "file": "PROVIDER_PROMOTION_UPDATED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "SponsoredPromotion",
+      "status": "v2-draft"
+    },
+    {
+      "type": "PromotionReviewDecided",
+      "aliases": [],
+      "file": "PromotionReviewDecided",
+      "producer": "kiorex",
+      "aggregateType": "SponsoredPromotion",
+      "status": "v2-draft"
+    },
+    {
+      "type": "SponsoredDiscountReserved",
+      "aliases": [],
+      "file": "SponsoredDiscountReserved",
+      "producer": "kiorly-clinic",
+      "aggregateType": "SponsoredPromotion",
+      "status": "v2-draft"
+    },
+    {
+      "type": "SponsoredDiscountDebited",
+      "aliases": [],
+      "file": "SponsoredDiscountDebited",
+      "producer": "kiorly-clinic",
+      "aggregateType": "SponsoredPromotion",
+      "status": "v2-draft"
+    },
+    {
+      "type": "SponsoredDiscountReleased",
+      "aliases": [],
+      "file": "SponsoredDiscountReleased",
+      "producer": "kiorly-clinic",
+      "aggregateType": "SponsoredPromotion",
+      "status": "v2-draft"
+    },
+    {
+      "type": "SponsoredDiscountReversed",
+      "aliases": [],
+      "file": "SponsoredDiscountReversed",
+      "producer": "kiorly-clinic",
+      "aggregateType": "SponsoredPromotion",
+      "status": "v2-draft"
     }
   ]
 }

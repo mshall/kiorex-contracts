@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/GoodwillGranted.schema.json",
+  "title": "GoodwillGranted",
+  "description": "INTERNAL. Support granted a service-recovery coupon or credit. Reason code from a closed list; no patient identity (1.12.0).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "GoodwillGranted"
+    },
+    "aggregateType": {
+      "const": "GoodwillGrant"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "grantRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lotRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "reason": {
+          "enum": [
+            "PROVIDER_LATE_CANCEL",
+            "LONG_WAIT",
+            "FAILED_BOOKING",
+            "PAYMENT_ISSUE",
+            "OTHER_APPROVED"
+          ]
+        },
+        "amountMinor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "secondApproval": {
+          "type": "boolean"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "grantRef",
+        "lotRef",
+        "reason",
+        "amountMinor",
+        "currency",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

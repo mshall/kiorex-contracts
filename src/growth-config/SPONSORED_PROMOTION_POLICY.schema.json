@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/SPONSORED_PROMOTION_POLICY.schema.json",
+  "title": "Growth config: SPONSORED_PROMOTION_POLICY",
+  "description": "Rules of provider-sponsored promotions (GRW-P2-S, ADR-048 Proposed): the commission basis, the high-value review thresholds and the funding defaults. The clinic funds its own promotion; it is never a Kiorex discount and never a conversion of credit. Money relevant: effective at least 7 days after approval, two approvers. Added in contracts 1.12.0 (Rev 2.6). PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "commissionBasis": {
+      "enum": [
+        "GROSS_BEFORE_SPONSORED",
+        "NET_AFTER_SPONSORED"
+      ],
+      "description": "GROSS_BEFORE_SPONSORED (default): the Kiorex fee is computed on the fee before any sponsored discount. NET_AFTER_SPONSORED exists for a future percentage model only."
+    },
+    "highValueBudgetMinor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000000,
+      "description": "A promotion budget cap at or above this needs a second approver."
+    },
+    "highValuePerBookingMinor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000,
+      "description": "A per-booking discount at or above this needs a second approver."
+    },
+    "maxDiscountBp": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000,
+      "description": "A percent discount above this needs a second approver. PROPOSED_DEFAULT 3000."
+    },
+    "allowedCareTypes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "IN_CLINIC",
+          "VIDEO",
+          "HOME_VISIT"
+        ]
+      }
+    },
+    "defaultFundingMode": {
+      "enum": [
+        "WALLET_ONLY",
+        "WALLET_THEN_INVOICE"
+      ]
+    },
+    "postToPayLedger": {
+      "type": "boolean",
+      "description": "PROPOSED_DEFAULT false (finance decision)."
+    },
+    "reservationTtlGraceMinutes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1440,
+      "description": "Reservation lives as long as the hold plus this grace."
+    },
+    "reviewRequired": {
+      "type": "boolean",
+      "description": "Every promotion version goes through the advertising review. PROPOSED_DEFAULT true; not switchable off in production."
+    },
+    "fraudRuleWeights": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "maxProperties": 30,
+      "description": "Shadow-mode weights of the promotion fraud signals."
+    }
+  },
+  "required": [
+    "commissionBasis",
+    "highValueBudgetMinor",
+    "highValuePerBookingMinor",
+    "maxDiscountBp",
+    "allowedCareTypes",
+    "defaultFundingMode",
+    "postToPayLedger",
+    "reservationTtlGraceMinutes",
+    "reviewRequired"
+  ]
+}

@@ -540,6 +540,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/promotions/{promotionId}/reserve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kiorex asks the Clinic to hold budget of a provider-sponsored promotion for one booking (signed, idempotent)
+         * @description The Clinic re-checks status, window, eligibility, per-patient limit and writes a RESERVE entry against the budget cap; WALLET_ONLY also needs wallet cover. The reservation lives as long as the hold plus a grace and is released by a sweeper. The wallet is not touched until the visit completes.
+         */
+        post: operations["marketplaceReservePromotion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/promotions/{promotionId}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Kiorex releases a reservation (hold expired, booking cancelled or not confirmed) */
+        post: operations["marketplaceReleasePromotion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export interface webhooks {
     kiorexOutboxEvent: {
@@ -754,6 +791,46 @@ export interface components {
             code: "REFERRAL_LINK_NOT_FOUND";
             message?: string;
         };
+        /** @description Optional block on POST /bookings (1.12.0). The Clinic re-checks the reservation it issued; a booking without a valid reservation is created without the discount, never refused. */
+        SponsoredDiscountBlock: {
+            promotionId: string;
+            promotionVersion: number;
+            reservationRef: string;
+            amountMinor: number;
+            currency: string;
+        };
+        /** @description How a booking amount was funded (1.12.0). Minor units. No patient identity. */
+        Tender: {
+            cardMinor?: number;
+            patientCreditMinor?: number;
+            sponsoredDiscountMinor?: number;
+        };
+        PromotionReserveRequest: {
+            version: number;
+            bookingRef: string;
+            /** @description Opaque keyed hash. Never the Passport sub, a phone or a name. */
+            patientRef: string;
+            /** @enum {unknown} */
+            careType: "IN_CLINIC" | "VIDEO" | "HOME_VISIT";
+            amountMinor: number;
+            currency: string;
+            idempotencyKey: string;
+        };
+        PromotionReserveResult: {
+            reservationRef: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        PromotionReserveRefusal: {
+            /** @enum {unknown} */
+            code: "BUDGET_EXHAUSTED" | "NOT_ELIGIBLE" | "PAUSED" | "WALLET_INSUFFICIENT" | "LIMIT_REACHED";
+            message?: string;
+        };
+        PromotionReleaseRequest: {
+            reservationRef: string;
+            idempotencyKey: string;
+            reason?: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -782,6 +859,7 @@ export interface operations {
                     paymentRef: string;
                     /** Format: date-time */
                     paidAt?: string;
+                    tender?: components["schemas"]["Tender"];
                 };
             };
         };
@@ -828,6 +906,7 @@ export interface operations {
                     paymentRef: string;
                     /** Format: date-time */
                     paidAt?: string;
+                    tender?: components["schemas"]["Tender"];
                 };
             };
         };
@@ -1129,6 +1208,7 @@ export interface operations {
                     acquisition?: components["schemas"]["AcquisitionBlock"];
                     /** @description Signed link-touch token issued by the Clinic for a provider referral link, QR or widget (`<base64url claims>.<base64url hmac>`, claims {o: organisation, c: 8-character link code, t: issued-at ms, v: 1}, 72 h lifetime; domain-separated HMAC over `kx-lt1\n` + payload). Kiorex forwards the token it verified at decision time and only when the signed `acquisition.origin` is PROVIDER_LED. The Clinic re-checks the link at booking time (ACTIVE, same organisation); an invalid, expired, other-organisation or revoked token is ignored (the booking is then not attributed to the link) and is never an error. Optional and additive: absent = today's rules. Never a patient or visitor identifier. */
                     lt?: string;
+                    sponsoredDiscount?: components["schemas"]["SponsoredDiscountBlock"];
                 };
             };
         };
@@ -1829,6 +1909,79 @@ export interface operations {
             };
             /** @description PRODUCT_NOT_ALLOWED: only Kiorly Clinic may register pay links */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceReservePromotion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionReserveRequest"];
+            };
+        };
+        responses: {
+            /** @description Reserved (replay returns the same reservation) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionReserveResult"];
+                };
+            };
+            /** @description Unknown promotion */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Refused with a reason */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionReserveRefusal"];
+                };
+            };
+        };
+    };
+    marketplaceReleasePromotion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionReleaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Released (idempotent; an unknown or already released reservation answers 200) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown promotion */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

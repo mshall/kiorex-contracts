@@ -1,0 +1,35 @@
+{
+  "eventId": "01JF3ZEVTPROVIDER",
+  "type": "PROVIDER_PROMOTION_UPDATED",
+  "aggregateType": "SponsoredPromotion",
+  "aggregateId": "spr_01JF3ZS000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "promotionId": "spr_01JF3ZS000",
+    "version": 2,
+    "orgRef": "ten_01JF3Z0000",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "status": "ACTIVE",
+    "discount": {
+      "kind": "FIXED_MINOR",
+      "value": 10000,
+      "maxPerBookingMinor": 10000
+    },
+    "scope": {
+      "careTypes": [
+        "IN_CLINIC"
+      ]
+    },
+    "startsAt": "2027-03-10T00:00:00.000Z",
+    "endsAt": "2027-04-10T00:00:00.000Z",
+    "patientCopy": {
+      "ar": "خصم برعاية العيادة",
+      "en": "Discount sponsored by the clinic"
+    },
+    "contentHash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "at": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "SponsoredPromotion",
+    "aggregateId": "spr_01JF3ZS000"
+  }
+}

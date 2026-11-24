@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/ProviderCreditGranted.schema.json",
+  "title": "ProviderCreditGranted",
+  "description": "INTERNAL to the Clinic (aggregate-only toward Kiorex ops). Provider credit wallet event ProviderCreditGranted (the existing CR-05 wallet: fee offsets, waivers, dispute-win credit, promotion credit). Tenant reference, category and amount only; it is a different ledger from the patient credit and never carries a patient identity (1.12.0).",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "ProviderCreditGranted"
+    },
+    "aggregateType": {
+      "const": "CreditWallet"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "walletRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orgRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+        },
+        "category": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,40}$"
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+        },
+        "amountMinor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "walletRef",
+        "orgRef",
+        "category",
+        "amountMinor",
+        "currency",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

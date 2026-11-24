@@ -86,6 +86,10 @@ const chargeProps = {
   decisionRef: ACQ_DECISION_REF,
   origin: ACQ_ORIGIN,
   policyVersion: ACQ_POLICY_VERSION,
+  // 1.12.0 (additive, Rev 2.6): reproducible fee basis. A provider-sponsored discount never changes chargeability or attribution.
+  feeBasisMinor: { type: "integer", minimum: 0, description: "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)." },
+  sponsoredDiscountMinor: { type: "integer", minimum: 0, description: "Provider-sponsored discount on the booking, informational (additive, 1.12.0)." },
+  basisPolicyVersion: { type: "string", minLength: 1, maxLength: 64, description: "Version id of the policy that fixed the basis (additive, 1.12.0)." },
 };
 
 /** Each def: type, aliases?, producer, aggregateType, status ('emitted'|'v2-draft'|'kiorly-extra'), description, data schema, example (data + aggregateId), kxNote? */
@@ -604,7 +608,7 @@ export const EVENTS = [
         adjustedAmount: { type: "string", pattern: "^-?\\d+(\\.\\d{1,2})?$", description: "Decimal string, 2 dp; 0.00 when waived." },
         currency: { type: "string", minLength: 3, maxLength: 3 },
         reason: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,63}$", description: "Machine reason, e.g. PROVIDER_LED_EVIDENCE, GOODWILL_WAIVER, POLICY_CORRECTION." },
-        decisionRef: ACQ_DECISION_REF, origin: ACQ_ORIGIN, policyVersion: ACQ_POLICY_VERSION, adjustedAt: TS, ...AGG,
+        feeBasisMinor: { type: "integer", minimum: 0, description: "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)." }, sponsoredDiscountMinor: { type: "integer", minimum: 0, description: "Provider-sponsored discount on the booking, informational: it never changes chargeability or attribution (additive, 1.12.0)." }, basisPolicyVersion: { type: "string", minLength: 1, maxLength: 64, description: "Version id of the policy that fixed the basis (additive, 1.12.0)." }, decisionRef: ACQ_DECISION_REF, origin: ACQ_ORIGIN, policyVersion: ACQ_POLICY_VERSION, adjustedAt: TS, ...AGG,
       },
       required: ["chargeId", "appointmentId", "previousAmount", "adjustedAmount", "currency", "reason", "adjustedAt"],
     },
@@ -760,6 +764,50 @@ export const EVENTS = [
     data: { properties: { offerId: ID, waitlistRef: ID, clinicId: ID, reason: { enum: ["EXPIRED", "WITHDRAWN", "SLOT_TAKEN"] }, at: TS, ...AGG }, required: ["offerId", "waitlistRef", "clinicId", "reason", "at"] },
     example: { aggregateId: "wo_01JF3ZN000", data: { offerId: "wo_01JF3ZN000", waitlistRef: "kx_wl_01JF3ZN111", clinicId: "clinic_01JF3Z7ZZZ", reason: "EXPIRED", at: "2027-03-05T09:31:00.000Z", aggregateType: "WaitlistOffer", aggregateId: "wo_01JF3ZN000" } },
   },
+  // ===================== 1.12.0 (additive), Rev 2.6 amendment: two separate credit systems and sponsored promotions =====================
+  // Patient credit events (Kiorex, internal) NEVER reach a clinic; provider credit events (Clinic) NEVER reach a patient surface.
+  {
+    type: "RefundDestinationChosen", producer: "kiorex", aggregateType: "RefundDestinationChoice", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Kiorex outbox only, never delivered to a clinic). The patient chose where a refund of card money goes: the original payment method (default) or Kiorex credit (an option, never forced). Immutable once the refund executed. Opaque references, no identity (1.12.0).",
+    data: { properties: { choiceRef: ID, market: MARKET, refundRef: ID, choice: { enum: ["ORIGINAL", "CREDIT"] }, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, source: { enum: ["PATIENT_CANCEL", "PATIENT_REFUND_REQUEST"] }, chosenAt: TS, ...AGG }, required: ["choiceRef", "refundRef", "choice", "amountMinor", "currency", "chosenAt"] },
+    example: { aggregateId: "rdc_01JF3ZP000", data: { choiceRef: "rdc_01JF3ZP000", market: "EG", refundRef: "rfd_01JF3ZP111", choice: "ORIGINAL", amountMinor: 25000, currency: "EGP", source: "PATIENT_CANCEL", chosenAt: "2027-03-04T09:12:44.000Z", aggregateType: "RefundDestinationChoice", aggregateId: "rdc_01JF3ZP000" } },
+  },
+  {
+    type: "RewardRestored", producer: "kiorex", aggregateType: "RewardLot", status: "v2-draft", group: "growth",
+    description: "INTERNAL. Credit used on a booking was given back because the booking was refunded or cancelled: to the same lot when it is still unexpired, otherwise to a new restored lot (1.12.0).",
+    data: { properties: { lotRef: ID, restoredLotRef: ID, market: MARKET, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, reasonCode: REASON_CODE, at: TS, ...AGG }, required: ["lotRef", "amountMinor", "currency", "reasonCode", "at"] },
+    example: { aggregateId: "rwl_01JF3ZH000", data: { lotRef: "rwl_01JF3ZH000", market: "EG", amountMinor: 15000, currency: "EGP", reasonCode: "BOOKING_CANCELLED", at: "2027-03-04T09:12:44.000Z", aggregateType: "RewardLot", aggregateId: "rwl_01JF3ZH000" } },
+  },
+  {
+    type: "GoodwillGranted", producer: "kiorex", aggregateType: "GoodwillGrant", status: "v2-draft", group: "growth",
+    description: "INTERNAL. Support granted a service-recovery coupon or credit. Reason code from a closed list; no patient identity (1.12.0).",
+    data: { properties: { grantRef: ID, lotRef: ID, market: MARKET, reason: { enum: ["PROVIDER_LATE_CANCEL", "LONG_WAIT", "FAILED_BOOKING", "PAYMENT_ISSUE", "OTHER_APPROVED"] }, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, secondApproval: { type: "boolean" }, at: TS, ...AGG }, required: ["grantRef", "lotRef", "reason", "amountMinor", "currency", "at"] },
+    example: { aggregateId: "gwg_01JF3ZQ000", data: { grantRef: "gwg_01JF3ZQ000", lotRef: "rwl_01JF3ZH111", market: "EG", reason: "LONG_WAIT", amountMinor: 5000, currency: "EGP", secondApproval: false, at: "2027-03-04T09:12:44.000Z", aggregateType: "GoodwillGrant", aggregateId: "gwg_01JF3ZQ000" } },
+  },
+  ...["ProviderCreditGranted", "ProviderCreditConsumed", "ProviderCreditExpired"].map((t) => ({
+    type: t, producer: "kiorly-clinic", aggregateType: "CreditWallet", status: "v2-draft", group: "growth",
+    description: `INTERNAL to the Clinic (aggregate-only toward Kiorex ops). Provider credit wallet event ${t} (the existing CR-05 wallet: fee offsets, waivers, dispute-win credit, promotion credit). Tenant reference, category and amount only; it is a different ledger from the patient credit and never carries a patient identity (1.12.0).`,
+    data: { properties: { walletRef: ID, orgRef: LINK_ORG_REF, category: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,40}$" }, reason: REASON_CODE, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, at: TS, ...AGG }, required: ["walletRef", "orgRef", "category", "amountMinor", "currency", "at"] },
+    example: { aggregateId: "cwl_01JF3ZR000", data: { walletRef: "cwl_01JF3ZR000", orgRef: "ten_01JF3Z0000", category: "FEE_OFFSET", reason: t === "ProviderCreditGranted" ? "DISPUTE_WON" : t === "ProviderCreditConsumed" ? "COMMISSION_DRAWDOWN" : "EXPIRED", amountMinor: 4000, currency: "EGP", at: "2027-03-04T09:12:44.000Z", aggregateType: "CreditWallet", aggregateId: "cwl_01JF3ZR000" } },
+  })),
+  {
+    type: "PROVIDER_PROMOTION_UPDATED", producer: "kiorly-clinic", aggregateType: "SponsoredPromotion", status: "v2-draft", group: "growth",
+    description: "A clinic created, changed, paused or ended a provider-sponsored promotion; Kiorex keeps a projection of the ACTIVE ones to show 'Discount sponsored by <clinic>' and to quote (1.12.0, work package P2-S). The patient copy is public advertising text, reviewed before activation; never clinical content.",
+    data: { properties: { promotionId: ID, version: { type: "integer", minimum: 1 }, orgRef: LINK_ORG_REF, clinicId: ID, status: { enum: ["DRAFT", "SUBMITTED", "IN_REVIEW", "APPROVED", "ACTIVE", "PAUSED", "EXHAUSTED", "EXPIRED", "REJECTED", "ARCHIVED"] }, discount: { type: "object", properties: { kind: { enum: ["FIXED_MINOR", "PERCENT_BP"] }, value: { type: "integer", minimum: 1 }, maxPerBookingMinor: { type: "integer", minimum: 1 } }, required: ["kind", "value"] }, scope: { type: "object", properties: { doctorIds: { type: "array", items: ID, maxItems: 200 }, appointmentTypeIds: { type: "array", items: ID, maxItems: 200 }, careTypes: { type: "array", items: { enum: ["IN_CLINIC", "VIDEO", "HOME_VISIT"] } } } }, startsAt: TS, endsAt: TS, patientCopy: { type: "object", properties: { ar: { type: "string", maxLength: 300 }, en: { type: "string", maxLength: 300 } } }, contentHash: { type: "string", pattern: "^[0-9a-f]{64}$" }, at: TS, ...AGG }, required: ["promotionId", "version", "orgRef", "status", "at"] },
+    example: { aggregateId: "spr_01JF3ZS000", data: { promotionId: "spr_01JF3ZS000", version: 2, orgRef: "ten_01JF3Z0000", clinicId: "clinic_01JF3Z7ZZZ", status: "ACTIVE", discount: { kind: "FIXED_MINOR", value: 10000, maxPerBookingMinor: 10000 }, scope: { careTypes: ["IN_CLINIC"] }, startsAt: "2027-03-10T00:00:00.000Z", endsAt: "2027-04-10T00:00:00.000Z", patientCopy: { ar: "خصم برعاية العيادة", en: "Discount sponsored by the clinic" }, contentHash: "c".repeat(64), at: "2027-03-04T09:12:44.000Z", aggregateType: "SponsoredPromotion", aggregateId: "spr_01JF3ZS000" } },
+  },
+  {
+    type: "PromotionReviewDecided", producer: "kiorex", aggregateType: "SponsoredPromotion", status: "v2-draft", group: "growth",
+    description: "Kiorex ops decided the advertising and compliance review of a promotion version (content, scope or high value; high value needs a second approver). Delivered to the Clinic that owns the promotion (1.12.0, work package P2-S).",
+    data: { properties: { promotionId: ID, version: { type: "integer", minimum: 1 }, orgRef: LINK_ORG_REF, reviewKind: { enum: ["CONTENT", "SCOPE", "HIGH_VALUE"] }, decision: { enum: ["APPROVED", "REJECTED", "NEEDS_CHANGES"] }, note: { type: "string", maxLength: 300 }, decidedAt: TS, ...AGG }, required: ["promotionId", "version", "orgRef", "reviewKind", "decision", "decidedAt"] },
+    example: { aggregateId: "spr_01JF3ZS000", data: { promotionId: "spr_01JF3ZS000", version: 2, orgRef: "ten_01JF3Z0000", reviewKind: "CONTENT", decision: "APPROVED", decidedAt: "2027-03-05T09:12:44.000Z", aggregateType: "SponsoredPromotion", aggregateId: "spr_01JF3ZS000" } },
+  },
+  ...["SponsoredDiscountReserved", "SponsoredDiscountDebited", "SponsoredDiscountReleased", "SponsoredDiscountReversed"].map((t) => ({
+    type: t, producer: "kiorly-clinic", aggregateType: "SponsoredPromotion", status: "v2-draft", group: "growth",
+    description: `The Clinic tells Kiorex the state of the budget entry of a sponsored discount for one booking: ${t}. Opaque booking and reservation references and amounts only; never a patient identity (1.12.0, work package P2-S). Kiorex keeps one BookingSponsoredDiscount per booking and compares it with the Clinic ledger every day.`,
+    data: { properties: { promotionId: ID, version: { type: "integer", minimum: 1 }, reservationRef: ID, bookingRef: ID, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, reason: REASON_CODE, at: TS, ...AGG }, required: ["promotionId", "version", "reservationRef", "bookingRef", "amountMinor", "currency", "at"] },
+    example: { aggregateId: "spr_01JF3ZS000", data: { promotionId: "spr_01JF3ZS000", version: 2, reservationRef: "rsv_01JF3ZT000", bookingRef: "kx_bk_01JF3Z8P2M", amountMinor: 10000, currency: "EGP", reason: t === "SponsoredDiscountReserved" ? "HELD" : t === "SponsoredDiscountDebited" ? "VISIT_COMPLETED" : t === "SponsoredDiscountReleased" ? "CANCELLED" : "REFUNDED", at: "2027-03-12T10:00:00.000Z", aggregateType: "SponsoredPromotion", aggregateId: "spr_01JF3ZS000" } },
+  })),
 ];
 
 export const ENVELOPE = {

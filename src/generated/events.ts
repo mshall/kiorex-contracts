@@ -1281,6 +1281,22 @@ export const EVENT_SCHEMAS = {
             "maxLength": 64,
             "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
           },
+          "feeBasisMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)."
+          },
+          "sponsoredDiscountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Provider-sponsored discount on the booking, informational (additive, 1.12.0)."
+          },
+          "basisPolicyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -1379,6 +1395,22 @@ export const EVENT_SCHEMAS = {
             "minLength": 1,
             "maxLength": 64,
             "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+          },
+          "feeBasisMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)."
+          },
+          "sponsoredDiscountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Provider-sponsored discount on the booking, informational (additive, 1.12.0)."
+          },
+          "basisPolicyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
           },
           "reason": {
             "type": "string"
@@ -4394,6 +4426,22 @@ export const EVENT_SCHEMAS = {
             "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
             "description": "Machine reason, e.g. PROVIDER_LED_EVIDENCE, GOODWILL_WAIVER, POLICY_CORRECTION."
           },
+          "feeBasisMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)."
+          },
+          "sponsoredDiscountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Provider-sponsored discount on the booking, informational: it never changes chargeability or attribution (additive, 1.12.0)."
+          },
+          "basisPolicyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
+          },
           "decisionRef": {
             "type": "string",
             "minLength": 1,
@@ -6551,6 +6599,1058 @@ export const EVENT_SCHEMAS = {
       "aggregateType",
       "data"
     ]
+  },
+  "RefundDestinationChosen": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/RefundDestinationChosen.schema.json",
+    "title": "RefundDestinationChosen",
+    "description": "INTERNAL (Kiorex outbox only, never delivered to a clinic). The patient chose where a refund of card money goes: the original payment method (default) or Kiorex credit (an option, never forced). Immutable once the refund executed. Opaque references, no identity (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "RefundDestinationChosen"
+      },
+      "aggregateType": {
+        "const": "RefundDestinationChoice"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "choiceRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "refundRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "choice": {
+            "enum": [
+              "ORIGINAL",
+              "CREDIT"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "source": {
+            "enum": [
+              "PATIENT_CANCEL",
+              "PATIENT_REFUND_REQUEST"
+            ]
+          },
+          "chosenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "choiceRef",
+          "refundRef",
+          "choice",
+          "amountMinor",
+          "currency",
+          "chosenAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "RewardRestored": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/RewardRestored.schema.json",
+    "title": "RewardRestored",
+    "description": "INTERNAL. Credit used on a booking was given back because the booking was refunded or cancelled: to the same lot when it is still unexpired, otherwise to a new restored lot (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "RewardRestored"
+      },
+      "aggregateType": {
+        "const": "RewardLot"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "restoredLotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "lotRef",
+          "amountMinor",
+          "currency",
+          "reasonCode",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "GoodwillGranted": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/GoodwillGranted.schema.json",
+    "title": "GoodwillGranted",
+    "description": "INTERNAL. Support granted a service-recovery coupon or credit. Reason code from a closed list; no patient identity (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "GoodwillGranted"
+      },
+      "aggregateType": {
+        "const": "GoodwillGrant"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "grantRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "reason": {
+            "enum": [
+              "PROVIDER_LATE_CANCEL",
+              "LONG_WAIT",
+              "FAILED_BOOKING",
+              "PAYMENT_ISSUE",
+              "OTHER_APPROVED"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "secondApproval": {
+            "type": "boolean"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "grantRef",
+          "lotRef",
+          "reason",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ProviderCreditGranted": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ProviderCreditGranted.schema.json",
+    "title": "ProviderCreditGranted",
+    "description": "INTERNAL to the Clinic (aggregate-only toward Kiorex ops). Provider credit wallet event ProviderCreditGranted (the existing CR-05 wallet: fee offsets, waivers, dispute-win credit, promotion credit). Tenant reference, category and amount only; it is a different ledger from the patient credit and never carries a patient identity (1.12.0).",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ProviderCreditGranted"
+      },
+      "aggregateType": {
+        "const": "CreditWallet"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "walletRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "category": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,40}$"
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "walletRef",
+          "orgRef",
+          "category",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ProviderCreditConsumed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ProviderCreditConsumed.schema.json",
+    "title": "ProviderCreditConsumed",
+    "description": "INTERNAL to the Clinic (aggregate-only toward Kiorex ops). Provider credit wallet event ProviderCreditConsumed (the existing CR-05 wallet: fee offsets, waivers, dispute-win credit, promotion credit). Tenant reference, category and amount only; it is a different ledger from the patient credit and never carries a patient identity (1.12.0).",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ProviderCreditConsumed"
+      },
+      "aggregateType": {
+        "const": "CreditWallet"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "walletRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "category": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,40}$"
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "walletRef",
+          "orgRef",
+          "category",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ProviderCreditExpired": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ProviderCreditExpired.schema.json",
+    "title": "ProviderCreditExpired",
+    "description": "INTERNAL to the Clinic (aggregate-only toward Kiorex ops). Provider credit wallet event ProviderCreditExpired (the existing CR-05 wallet: fee offsets, waivers, dispute-win credit, promotion credit). Tenant reference, category and amount only; it is a different ledger from the patient credit and never carries a patient identity (1.12.0).",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ProviderCreditExpired"
+      },
+      "aggregateType": {
+        "const": "CreditWallet"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "walletRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "category": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,40}$"
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "walletRef",
+          "orgRef",
+          "category",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "PROVIDER_PROMOTION_UPDATED": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/PROVIDER_PROMOTION_UPDATED.schema.json",
+    "title": "PROVIDER_PROMOTION_UPDATED",
+    "description": "A clinic created, changed, paused or ended a provider-sponsored promotion; Kiorex keeps a projection of the ACTIVE ones to show 'Discount sponsored by <clinic>' and to quote (1.12.0, work package P2-S). The patient copy is public advertising text, reviewed before activation; never clinical content.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "PROVIDER_PROMOTION_UPDATED"
+      },
+      "aggregateType": {
+        "const": "SponsoredPromotion"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "promotionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "IN_REVIEW",
+              "APPROVED",
+              "ACTIVE",
+              "PAUSED",
+              "EXHAUSTED",
+              "EXPIRED",
+              "REJECTED",
+              "ARCHIVED"
+            ]
+          },
+          "discount": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "FIXED_MINOR",
+                  "PERCENT_BP"
+                ]
+              },
+              "value": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "maxPerBookingMinor": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "kind",
+              "value"
+            ]
+          },
+          "scope": {
+            "type": "object",
+            "properties": {
+              "doctorIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "maxItems": 200
+              },
+              "appointmentTypeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "maxItems": 200
+              },
+              "careTypes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "IN_CLINIC",
+                    "VIDEO",
+                    "HOME_VISIT"
+                  ]
+                }
+              }
+            }
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "patientCopy": {
+            "type": "object",
+            "properties": {
+              "ar": {
+                "type": "string",
+                "maxLength": 300
+              },
+              "en": {
+                "type": "string",
+                "maxLength": 300
+              }
+            }
+          },
+          "contentHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "promotionId",
+          "version",
+          "orgRef",
+          "status",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "PromotionReviewDecided": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/PromotionReviewDecided.schema.json",
+    "title": "PromotionReviewDecided",
+    "description": "Kiorex ops decided the advertising and compliance review of a promotion version (content, scope or high value; high value needs a second approver). Delivered to the Clinic that owns the promotion (1.12.0, work package P2-S).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "PromotionReviewDecided"
+      },
+      "aggregateType": {
+        "const": "SponsoredPromotion"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "promotionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "reviewKind": {
+            "enum": [
+              "CONTENT",
+              "SCOPE",
+              "HIGH_VALUE"
+            ]
+          },
+          "decision": {
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "NEEDS_CHANGES"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "promotionId",
+          "version",
+          "orgRef",
+          "reviewKind",
+          "decision",
+          "decidedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "SponsoredDiscountReserved": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/SponsoredDiscountReserved.schema.json",
+    "title": "SponsoredDiscountReserved",
+    "description": "The Clinic tells Kiorex the state of the budget entry of a sponsored discount for one booking: SponsoredDiscountReserved. Opaque booking and reservation references and amounts only; never a patient identity (1.12.0, work package P2-S). Kiorex keeps one BookingSponsoredDiscount per booking and compares it with the Clinic ledger every day.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "SponsoredDiscountReserved"
+      },
+      "aggregateType": {
+        "const": "SponsoredPromotion"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "promotionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reservationRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bookingRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "promotionId",
+          "version",
+          "reservationRef",
+          "bookingRef",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "SponsoredDiscountDebited": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/SponsoredDiscountDebited.schema.json",
+    "title": "SponsoredDiscountDebited",
+    "description": "The Clinic tells Kiorex the state of the budget entry of a sponsored discount for one booking: SponsoredDiscountDebited. Opaque booking and reservation references and amounts only; never a patient identity (1.12.0, work package P2-S). Kiorex keeps one BookingSponsoredDiscount per booking and compares it with the Clinic ledger every day.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "SponsoredDiscountDebited"
+      },
+      "aggregateType": {
+        "const": "SponsoredPromotion"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "promotionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reservationRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bookingRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "promotionId",
+          "version",
+          "reservationRef",
+          "bookingRef",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "SponsoredDiscountReleased": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/SponsoredDiscountReleased.schema.json",
+    "title": "SponsoredDiscountReleased",
+    "description": "The Clinic tells Kiorex the state of the budget entry of a sponsored discount for one booking: SponsoredDiscountReleased. Opaque booking and reservation references and amounts only; never a patient identity (1.12.0, work package P2-S). Kiorex keeps one BookingSponsoredDiscount per booking and compares it with the Clinic ledger every day.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "SponsoredDiscountReleased"
+      },
+      "aggregateType": {
+        "const": "SponsoredPromotion"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "promotionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reservationRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bookingRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "promotionId",
+          "version",
+          "reservationRef",
+          "bookingRef",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "SponsoredDiscountReversed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/SponsoredDiscountReversed.schema.json",
+    "title": "SponsoredDiscountReversed",
+    "description": "The Clinic tells Kiorex the state of the budget entry of a sponsored discount for one booking: SponsoredDiscountReversed. Opaque booking and reservation references and amounts only; never a patient identity (1.12.0, work package P2-S). Kiorex keeps one BookingSponsoredDiscount per booking and compares it with the Clinic ledger every day.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "SponsoredDiscountReversed"
+      },
+      "aggregateType": {
+        "const": "SponsoredPromotion"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "promotionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reservationRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bookingRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "promotionId",
+          "version",
+          "reservationRef",
+          "bookingRef",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
   }
 } as const;
 
@@ -7914,6 +9014,250 @@ export const EVENT_EXAMPLES = {
       "aggregateType": "WaitlistOffer",
       "aggregateId": "wo_01JF3ZN000"
     }
+  },
+  "RefundDestinationChosen": {
+    "eventId": "01JF3ZEVTREFUNDDE",
+    "type": "RefundDestinationChosen",
+    "aggregateType": "RefundDestinationChoice",
+    "aggregateId": "rdc_01JF3ZP000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "choiceRef": "rdc_01JF3ZP000",
+      "market": "EG",
+      "refundRef": "rfd_01JF3ZP111",
+      "choice": "ORIGINAL",
+      "amountMinor": 25000,
+      "currency": "EGP",
+      "source": "PATIENT_CANCEL",
+      "chosenAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "RefundDestinationChoice",
+      "aggregateId": "rdc_01JF3ZP000"
+    }
+  },
+  "RewardRestored": {
+    "eventId": "01JF3ZEVTREWARDRE",
+    "type": "RewardRestored",
+    "aggregateType": "RewardLot",
+    "aggregateId": "rwl_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "lotRef": "rwl_01JF3ZH000",
+      "market": "EG",
+      "amountMinor": 15000,
+      "currency": "EGP",
+      "reasonCode": "BOOKING_CANCELLED",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "RewardLot",
+      "aggregateId": "rwl_01JF3ZH000"
+    }
+  },
+  "GoodwillGranted": {
+    "eventId": "01JF3ZEVTGOODWILL",
+    "type": "GoodwillGranted",
+    "aggregateType": "GoodwillGrant",
+    "aggregateId": "gwg_01JF3ZQ000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "grantRef": "gwg_01JF3ZQ000",
+      "lotRef": "rwl_01JF3ZH111",
+      "market": "EG",
+      "reason": "LONG_WAIT",
+      "amountMinor": 5000,
+      "currency": "EGP",
+      "secondApproval": false,
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GoodwillGrant",
+      "aggregateId": "gwg_01JF3ZQ000"
+    }
+  },
+  "ProviderCreditGranted": {
+    "eventId": "01JF3ZEVTPROVIDER",
+    "type": "ProviderCreditGranted",
+    "aggregateType": "CreditWallet",
+    "aggregateId": "cwl_01JF3ZR000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "walletRef": "cwl_01JF3ZR000",
+      "orgRef": "ten_01JF3Z0000",
+      "category": "FEE_OFFSET",
+      "reason": "DISPUTE_WON",
+      "amountMinor": 4000,
+      "currency": "EGP",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "CreditWallet",
+      "aggregateId": "cwl_01JF3ZR000"
+    }
+  },
+  "ProviderCreditConsumed": {
+    "eventId": "01JF3ZEVTPROVIDER",
+    "type": "ProviderCreditConsumed",
+    "aggregateType": "CreditWallet",
+    "aggregateId": "cwl_01JF3ZR000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "walletRef": "cwl_01JF3ZR000",
+      "orgRef": "ten_01JF3Z0000",
+      "category": "FEE_OFFSET",
+      "reason": "COMMISSION_DRAWDOWN",
+      "amountMinor": 4000,
+      "currency": "EGP",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "CreditWallet",
+      "aggregateId": "cwl_01JF3ZR000"
+    }
+  },
+  "ProviderCreditExpired": {
+    "eventId": "01JF3ZEVTPROVIDER",
+    "type": "ProviderCreditExpired",
+    "aggregateType": "CreditWallet",
+    "aggregateId": "cwl_01JF3ZR000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "walletRef": "cwl_01JF3ZR000",
+      "orgRef": "ten_01JF3Z0000",
+      "category": "FEE_OFFSET",
+      "reason": "EXPIRED",
+      "amountMinor": 4000,
+      "currency": "EGP",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "CreditWallet",
+      "aggregateId": "cwl_01JF3ZR000"
+    }
+  },
+  "PROVIDER_PROMOTION_UPDATED": {
+    "eventId": "01JF3ZEVTPROVIDER",
+    "type": "PROVIDER_PROMOTION_UPDATED",
+    "aggregateType": "SponsoredPromotion",
+    "aggregateId": "spr_01JF3ZS000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "promotionId": "spr_01JF3ZS000",
+      "version": 2,
+      "orgRef": "ten_01JF3Z0000",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "status": "ACTIVE",
+      "discount": {
+        "kind": "FIXED_MINOR",
+        "value": 10000,
+        "maxPerBookingMinor": 10000
+      },
+      "scope": {
+        "careTypes": [
+          "IN_CLINIC"
+        ]
+      },
+      "startsAt": "2027-03-10T00:00:00.000Z",
+      "endsAt": "2027-04-10T00:00:00.000Z",
+      "patientCopy": {
+        "ar": "خصم برعاية العيادة",
+        "en": "Discount sponsored by the clinic"
+      },
+      "contentHash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "SponsoredPromotion",
+      "aggregateId": "spr_01JF3ZS000"
+    }
+  },
+  "PromotionReviewDecided": {
+    "eventId": "01JF3ZEVTPROMOTIO",
+    "type": "PromotionReviewDecided",
+    "aggregateType": "SponsoredPromotion",
+    "aggregateId": "spr_01JF3ZS000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "promotionId": "spr_01JF3ZS000",
+      "version": 2,
+      "orgRef": "ten_01JF3Z0000",
+      "reviewKind": "CONTENT",
+      "decision": "APPROVED",
+      "decidedAt": "2027-03-05T09:12:44.000Z",
+      "aggregateType": "SponsoredPromotion",
+      "aggregateId": "spr_01JF3ZS000"
+    }
+  },
+  "SponsoredDiscountReserved": {
+    "eventId": "01JF3ZEVTSPONSORE",
+    "type": "SponsoredDiscountReserved",
+    "aggregateType": "SponsoredPromotion",
+    "aggregateId": "spr_01JF3ZS000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "promotionId": "spr_01JF3ZS000",
+      "version": 2,
+      "reservationRef": "rsv_01JF3ZT000",
+      "bookingRef": "kx_bk_01JF3Z8P2M",
+      "amountMinor": 10000,
+      "currency": "EGP",
+      "reason": "HELD",
+      "at": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "SponsoredPromotion",
+      "aggregateId": "spr_01JF3ZS000"
+    }
+  },
+  "SponsoredDiscountDebited": {
+    "eventId": "01JF3ZEVTSPONSORE",
+    "type": "SponsoredDiscountDebited",
+    "aggregateType": "SponsoredPromotion",
+    "aggregateId": "spr_01JF3ZS000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "promotionId": "spr_01JF3ZS000",
+      "version": 2,
+      "reservationRef": "rsv_01JF3ZT000",
+      "bookingRef": "kx_bk_01JF3Z8P2M",
+      "amountMinor": 10000,
+      "currency": "EGP",
+      "reason": "VISIT_COMPLETED",
+      "at": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "SponsoredPromotion",
+      "aggregateId": "spr_01JF3ZS000"
+    }
+  },
+  "SponsoredDiscountReleased": {
+    "eventId": "01JF3ZEVTSPONSORE",
+    "type": "SponsoredDiscountReleased",
+    "aggregateType": "SponsoredPromotion",
+    "aggregateId": "spr_01JF3ZS000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "promotionId": "spr_01JF3ZS000",
+      "version": 2,
+      "reservationRef": "rsv_01JF3ZT000",
+      "bookingRef": "kx_bk_01JF3Z8P2M",
+      "amountMinor": 10000,
+      "currency": "EGP",
+      "reason": "CANCELLED",
+      "at": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "SponsoredPromotion",
+      "aggregateId": "spr_01JF3ZS000"
+    }
+  },
+  "SponsoredDiscountReversed": {
+    "eventId": "01JF3ZEVTSPONSORE",
+    "type": "SponsoredDiscountReversed",
+    "aggregateType": "SponsoredPromotion",
+    "aggregateId": "spr_01JF3ZS000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "promotionId": "spr_01JF3ZS000",
+      "version": 2,
+      "reservationRef": "rsv_01JF3ZT000",
+      "bookingRef": "kx_bk_01JF3Z8P2M",
+      "amountMinor": 10000,
+      "currency": "EGP",
+      "reason": "REFUNDED",
+      "at": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "SponsoredPromotion",
+      "aggregateId": "spr_01JF3ZS000"
+    }
   }
 } as const;
 
@@ -8372,10 +9716,82 @@ export const EVENT_META = {
     "aggregateType": "WaitlistOffer",
     "status": "v2-draft",
     "schemaFile": "WAITLIST_OFFER_EXPIRED.schema.json"
+  },
+  "RefundDestinationChosen": {
+    "producer": "kiorex",
+    "aggregateType": "RefundDestinationChoice",
+    "status": "v2-draft",
+    "schemaFile": "RefundDestinationChosen.schema.json"
+  },
+  "RewardRestored": {
+    "producer": "kiorex",
+    "aggregateType": "RewardLot",
+    "status": "v2-draft",
+    "schemaFile": "RewardRestored.schema.json"
+  },
+  "GoodwillGranted": {
+    "producer": "kiorex",
+    "aggregateType": "GoodwillGrant",
+    "status": "v2-draft",
+    "schemaFile": "GoodwillGranted.schema.json"
+  },
+  "ProviderCreditGranted": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "CreditWallet",
+    "status": "v2-draft",
+    "schemaFile": "ProviderCreditGranted.schema.json"
+  },
+  "ProviderCreditConsumed": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "CreditWallet",
+    "status": "v2-draft",
+    "schemaFile": "ProviderCreditConsumed.schema.json"
+  },
+  "ProviderCreditExpired": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "CreditWallet",
+    "status": "v2-draft",
+    "schemaFile": "ProviderCreditExpired.schema.json"
+  },
+  "PROVIDER_PROMOTION_UPDATED": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "SponsoredPromotion",
+    "status": "v2-draft",
+    "schemaFile": "PROVIDER_PROMOTION_UPDATED.schema.json"
+  },
+  "PromotionReviewDecided": {
+    "producer": "kiorex",
+    "aggregateType": "SponsoredPromotion",
+    "status": "v2-draft",
+    "schemaFile": "PromotionReviewDecided.schema.json"
+  },
+  "SponsoredDiscountReserved": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "SponsoredPromotion",
+    "status": "v2-draft",
+    "schemaFile": "SponsoredDiscountReserved.schema.json"
+  },
+  "SponsoredDiscountDebited": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "SponsoredPromotion",
+    "status": "v2-draft",
+    "schemaFile": "SponsoredDiscountDebited.schema.json"
+  },
+  "SponsoredDiscountReleased": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "SponsoredPromotion",
+    "status": "v2-draft",
+    "schemaFile": "SponsoredDiscountReleased.schema.json"
+  },
+  "SponsoredDiscountReversed": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "SponsoredPromotion",
+    "status": "v2-draft",
+    "schemaFile": "SponsoredDiscountReversed.schema.json"
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -8409,9 +9825,9 @@ export type ProviderProfileUpdatedData = { "listingId": string; "clinicId": stri
 export type ProviderProfileUpdatedEvent = EventEnvelope<"PROVIDER_PROFILE_UPDATED", ProviderProfileUpdatedData>;
 export type ListingStatusChangedData = { "listingId": string; "clinicId": string; "clinicianId": string; "previousStatus": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "nextStatus": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ListingStatusChangedEvent = EventEnvelope<"LISTING_STATUS_CHANGED", ListingStatusChangedData>;
-export type CommissionChargeCreatedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionChargeCreatedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CommissionChargeCreatedEvent = EventEnvelope<"COMMISSION_CHARGE_CREATED", CommissionChargeCreatedData>;
-export type CommissionChargeReversedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "reason": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionChargeReversedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "reason": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CommissionChargeReversedEvent = EventEnvelope<"COMMISSION_CHARGE_REVERSED", CommissionChargeReversedData>;
 export type ReviewInvitationEligibleData = { "appointmentId": string; "clinicId": string; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ReviewInvitationEligibleEvent = EventEnvelope<"REVIEW_INVITATION_ELIGIBLE", ReviewInvitationEligibleData>;
@@ -8481,7 +9897,7 @@ export type ReferralIssuedData = { "referralId": string; "fromClinicId": string;
 export type ReferralIssuedEvent = EventEnvelope<"ReferralIssued", ReferralIssuedData>;
 export type MedicationOrderSharedData = { "orderId": string; "fromClinicId": string; "toClinicId"?: string; "patientRef": string; "prescriberId": string; "orderVersion": number; "signedAt": string; "expiresAt": string; "consentToken": string; "secureLink"?: string; "items"?: never; "medications"?: never; "lines"?: never; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type MedicationOrderSharedEvent = EventEnvelope<"MedicationOrderShared", MedicationOrderSharedData>;
-export type CommissionAdjustedData = { "chargeId": string; "appointmentId": string; "previousAmount": string; "adjustedAmount": string; "currency": string; "reason": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "adjustedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionAdjustedData = { "chargeId": string; "appointmentId": string; "previousAmount": string; "adjustedAmount": string; "currency": string; "reason": string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "adjustedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CommissionAdjustedEvent = EventEnvelope<"CommissionAdjusted", CommissionAdjustedData>;
 export type PatientConsentUpdatedData = { "subRef": string; "purpose": string; "channel"?: string; "granted": boolean; "textVersion": string; "source": "web" | "app" | "whatsapp" | "widget" | "ops-import"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PatientConsentUpdatedEvent = EventEnvelope<"PatientConsentUpdated", PatientConsentUpdatedData>;
@@ -8537,6 +9953,30 @@ export type WaitlistOfferCreatedData = { "offerId": string; "waitlistRef": strin
 export type WaitlistOfferCreatedEvent = EventEnvelope<"WAITLIST_OFFER_CREATED", WaitlistOfferCreatedData>;
 export type WaitlistOfferExpiredData = { "offerId": string; "waitlistRef": string; "clinicId": string; "reason": "EXPIRED" | "WITHDRAWN" | "SLOT_TAKEN"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type WaitlistOfferExpiredEvent = EventEnvelope<"WAITLIST_OFFER_EXPIRED", WaitlistOfferExpiredData>;
+export type RefundDestinationChosenData = { "choiceRef": string; "market"?: string; "refundRef": string; "choice": "ORIGINAL" | "CREDIT"; "amountMinor": number; "currency": string; "source"?: "PATIENT_CANCEL" | "PATIENT_REFUND_REQUEST"; "chosenAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type RefundDestinationChosenEvent = EventEnvelope<"RefundDestinationChosen", RefundDestinationChosenData>;
+export type RewardRestoredData = { "lotRef": string; "restoredLotRef"?: string; "market"?: string; "amountMinor": number; "currency": string; "reasonCode": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type RewardRestoredEvent = EventEnvelope<"RewardRestored", RewardRestoredData>;
+export type GoodwillGrantedData = { "grantRef": string; "lotRef": string; "market"?: string; "reason": "PROVIDER_LATE_CANCEL" | "LONG_WAIT" | "FAILED_BOOKING" | "PAYMENT_ISSUE" | "OTHER_APPROVED"; "amountMinor": number; "currency": string; "secondApproval"?: boolean; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type GoodwillGrantedEvent = EventEnvelope<"GoodwillGranted", GoodwillGrantedData>;
+export type ProviderCreditGrantedData = { "walletRef": string; "orgRef": string; "category": string; "reason"?: string; "amountMinor": number; "currency": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderCreditGrantedEvent = EventEnvelope<"ProviderCreditGranted", ProviderCreditGrantedData>;
+export type ProviderCreditConsumedData = { "walletRef": string; "orgRef": string; "category": string; "reason"?: string; "amountMinor": number; "currency": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderCreditConsumedEvent = EventEnvelope<"ProviderCreditConsumed", ProviderCreditConsumedData>;
+export type ProviderCreditExpiredData = { "walletRef": string; "orgRef": string; "category": string; "reason"?: string; "amountMinor": number; "currency": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderCreditExpiredEvent = EventEnvelope<"ProviderCreditExpired", ProviderCreditExpiredData>;
+export type ProviderPromotionUpdatedData = { "promotionId": string; "version": number; "orgRef": string; "clinicId"?: string; "status": "DRAFT" | "SUBMITTED" | "IN_REVIEW" | "APPROVED" | "ACTIVE" | "PAUSED" | "EXHAUSTED" | "EXPIRED" | "REJECTED" | "ARCHIVED"; "discount"?: { "kind": "FIXED_MINOR" | "PERCENT_BP"; "value": number; "maxPerBookingMinor"?: number; [k: string]: unknown }; "scope"?: { "doctorIds"?: Array<string>; "appointmentTypeIds"?: Array<string>; "careTypes"?: Array<"IN_CLINIC" | "VIDEO" | "HOME_VISIT">; [k: string]: unknown }; "startsAt"?: string; "endsAt"?: string; "patientCopy"?: { "ar"?: string; "en"?: string; [k: string]: unknown }; "contentHash"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderPromotionUpdatedEvent = EventEnvelope<"PROVIDER_PROMOTION_UPDATED", ProviderPromotionUpdatedData>;
+export type PromotionReviewDecidedData = { "promotionId": string; "version": number; "orgRef": string; "reviewKind": "CONTENT" | "SCOPE" | "HIGH_VALUE"; "decision": "APPROVED" | "REJECTED" | "NEEDS_CHANGES"; "note"?: string; "decidedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PromotionReviewDecidedEvent = EventEnvelope<"PromotionReviewDecided", PromotionReviewDecidedData>;
+export type SponsoredDiscountReservedData = { "promotionId": string; "version": number; "reservationRef": string; "bookingRef": string; "amountMinor": number; "currency": string; "reason"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type SponsoredDiscountReservedEvent = EventEnvelope<"SponsoredDiscountReserved", SponsoredDiscountReservedData>;
+export type SponsoredDiscountDebitedData = { "promotionId": string; "version": number; "reservationRef": string; "bookingRef": string; "amountMinor": number; "currency": string; "reason"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type SponsoredDiscountDebitedEvent = EventEnvelope<"SponsoredDiscountDebited", SponsoredDiscountDebitedData>;
+export type SponsoredDiscountReleasedData = { "promotionId": string; "version": number; "reservationRef": string; "bookingRef": string; "amountMinor": number; "currency": string; "reason"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type SponsoredDiscountReleasedEvent = EventEnvelope<"SponsoredDiscountReleased", SponsoredDiscountReleasedData>;
+export type SponsoredDiscountReversedData = { "promotionId": string; "version": number; "reservationRef": string; "bookingRef": string; "amountMinor": number; "currency": string; "reason"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type SponsoredDiscountReversedEvent = EventEnvelope<"SponsoredDiscountReversed", SponsoredDiscountReversedData>;
 
 export interface EventMap {
   "APPOINTMENT_CONFIRMED": AppointmentConfirmedEvent;
@@ -8614,4 +10054,16 @@ export interface EventMap {
   "ProviderVerificationDecided": ProviderVerificationDecidedEvent;
   "WAITLIST_OFFER_CREATED": WaitlistOfferCreatedEvent;
   "WAITLIST_OFFER_EXPIRED": WaitlistOfferExpiredEvent;
+  "RefundDestinationChosen": RefundDestinationChosenEvent;
+  "RewardRestored": RewardRestoredEvent;
+  "GoodwillGranted": GoodwillGrantedEvent;
+  "ProviderCreditGranted": ProviderCreditGrantedEvent;
+  "ProviderCreditConsumed": ProviderCreditConsumedEvent;
+  "ProviderCreditExpired": ProviderCreditExpiredEvent;
+  "PROVIDER_PROMOTION_UPDATED": ProviderPromotionUpdatedEvent;
+  "PromotionReviewDecided": PromotionReviewDecidedEvent;
+  "SponsoredDiscountReserved": SponsoredDiscountReservedEvent;
+  "SponsoredDiscountDebited": SponsoredDiscountDebitedEvent;
+  "SponsoredDiscountReleased": SponsoredDiscountReleasedEvent;
+  "SponsoredDiscountReversed": SponsoredDiscountReversedEvent;
 }
