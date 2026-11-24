@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/ATTRIBUTION_MODELS.schema.json",
+  "title": "Growth config: ATTRIBUTION_MODELS",
+  "description": "Reporting models only (GRW-P3-B): windows, half-life, position shares and the data-driven gate. NEVER read by the money decision (ATTRIBUTION_POLICY owns that); no model changes a commission. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "windows": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "webAppDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "description": "Web and app touch window. PROPOSED_DEFAULT 30."
+        },
+        "campaignDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "description": "Campaign window. PROPOSED_DEFAULT 7."
+        },
+        "providerLinkDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "description": "Provider link window. PROPOSED_DEFAULT 30."
+        }
+      }
+    },
+    "halfLifeDays": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 90,
+      "description": "Time-decay half-life. PROPOSED_DEFAULT 7."
+    },
+    "positionFirstBp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "description": "Position-based first-touch share in basis points. PROPOSED_DEFAULT 4000."
+    },
+    "positionLastBp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "description": "Position-based last-touch share. positionFirstBp + positionLastBp must not exceed 10000. PROPOSED_DEFAULT 4000."
+    },
+    "dataDriven": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minConversions": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 10000000,
+          "description": "Attended new patients needed in the lookback before the data-driven model runs. PROPOSED_DEFAULT 1000."
+        },
+        "minNodeK": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 10000,
+          "description": "Paths a node must occur in before it is shown; smaller nodes are folded. Never below 10."
+        }
+      }
+    }
+  }
+}

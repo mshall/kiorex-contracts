@@ -4696,6 +4696,15 @@ export const EVENT_SCHEMAS = {
             "type": "string",
             "pattern": "^[A-Z]{2}$"
           },
+          "product": {
+            "enum": [
+              "CLINIC",
+              "PHARMACY",
+              "LAB",
+              "NURSE"
+            ],
+            "description": "Aggregate rollup dimension (1.13.0, optional). Absent = CLINIC."
+          },
           "recordedAt": {
             "type": "string",
             "format": "date-time"
@@ -7213,6 +7222,45 @@ export const EVENT_SCHEMAS = {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$"
           },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Internal promotion name (1.13.0, optional)."
+          },
+          "budgetCapMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Funding ceiling in minor units (1.13.0, optional)."
+          },
+          "perPatientLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Redemptions per patient (1.13.0, optional)."
+          },
+          "eligibility": {
+            "enum": [
+              "ALL",
+              "NEW_PATIENTS",
+              "RETURNING"
+            ],
+            "description": "1.13.0, optional."
+          },
+          "fundingMode": {
+            "enum": [
+              "PROVIDER_FUNDED",
+              "PROVIDER_CREDIT"
+            ],
+            "description": "1.13.0, optional."
+          },
+          "reviewKinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z_]{2,40}$"
+            },
+            "maxItems": 10,
+            "description": "Why the review was required (1.13.0, optional)."
+          },
           "at": {
             "type": "string",
             "format": "date-time"
@@ -7857,6 +7905,1138 @@ export const EVENT_SCHEMAS = {
           "orgRef",
           "companyName",
           "referredAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ExperimentStarted": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ExperimentStarted.schema.json",
+    "title": "ExperimentStarted",
+    "description": "INTERNAL (Kiorex outbox only). An experiment moved to RUNNING. Experiment id, market and key; never a visitor, a person or a health datum (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ExperimentStarted"
+      },
+      "aggregateType": {
+        "const": "GrowthExperiment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "experimentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "surface": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "by": {
+            "enum": [
+              "HUMAN",
+              "SYSTEM",
+              "KILL_SWITCH"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,32}$"
+          },
+          "pValue": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "experimentId",
+          "market",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ExperimentStopped": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ExperimentStopped.schema.json",
+    "title": "ExperimentStopped",
+    "description": "INTERNAL (Kiorex outbox only). An experiment was stopped by a person or by the kill switch (reason is a short operator text, never a person). Experiment id, market and key; never a visitor, a person or a health datum (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ExperimentStopped"
+      },
+      "aggregateType": {
+        "const": "GrowthExperiment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "experimentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "surface": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "by": {
+            "enum": [
+              "HUMAN",
+              "SYSTEM",
+              "KILL_SWITCH"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,32}$"
+          },
+          "pValue": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "experimentId",
+          "market",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ExperimentConcluded": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ExperimentConcluded.schema.json",
+    "title": "ExperimentConcluded",
+    "description": "INTERNAL (Kiorex outbox only). An experiment reached a verdict. Experiment id, market and key; never a visitor, a person or a health datum (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ExperimentConcluded"
+      },
+      "aggregateType": {
+        "const": "GrowthExperiment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "experimentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "surface": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "by": {
+            "enum": [
+              "HUMAN",
+              "SYSTEM",
+              "KILL_SWITCH"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,32}$"
+          },
+          "pValue": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "experimentId",
+          "market",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ExperimentSrmDetected": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ExperimentSrmDetected.schema.json",
+    "title": "ExperimentSrmDetected",
+    "description": "INTERNAL (Kiorex outbox only). The sample-ratio-mismatch check failed; results are hidden until a person looks. Experiment id, market and key; never a visitor, a person or a health datum (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ExperimentSrmDetected"
+      },
+      "aggregateType": {
+        "const": "GrowthExperiment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "experimentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "surface": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "by": {
+            "enum": [
+              "HUMAN",
+              "SYSTEM",
+              "KILL_SWITCH"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,32}$"
+          },
+          "pValue": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "experimentId",
+          "market",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ExperimentShipRequested": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ExperimentShipRequested.schema.json",
+    "title": "ExperimentShipRequested",
+    "description": "INTERNAL (Kiorex outbox only). A winner was proposed for shipping; a human turns the flag on through the maker-checker (ship-winner never flips a flag). Experiment id, market and key; never a visitor, a person or a health datum (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ExperimentShipRequested"
+      },
+      "aggregateType": {
+        "const": "GrowthExperiment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "experimentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "surface": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "by": {
+            "enum": [
+              "HUMAN",
+              "SYSTEM",
+              "KILL_SWITCH"
+            ]
+          },
+          "verdict": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,32}$"
+          },
+          "pValue": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "experimentId",
+          "market",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "FraudCaseOpened": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/FraudCaseOpened.schema.json",
+    "title": "FraudCaseOpened",
+    "description": "INTERNAL (Kiorex outbox only). A fraud case was opened (shadow or enforced). Case id, surface, band and rule ids only: never an identity, a phone, a device id or a reward holder (identity lookup is a separate audited action). 1.13.0.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "FraudCaseOpened"
+      },
+      "aggregateType": {
+        "const": "FraudCase"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "surface": {
+            "enum": [
+              "REFERRAL_CLAIM",
+              "REWARD",
+              "REFERRAL_ELIGIBILITY",
+              "WIDGET",
+              "TOUCH",
+              "PROVIDER_REVIEW"
+            ]
+          },
+          "band": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ]
+          },
+          "ruleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^r_[a-z_]{2,30}$"
+            },
+            "maxItems": 20
+          },
+          "enforced": {
+            "type": "boolean"
+          },
+          "resolution": {
+            "enum": [
+              "CONFIRMED",
+              "DISMISSED",
+              "UPHELD_APPEAL",
+              "EXPIRED"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "caseId",
+          "surface",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "FraudCaseResolved": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/FraudCaseResolved.schema.json",
+    "title": "FraudCaseResolved",
+    "description": "INTERNAL (Kiorex outbox only). A fraud case was resolved by a person or expired. Case id, surface, band and rule ids only: never an identity, a phone, a device id or a reward holder (identity lookup is a separate audited action). 1.13.0.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "FraudCaseResolved"
+      },
+      "aggregateType": {
+        "const": "FraudCase"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "surface": {
+            "enum": [
+              "REFERRAL_CLAIM",
+              "REWARD",
+              "REFERRAL_ELIGIBILITY",
+              "WIDGET",
+              "TOUCH",
+              "PROVIDER_REVIEW"
+            ]
+          },
+          "band": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ]
+          },
+          "ruleIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^r_[a-z_]{2,30}$"
+            },
+            "maxItems": 20
+          },
+          "enforced": {
+            "type": "boolean"
+          },
+          "resolution": {
+            "enum": [
+              "CONFIRMED",
+              "DISMISSED",
+              "UPHELD_APPEAL",
+              "EXPIRED"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "caseId",
+          "surface",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "GrowthRecommendationProposed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/GrowthRecommendationProposed.schema.json",
+    "title": "GrowthRecommendationProposed",
+    "description": "INTERNAL (Kiorex outbox only). A recommendation was proposed from aggregate counts. Rule id, kind and market only; a recommendation is built from aggregates (k >= 10) and never carries a person (error RECOMMENDATION_NOT_AGGREGATE). 1.13.0.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "GrowthRecommendationProposed"
+      },
+      "aggregateType": {
+        "const": "GrowthRecommendation"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "recommendationId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,40}$"
+          },
+          "ruleId": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "decision": {
+            "enum": [
+              "ACCEPTED",
+              "DISMISSED",
+              "EXPIRED"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "recommendationId",
+          "kind",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "GrowthRecommendationDecided": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/GrowthRecommendationDecided.schema.json",
+    "title": "GrowthRecommendationDecided",
+    "description": "INTERNAL (Kiorex outbox only). A person accepted, dismissed or let a recommendation expire. Rule id, kind and market only; a recommendation is built from aggregates (k >= 10) and never carries a person (error RECOMMENDATION_NOT_AGGREGATE). 1.13.0.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "GrowthRecommendationDecided"
+      },
+      "aggregateType": {
+        "const": "GrowthRecommendation"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "recommendationId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,40}$"
+          },
+          "ruleId": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "decision": {
+            "enum": [
+              "ACCEPTED",
+              "DISMISSED",
+              "EXPIRED"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "recommendationId",
+          "kind",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "GrowthJourneyPublished": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/GrowthJourneyPublished.schema.json",
+    "title": "GrowthJourneyPublished",
+    "description": "INTERNAL (Kiorex outbox only). A custom automation journey was published (two-person rule). Journey id, version and checksum only; never an audience list or message text. Any MARKETING send still needs growth.marketing_messaging. 1.13.0.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "GrowthJourneyPublished"
+      },
+      "aggregateType": {
+        "const": "GrowthJourney"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "journeyId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "checksum": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{16,64}$"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "journeyId",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "GrowthJourneyKilled": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/GrowthJourneyKilled.schema.json",
+    "title": "GrowthJourneyKilled",
+    "description": "INTERNAL (Kiorex outbox only). A custom journey was killed or auto-stopped. Journey id, version and checksum only; never an audience list or message text. Any MARKETING send still needs growth.marketing_messaging. 1.13.0.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "GrowthJourneyKilled"
+      },
+      "aggregateType": {
+        "const": "GrowthJourney"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "journeyId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "checksum": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{16,64}$"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "journeyId",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "MarketOnboardingStateChanged": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/MarketOnboardingStateChanged.schema.json",
+    "title": "MarketOnboardingStateChanged",
+    "description": "INTERNAL (Kiorex outbox only). A market moved between onboarding states (DRAFT, STAGED, READY, LIVE_REQUESTED, PAUSED). `market.<cc>.live` stays the human gate; this event records the step, never turns anything on (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "MarketOnboardingStateChanged"
+      },
+      "aggregateType": {
+        "const": "MarketOnboarding"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,30}$"
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,30}$"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "market",
+          "to",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "SeoQualityGateFailed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/SeoQualityGateFailed.schema.json",
+    "title": "SeoQualityGateFailed",
+    "description": "INTERNAL (Kiorex outbox only). A public page failed a blocking SEO quality check (thin content, near duplicate, AR/EN parity, structured data, canonical, hreflang, claims, empty page, review markup, available providers). Page key and check ids only. `wouldNoindex` says what autoNoindex would do; nothing changes unless SEO_AUTOMATION.autoNoindex is on (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "SeoQualityGateFailed"
+      },
+      "aggregateType": {
+        "const": "SeoPage"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "pageKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "locale": {
+            "enum": [
+              "ar",
+              "en"
+            ]
+          },
+          "templateKind": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "failedChecks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 60
+            },
+            "maxItems": 30
+          },
+          "wouldNoindex": {
+            "type": "boolean"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "market",
+          "pageKey",
+          "locale",
+          "failedChecks",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "SeoVitalBudgetBreached": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/SeoVitalBudgetBreached.schema.json",
+    "title": "SeoVitalBudgetBreached",
+    "description": "INTERNAL (Kiorex outbox only). A Core Web Vitals p75 (lab or field) of a template went over its budget from SEO_AUTOMATION.vitals. Template kind, metric, source and the p75 only. Blocks nothing in code (1.13.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "SeoVitalBudgetBreached"
+      },
+      "aggregateType": {
+        "const": "SeoVital"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "templateKind": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "metric": {
+            "enum": [
+              "lcpMs",
+              "inpMs",
+              "cls",
+              "tbtMs",
+              "perfScore"
+            ]
+          },
+          "source": {
+            "enum": [
+              "LAB",
+              "FIELD"
+            ]
+          },
+          "p75": {
+            "type": "number"
+          },
+          "budget": {
+            "type": "number"
+          },
+          "day": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "maxItems": 10
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "market",
+          "templateKind",
+          "metric",
+          "source",
+          "p75",
+          "day"
         ]
       }
     },
@@ -9522,6 +10702,244 @@ export const EVENT_EXAMPLES = {
       "aggregateType": "ProviderB2BReferral",
       "aggregateId": "b2b_01JF3ZC222"
     }
+  },
+  "ExperimentStarted": {
+    "eventId": "01JF3ZEVTEXPERIME",
+    "type": "ExperimentStarted",
+    "aggregateType": "GrowthExperiment",
+    "aggregateId": "exp_01JF3ZE000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "experimentId": "exp_01JF3ZE000",
+      "market": "EG",
+      "key": "winback-subject-a-b",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthExperiment",
+      "aggregateId": "exp_01JF3ZE000"
+    }
+  },
+  "ExperimentStopped": {
+    "eventId": "01JF3ZEVTEXPERIME",
+    "type": "ExperimentStopped",
+    "aggregateType": "GrowthExperiment",
+    "aggregateId": "exp_01JF3ZE000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "experimentId": "exp_01JF3ZE000",
+      "market": "EG",
+      "key": "winback-subject-a-b",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthExperiment",
+      "aggregateId": "exp_01JF3ZE000"
+    }
+  },
+  "ExperimentConcluded": {
+    "eventId": "01JF3ZEVTEXPERIME",
+    "type": "ExperimentConcluded",
+    "aggregateType": "GrowthExperiment",
+    "aggregateId": "exp_01JF3ZE000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "experimentId": "exp_01JF3ZE000",
+      "market": "EG",
+      "key": "winback-subject-a-b",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthExperiment",
+      "aggregateId": "exp_01JF3ZE000"
+    }
+  },
+  "ExperimentSrmDetected": {
+    "eventId": "01JF3ZEVTEXPERIME",
+    "type": "ExperimentSrmDetected",
+    "aggregateType": "GrowthExperiment",
+    "aggregateId": "exp_01JF3ZE000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "experimentId": "exp_01JF3ZE000",
+      "market": "EG",
+      "key": "winback-subject-a-b",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthExperiment",
+      "aggregateId": "exp_01JF3ZE000"
+    }
+  },
+  "ExperimentShipRequested": {
+    "eventId": "01JF3ZEVTEXPERIME",
+    "type": "ExperimentShipRequested",
+    "aggregateType": "GrowthExperiment",
+    "aggregateId": "exp_01JF3ZE000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "experimentId": "exp_01JF3ZE000",
+      "market": "EG",
+      "key": "winback-subject-a-b",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthExperiment",
+      "aggregateId": "exp_01JF3ZE000"
+    }
+  },
+  "FraudCaseOpened": {
+    "eventId": "01JF3ZEVTFRAUDCAS",
+    "type": "FraudCaseOpened",
+    "aggregateType": "FraudCase",
+    "aggregateId": "fc_01JF3ZF000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "caseId": "fc_01JF3ZF000",
+      "market": "EG",
+      "surface": "REWARD",
+      "band": "HIGH",
+      "ruleIds": [
+        "r_farm"
+      ],
+      "enforced": false,
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "FraudCase",
+      "aggregateId": "fc_01JF3ZF000"
+    }
+  },
+  "FraudCaseResolved": {
+    "eventId": "01JF3ZEVTFRAUDCAS",
+    "type": "FraudCaseResolved",
+    "aggregateType": "FraudCase",
+    "aggregateId": "fc_01JF3ZF000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "caseId": "fc_01JF3ZF000",
+      "market": "EG",
+      "surface": "REWARD",
+      "band": "HIGH",
+      "ruleIds": [
+        "r_farm"
+      ],
+      "enforced": false,
+      "resolution": "DISMISSED",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "FraudCase",
+      "aggregateId": "fc_01JF3ZF000"
+    }
+  },
+  "GrowthRecommendationProposed": {
+    "eventId": "01JF3ZEVTGROWTHRE",
+    "type": "GrowthRecommendationProposed",
+    "aggregateType": "GrowthRecommendation",
+    "aggregateId": "rec_01JF3ZG000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "recommendationId": "rec_01JF3ZG000",
+      "market": "EG",
+      "kind": "PAUSE_CAMPAIGN",
+      "ruleId": "campaign-cpa-high",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthRecommendation",
+      "aggregateId": "rec_01JF3ZG000"
+    }
+  },
+  "GrowthRecommendationDecided": {
+    "eventId": "01JF3ZEVTGROWTHRE",
+    "type": "GrowthRecommendationDecided",
+    "aggregateType": "GrowthRecommendation",
+    "aggregateId": "rec_01JF3ZG000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "recommendationId": "rec_01JF3ZG000",
+      "market": "EG",
+      "kind": "PAUSE_CAMPAIGN",
+      "ruleId": "campaign-cpa-high",
+      "decision": "DISMISSED",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthRecommendation",
+      "aggregateId": "rec_01JF3ZG000"
+    }
+  },
+  "GrowthJourneyPublished": {
+    "eventId": "01JF3ZEVTGROWTHJO",
+    "type": "GrowthJourneyPublished",
+    "aggregateType": "GrowthJourney",
+    "aggregateId": "jny_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "journeyId": "jny_01JF3ZH000",
+      "version": 1,
+      "market": "EG",
+      "checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthJourney",
+      "aggregateId": "jny_01JF3ZH000"
+    }
+  },
+  "GrowthJourneyKilled": {
+    "eventId": "01JF3ZEVTGROWTHJO",
+    "type": "GrowthJourneyKilled",
+    "aggregateType": "GrowthJourney",
+    "aggregateId": "jny_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "journeyId": "jny_01JF3ZH000",
+      "version": 1,
+      "market": "EG",
+      "checksum": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthJourney",
+      "aggregateId": "jny_01JF3ZH000"
+    }
+  },
+  "MarketOnboardingStateChanged": {
+    "eventId": "01JF3ZEVTMARKETON",
+    "type": "MarketOnboardingStateChanged",
+    "aggregateType": "MarketOnboarding",
+    "aggregateId": "ZY",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "market": "ZY",
+      "from": "DRAFT",
+      "to": "STAGED",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "MarketOnboarding",
+      "aggregateId": "ZY"
+    }
+  },
+  "SeoQualityGateFailed": {
+    "eventId": "01JF3ZEVTSEOQUALI",
+    "type": "SeoQualityGateFailed",
+    "aggregateType": "SeoPage",
+    "aggregateId": "doctor/dr-sample|ar",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "market": "EG",
+      "pageKey": "doctor/dr-sample",
+      "locale": "ar",
+      "templateKind": "doctor",
+      "score": 61,
+      "failedChecks": [
+        "thin-content"
+      ],
+      "wouldNoindex": true,
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "SeoPage",
+      "aggregateId": "doctor/dr-sample|ar"
+    }
+  },
+  "SeoVitalBudgetBreached": {
+    "eventId": "01JF3ZEVTSEOVITAL",
+    "type": "SeoVitalBudgetBreached",
+    "aggregateType": "SeoVital",
+    "aggregateId": "doctor|lcpMs|FIELD",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "market": "EG",
+      "templateKind": "doctor",
+      "metric": "lcpMs",
+      "source": "FIELD",
+      "p75": 3100,
+      "budget": 2500,
+      "day": "2027-03-04",
+      "targets": [
+        "ops"
+      ],
+      "aggregateType": "SeoVital",
+      "aggregateId": "doctor|lcpMs|FIELD"
+    }
   }
 } as const;
 
@@ -10070,10 +11488,94 @@ export const EVENT_META = {
     "aggregateType": "ProviderB2BReferral",
     "status": "v2-draft",
     "schemaFile": "CorporateLeadReferred.schema.json"
+  },
+  "ExperimentStarted": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthExperiment",
+    "status": "v2-draft",
+    "schemaFile": "ExperimentStarted.schema.json"
+  },
+  "ExperimentStopped": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthExperiment",
+    "status": "v2-draft",
+    "schemaFile": "ExperimentStopped.schema.json"
+  },
+  "ExperimentConcluded": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthExperiment",
+    "status": "v2-draft",
+    "schemaFile": "ExperimentConcluded.schema.json"
+  },
+  "ExperimentSrmDetected": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthExperiment",
+    "status": "v2-draft",
+    "schemaFile": "ExperimentSrmDetected.schema.json"
+  },
+  "ExperimentShipRequested": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthExperiment",
+    "status": "v2-draft",
+    "schemaFile": "ExperimentShipRequested.schema.json"
+  },
+  "FraudCaseOpened": {
+    "producer": "kiorex",
+    "aggregateType": "FraudCase",
+    "status": "v2-draft",
+    "schemaFile": "FraudCaseOpened.schema.json"
+  },
+  "FraudCaseResolved": {
+    "producer": "kiorex",
+    "aggregateType": "FraudCase",
+    "status": "v2-draft",
+    "schemaFile": "FraudCaseResolved.schema.json"
+  },
+  "GrowthRecommendationProposed": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthRecommendation",
+    "status": "v2-draft",
+    "schemaFile": "GrowthRecommendationProposed.schema.json"
+  },
+  "GrowthRecommendationDecided": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthRecommendation",
+    "status": "v2-draft",
+    "schemaFile": "GrowthRecommendationDecided.schema.json"
+  },
+  "GrowthJourneyPublished": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthJourney",
+    "status": "v2-draft",
+    "schemaFile": "GrowthJourneyPublished.schema.json"
+  },
+  "GrowthJourneyKilled": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthJourney",
+    "status": "v2-draft",
+    "schemaFile": "GrowthJourneyKilled.schema.json"
+  },
+  "MarketOnboardingStateChanged": {
+    "producer": "kiorex",
+    "aggregateType": "MarketOnboarding",
+    "status": "v2-draft",
+    "schemaFile": "MarketOnboardingStateChanged.schema.json"
+  },
+  "SeoQualityGateFailed": {
+    "producer": "kiorex",
+    "aggregateType": "SeoPage",
+    "status": "v2-draft",
+    "schemaFile": "SeoQualityGateFailed.schema.json"
+  },
+  "SeoVitalBudgetBreached": {
+    "producer": "kiorex",
+    "aggregateType": "SeoVital",
+    "status": "v2-draft",
+    "schemaFile": "SeoVitalBudgetBreached.schema.json"
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred" | "ExperimentStarted" | "ExperimentStopped" | "ExperimentConcluded" | "ExperimentSrmDetected" | "ExperimentShipRequested" | "FraudCaseOpened" | "FraudCaseResolved" | "GrowthRecommendationProposed" | "GrowthRecommendationDecided" | "GrowthJourneyPublished" | "GrowthJourneyKilled" | "MarketOnboardingStateChanged" | "SeoQualityGateFailed" | "SeoVitalBudgetBreached";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -10185,7 +11687,7 @@ export type PatientConsentUpdatedData = { "subRef": string; "purpose": string; "
 export type PatientConsentUpdatedEvent = EventEnvelope<"PatientConsentUpdated", PatientConsentUpdatedData>;
 export type AttributionAssignedData = { "bookingId": string; "decisionId": string; "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "reason": string; "policyVersion": string; "market"?: string; "decidedAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type AttributionAssignedEvent = EventEnvelope<"AttributionAssigned", AttributionAssignedData>;
-export type PatientAcquisitionRecordedData = { "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "sourceKind": string; "market": string; "recordedAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PatientAcquisitionRecordedData = { "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "sourceKind": string; "market": string; "product"?: "CLINIC" | "PHARMACY" | "LAB" | "NURSE"; "recordedAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PatientAcquisitionRecordedEvent = EventEnvelope<"PatientAcquisitionRecorded", PatientAcquisitionRecordedData>;
 export type ReferralLinkCreatedData = { "linkCode": string; "ownerScope": "ORG" | "CLINIC" | "BRANCH" | "DOCTOR" | "DESK"; "channelKind": "WEB_LINK" | "QR_POSTER" | "QR_DESK" | "SOCIAL" | "SMS" | "WHATSAPP_SHARE" | "EMAIL_SIG" | "GOOGLE_PROFILE"; "orgRef"?: string; "clinicRef"?: string | null; "product"?: "CLINIC" | "PHARMACY" | "LAB" | "NURSE"; "createdAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ReferralLinkCreatedEvent = EventEnvelope<"ReferralLinkCreated", ReferralLinkCreatedData>;
@@ -10247,7 +11749,7 @@ export type ProviderCreditConsumedData = { "walletRef": string; "orgRef": string
 export type ProviderCreditConsumedEvent = EventEnvelope<"ProviderCreditConsumed", ProviderCreditConsumedData>;
 export type ProviderCreditExpiredData = { "walletRef": string; "orgRef": string; "category": string; "reason"?: string; "amountMinor": number; "currency": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ProviderCreditExpiredEvent = EventEnvelope<"ProviderCreditExpired", ProviderCreditExpiredData>;
-export type ProviderPromotionUpdatedData = { "promotionId": string; "version": number; "orgRef": string; "clinicId"?: string; "status": "DRAFT" | "SUBMITTED" | "IN_REVIEW" | "APPROVED" | "ACTIVE" | "PAUSED" | "EXHAUSTED" | "EXPIRED" | "REJECTED" | "ARCHIVED"; "discount"?: { "kind": "FIXED_MINOR" | "PERCENT_BP"; "value": number; "maxPerBookingMinor"?: number; [k: string]: unknown }; "scope"?: { "doctorIds"?: Array<string>; "appointmentTypeIds"?: Array<string>; "careTypes"?: Array<"IN_CLINIC" | "VIDEO" | "HOME_VISIT">; [k: string]: unknown }; "startsAt"?: string; "endsAt"?: string; "patientCopy"?: { "ar"?: string; "en"?: string; [k: string]: unknown }; "contentHash"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderPromotionUpdatedData = { "promotionId": string; "version": number; "orgRef": string; "clinicId"?: string; "status": "DRAFT" | "SUBMITTED" | "IN_REVIEW" | "APPROVED" | "ACTIVE" | "PAUSED" | "EXHAUSTED" | "EXPIRED" | "REJECTED" | "ARCHIVED"; "discount"?: { "kind": "FIXED_MINOR" | "PERCENT_BP"; "value": number; "maxPerBookingMinor"?: number; [k: string]: unknown }; "scope"?: { "doctorIds"?: Array<string>; "appointmentTypeIds"?: Array<string>; "careTypes"?: Array<"IN_CLINIC" | "VIDEO" | "HOME_VISIT">; [k: string]: unknown }; "startsAt"?: string; "endsAt"?: string; "patientCopy"?: { "ar"?: string; "en"?: string; [k: string]: unknown }; "contentHash"?: string; "name"?: string; "budgetCapMinor"?: number; "perPatientLimit"?: number; "eligibility"?: "ALL" | "NEW_PATIENTS" | "RETURNING"; "fundingMode"?: "PROVIDER_FUNDED" | "PROVIDER_CREDIT"; "reviewKinds"?: Array<string>; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ProviderPromotionUpdatedEvent = EventEnvelope<"PROVIDER_PROMOTION_UPDATED", ProviderPromotionUpdatedData>;
 export type PromotionReviewDecidedData = { "promotionId": string; "version": number; "orgRef": string; "reviewKind": "CONTENT" | "SCOPE" | "HIGH_VALUE"; "decision": "APPROVED" | "REJECTED" | "NEEDS_CHANGES"; "note"?: string; "decidedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PromotionReviewDecidedEvent = EventEnvelope<"PromotionReviewDecided", PromotionReviewDecidedData>;
@@ -10265,6 +11767,34 @@ export type CorporateCodeRedeemedData = { "accountRef": string; "memberRef": str
 export type CorporateCodeRedeemedEvent = EventEnvelope<"CorporateCodeRedeemed", CorporateCodeRedeemedData>;
 export type CorporateLeadReferredData = { "referralId": string; "orgRef": string; "clinicId"?: string; "companyName": string; "sizeBucket"?: "1_49" | "50_199" | "200_999" | "1000_PLUS" | "UNKNOWN"; "contactRef"?: string; "referredAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CorporateLeadReferredEvent = EventEnvelope<"CorporateLeadReferred", CorporateLeadReferredData>;
+export type ExperimentStartedData = { "experimentId": string; "market": string; "key"?: string; "surface"?: string; "reason"?: string; "by"?: "HUMAN" | "SYSTEM" | "KILL_SWITCH"; "verdict"?: string; "pValue"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ExperimentStartedEvent = EventEnvelope<"ExperimentStarted", ExperimentStartedData>;
+export type ExperimentStoppedData = { "experimentId": string; "market": string; "key"?: string; "surface"?: string; "reason"?: string; "by"?: "HUMAN" | "SYSTEM" | "KILL_SWITCH"; "verdict"?: string; "pValue"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ExperimentStoppedEvent = EventEnvelope<"ExperimentStopped", ExperimentStoppedData>;
+export type ExperimentConcludedData = { "experimentId": string; "market": string; "key"?: string; "surface"?: string; "reason"?: string; "by"?: "HUMAN" | "SYSTEM" | "KILL_SWITCH"; "verdict"?: string; "pValue"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ExperimentConcludedEvent = EventEnvelope<"ExperimentConcluded", ExperimentConcludedData>;
+export type ExperimentSrmDetectedData = { "experimentId": string; "market": string; "key"?: string; "surface"?: string; "reason"?: string; "by"?: "HUMAN" | "SYSTEM" | "KILL_SWITCH"; "verdict"?: string; "pValue"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ExperimentSrmDetectedEvent = EventEnvelope<"ExperimentSrmDetected", ExperimentSrmDetectedData>;
+export type ExperimentShipRequestedData = { "experimentId": string; "market": string; "key"?: string; "surface"?: string; "reason"?: string; "by"?: "HUMAN" | "SYSTEM" | "KILL_SWITCH"; "verdict"?: string; "pValue"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ExperimentShipRequestedEvent = EventEnvelope<"ExperimentShipRequested", ExperimentShipRequestedData>;
+export type FraudCaseOpenedData = { "caseId": string; "market"?: string; "surface": "REFERRAL_CLAIM" | "REWARD" | "REFERRAL_ELIGIBILITY" | "WIDGET" | "TOUCH" | "PROVIDER_REVIEW"; "band"?: "LOW" | "MEDIUM" | "HIGH"; "ruleIds"?: Array<string>; "enforced"?: boolean; "resolution"?: "CONFIRMED" | "DISMISSED" | "UPHELD_APPEAL" | "EXPIRED"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type FraudCaseOpenedEvent = EventEnvelope<"FraudCaseOpened", FraudCaseOpenedData>;
+export type FraudCaseResolvedData = { "caseId": string; "market"?: string; "surface": "REFERRAL_CLAIM" | "REWARD" | "REFERRAL_ELIGIBILITY" | "WIDGET" | "TOUCH" | "PROVIDER_REVIEW"; "band"?: "LOW" | "MEDIUM" | "HIGH"; "ruleIds"?: Array<string>; "enforced"?: boolean; "resolution"?: "CONFIRMED" | "DISMISSED" | "UPHELD_APPEAL" | "EXPIRED"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type FraudCaseResolvedEvent = EventEnvelope<"FraudCaseResolved", FraudCaseResolvedData>;
+export type GrowthRecommendationProposedData = { "recommendationId": string; "market"?: string; "kind": string; "ruleId"?: string; "decision"?: "ACCEPTED" | "DISMISSED" | "EXPIRED"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type GrowthRecommendationProposedEvent = EventEnvelope<"GrowthRecommendationProposed", GrowthRecommendationProposedData>;
+export type GrowthRecommendationDecidedData = { "recommendationId": string; "market"?: string; "kind": string; "ruleId"?: string; "decision"?: "ACCEPTED" | "DISMISSED" | "EXPIRED"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type GrowthRecommendationDecidedEvent = EventEnvelope<"GrowthRecommendationDecided", GrowthRecommendationDecidedData>;
+export type GrowthJourneyPublishedData = { "journeyId": string; "version"?: number; "market"?: string; "checksum"?: string; "reason"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type GrowthJourneyPublishedEvent = EventEnvelope<"GrowthJourneyPublished", GrowthJourneyPublishedData>;
+export type GrowthJourneyKilledData = { "journeyId": string; "version"?: number; "market"?: string; "checksum"?: string; "reason"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type GrowthJourneyKilledEvent = EventEnvelope<"GrowthJourneyKilled", GrowthJourneyKilledData>;
+export type MarketOnboardingStateChangedData = { "market": string; "from"?: string; "to": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type MarketOnboardingStateChangedEvent = EventEnvelope<"MarketOnboardingStateChanged", MarketOnboardingStateChangedData>;
+export type SeoQualityGateFailedData = { "market": string; "pageKey": string; "locale": "ar" | "en"; "templateKind"?: string; "score"?: number; "failedChecks": Array<string>; "wouldNoindex"?: boolean; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type SeoQualityGateFailedEvent = EventEnvelope<"SeoQualityGateFailed", SeoQualityGateFailedData>;
+export type SeoVitalBudgetBreachedData = { "market": string; "templateKind": string; "metric": "lcpMs" | "inpMs" | "cls" | "tbtMs" | "perfScore"; "source": "LAB" | "FIELD"; "p75": number; "budget"?: number; "day": string; "targets"?: Array<string>; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type SeoVitalBudgetBreachedEvent = EventEnvelope<"SeoVitalBudgetBreached", SeoVitalBudgetBreachedData>;
 
 export interface EventMap {
   "APPOINTMENT_CONFIRMED": AppointmentConfirmedEvent;
@@ -10357,4 +11887,18 @@ export interface EventMap {
   "CorporateAccountCreated": CorporateAccountCreatedEvent;
   "CorporateCodeRedeemed": CorporateCodeRedeemedEvent;
   "CorporateLeadReferred": CorporateLeadReferredEvent;
+  "ExperimentStarted": ExperimentStartedEvent;
+  "ExperimentStopped": ExperimentStoppedEvent;
+  "ExperimentConcluded": ExperimentConcludedEvent;
+  "ExperimentSrmDetected": ExperimentSrmDetectedEvent;
+  "ExperimentShipRequested": ExperimentShipRequestedEvent;
+  "FraudCaseOpened": FraudCaseOpenedEvent;
+  "FraudCaseResolved": FraudCaseResolvedEvent;
+  "GrowthRecommendationProposed": GrowthRecommendationProposedEvent;
+  "GrowthRecommendationDecided": GrowthRecommendationDecidedEvent;
+  "GrowthJourneyPublished": GrowthJourneyPublishedEvent;
+  "GrowthJourneyKilled": GrowthJourneyKilledEvent;
+  "MarketOnboardingStateChanged": MarketOnboardingStateChangedEvent;
+  "SeoQualityGateFailed": SeoQualityGateFailedEvent;
+  "SeoVitalBudgetBreached": SeoVitalBudgetBreachedEvent;
 }

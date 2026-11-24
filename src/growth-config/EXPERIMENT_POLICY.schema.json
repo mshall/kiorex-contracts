@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/EXPERIMENT_POLICY.schema.json",
+  "title": "Growth config: EXPERIMENT_POLICY",
+  "description": "Experiment guardrails (GRW-P3-A): run length, SRM alpha, concurrency, k-anonymity. First-party funnel facts only; no health surface, no money surface. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "minRunDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "Shortest run. PROPOSED_DEFAULT 7."
+    },
+    "srmAlpha": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 0.05,
+      "description": "p-value under which results are hidden. PROPOSED_DEFAULT 0.001."
+    },
+    "maxConcurrentPerSurface": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "PROPOSED_DEFAULT 1"
+    },
+    "maxVariants": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 8,
+      "description": "PROPOSED_DEFAULT 5"
+    },
+    "kAnonymity": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 1000,
+      "description": "Smallest cell a result may show; never below 10."
+    },
+    "assignmentTtlSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 86400,
+      "description": "Cacheable assignment time"
+    },
+    "maxRunFactor": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "An experiment short of its sample at this multiple of its planned days is stopped"
+    },
+    "guardrailMinEvents": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 1000,
+      "description": "Events in the treatment arm before a guardrail breach can be declared"
+    },
+    "conversionWindowDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "description": "Conversions are attributed within this many days after exposure"
+    },
+    "maxCookieExperiments": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Experiments a single visitor key may be in"
+    },
+    "deniedTags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_-]{2,40}$"
+      },
+      "maxItems": 50,
+      "description": "Surface tags that may never be experimented on (health, price, fees)"
+    }
+  }
+}

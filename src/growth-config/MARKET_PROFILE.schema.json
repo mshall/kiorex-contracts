@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/MARKET_PROFILE.schema.json",
+  "title": "Growth config: MARKET_PROFILE",
+  "description": "Market facts (GRW-P3-G): replaces the hard-coded market map as the source (the code map stays the fallback). The market is not live until the human gate market.<cc>.live is set; this config never turns a market on. Two-person rule. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cc",
+    "name",
+    "currency",
+    "minorUnits",
+    "phoneCode",
+    "timezone",
+    "locales",
+    "defaultLocale",
+    "canonicalSegment",
+    "quietHours",
+    "workingWeek",
+    "regulation"
+  ],
+  "properties": {
+    "cc": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "name": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ar",
+        "en"
+      ],
+      "properties": {
+        "ar": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      }
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "minorUnits": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4,
+      "description": "Decimal places of the currency"
+    },
+    "phoneCode": {
+      "type": "string",
+      "pattern": "^\\+[0-9]{1,4}$"
+    },
+    "phoneRegion": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "timezone": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 64,
+      "description": "IANA zone (checked by the consumer)"
+    },
+    "locales": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "ar",
+          "en"
+        ]
+      }
+    },
+    "defaultLocale": {
+      "enum": [
+        "ar",
+        "en"
+      ]
+    },
+    "canonicalSegment": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$",
+      "description": "Lower-case market code"
+    },
+    "quietHours": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "string",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+        },
+        "end": {
+          "type": "string",
+          "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+        }
+      }
+    },
+    "workingWeek": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 6,
+        "description": "Day of week, 0 = Sunday"
+      }
+    },
+    "geographyRef": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+    },
+    "specialtiesRef": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+    },
+    "dataCellId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+    },
+    "consentDefaultsRef": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+    },
+    "providerImportBatchId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 64
+    },
+    "regulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "marketingLicenceRequired",
+        "marketingLicenceHeld",
+        "consentRegimeId",
+        "minimumAge",
+        "healthAdvertisingRestricted",
+        "reviewMarkupAllowed",
+        "dataExportRuleId"
+      ],
+      "properties": {
+        "marketingLicenceRequired": {
+          "type": "boolean"
+        },
+        "marketingLicenceHeld": {
+          "type": "boolean",
+          "description": "Needs marketingLicenceRequired (checked by the consumer)"
+        },
+        "consentRegimeId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{1,31}$"
+        },
+        "minimumAge": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 25,
+          "description": "Minimum age"
+        },
+        "healthAdvertisingRestricted": {
+          "type": "boolean"
+        },
+        "reviewMarkupAllowed": {
+          "type": "boolean"
+        },
+        "dataExportRuleId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{1,31}$"
+        }
+      }
+    }
+  }
+}

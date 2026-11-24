@@ -8,7 +8,7 @@
  * Kiorly Clinic keeps its own copy of the small pieces it needs (its Docker build context cannot reach this package) and proves
  * them against the fixed vectors in `fixtures/growth-v1.10/vectors.json` (see CHANGELOG 1.10.0).
  */
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { ACQUISITION_BLOCK_SCHEMA, GROWTH_CONFIG_SCHEMAS } from "./generated/growth-schemas.js";
@@ -73,8 +73,8 @@ export const GROWTH_CONFIG_KINDS = [
   "ATTRIBUTION_POLICY", "SEO", "WIDGET_POLICY", "CONSENT_DEFAULTS", "COMMS_CAPS", "CAMPAIGN_GUARDRAILS", "REWARDS", "INTEGRATIONS", "EXPERIMENT_GUARDRAILS", "MARKET_GROWTH",
   // 1.12.0 (additive): Phase 2 kinds. The older proposed names above stay for compatibility; Phase 2 uses the names below.
   "CAMPAIGN_POLICY", "REFERRAL_RULES", "REWARD_RULES", "LIFECYCLE_POLICY", "ASSISTANT_POLICY", "INTEGRATION", "SPONSORED_PROMOTION_POLICY",
-  // Phase 4 (unreleased 1.14.0 set, GRW-P4-C)
-  "CORPORATE_POLICY",
+  // 1.13.0 (additive, consolidated): Phase 3 kinds the Kiorex ops console already validates locally, plus Phase 4 corporate (GRW-P4-C)
+  "FRAUD_RULES", "SEO_AUTOMATION", "LTV_POLICY", "MARKET_PROFILE", "ATTRIBUTION_MODELS", "EXPERIMENT_POLICY", "AUTOMATION_POLICY", "CORPORATE_POLICY",
 ] as const;
 export type GrowthConfigKind = (typeof GROWTH_CONFIG_KINDS)[number];
 /** Kinds with a JSON Schema in 1.10.0; the others are Phase 2 and 3 and ship their schema with their phase. */
@@ -281,3 +281,32 @@ export const CORPORATE_ERROR_CODES = [
   "CORPORATE_CODE_INVALID", "CORPORATE_CODE_EXHAUSTED", "CORPORATE_CODE_EXPIRED", "CORPORATE_NOT_ELIGIBLE", "CORPORATE_ALREADY_MEMBER", "CORPORATE_ACCOUNT_NOT_ACTIVE",
   "CORPORATE_CEILING_EXCEEDED", "CORPORATE_MEMBER_CAP_EXCEEDED", "CORPORATE_SELF_APPROVAL", "CORPORATE_TERMS_INCOMPLETE", "CORPORATE_EMAIL_NOT_VERIFIED",
 ] as const;
+
+// ── 1.13.0 consolidated additive vocabulary (waves 7 to 9)
+/** Error codes of the journey builder and the recommendation engine (Kiorex ops API). Additive. */
+export const PHASE3_ERROR_CODES = ["JOURNEY_INVALID", "RECOMMENDATION_NOT_AGGREGATE"] as const;
+export const PHASE3_ERROR_STATUS: Record<(typeof PHASE3_ERROR_CODES)[number], number> = { JOURNEY_INVALID: 422, RECOMMENDATION_NOT_AGGREGATE: 422 };
+/** Flags new in 1.13.0 (the other flag keys stay in `FLAGS`). */
+export const GROWTH_FLAGS_1_13 = [
+  "growth.attribution_models", "growth.cohorts_ltv", "growth.fraud_scoring", "growth.automation_journeys", "growth.ai_recommendations", "growth.seo_automation", "growth.market_onboarding", "clinic.sponsored_promotions",
+] as const;
+/** Growth analytics event names added with the Pharmacy and Lab ingest (P4-B2); `product` is a rollup dimension. */
+export const PRODUCT_FUNNEL_EVENTS = ["order_started", "order_placed", "lab_booking_started", "lab_booking_placed"] as const;
+/** Fraud action a TOUCH surface may take: quarantine only hides the touch from decisions and analytics, it never changes a booking or a commission. */
+export const QUARANTINE_TOUCH_ACTION = "QUARANTINE_TOUCH" as const;
+/** Invoice line and statement field of a provider-sponsored promotion (additive; Rev 2.6). */
+export const PROMOTION_EXPENSE_LINE_CODE = "PROMOTION_EXPENSE" as const;
+
+/**
+ * Referral fraud rule RF_PROVIDER_COLLUSION: the Clinic answers "does one of these phone hashes belong to staff of this clinic?" (signed GET /marketplace/v1/growth/staff-phone-match).
+ * Hash = base64url(HMAC-SHA256(key = HMAC-SHA256(clientSecret, "kx-staff-phone-match-v1"), message = last ten digits of the phone)). Both sides derive the key from the marketplace
+ * client secret they already share, so no new secret exists and a hash is useless outside that one client. Vectors: fixtures/growth-v1.13/staff-phone-match-vectors.json.
+ */
+export function staffPhoneMatchDigits(phone: string): string {
+  const d = phone.replace(/\D+/g, "");
+  return d.length > 10 ? d.slice(-10) : d;
+}
+export function staffPhoneMatchHash(phone: string, clientSecret: string): string {
+  const key = createHmac("sha256", clientSecret).update("kx-staff-phone-match-v1").digest();
+  return createHmac("sha256", key).update(staffPhoneMatchDigits(phone)).digest("base64url");
+}

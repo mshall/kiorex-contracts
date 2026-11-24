@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/GrowthJourneyKilled.schema.json",
+  "title": "GrowthJourneyKilled",
+  "description": "INTERNAL (Kiorex outbox only). A custom journey was killed or auto-stopped. Journey id, version and checksum only; never an audience list or message text. Any MARKETING send still needs growth.marketing_messaging. 1.13.0.",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "GrowthJourneyKilled"
+    },
+    "aggregateType": {
+      "const": "GrowthJourney"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "journeyId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "checksum": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16,64}$"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "journeyId",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

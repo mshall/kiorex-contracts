@@ -265,6 +265,16 @@
               }
             }
           },
+          "201": {
+            "description": "Quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Validation error",
             "content": {
@@ -291,16 +301,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Quote",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Quote"
                 }
               }
             }
@@ -384,6 +384,16 @@
               }
             }
           },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResult"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Validation error",
             "content": {
@@ -410,16 +420,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderResult"
                 }
               }
             }
@@ -494,6 +494,16 @@
               }
             }
           },
+          "201": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RxValidateResult"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Validation error",
             "content": {
@@ -520,16 +530,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Result",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RxValidateResult"
                 }
               }
             }
@@ -605,6 +605,9 @@
           "200": {
             "description": "Cancelled"
           },
+          "201": {
+            "description": "Cancelled"
+          },
           "400": {
             "description": "Validation error",
             "content": {
@@ -634,9 +637,6 @@
                 }
               }
             }
-          },
-          "201": {
-            "description": "Cancelled"
           }
         }
       }
@@ -1185,8 +1185,10 @@
             "enum": [
               "PROVIDER_LED",
               "MARKETPLACE",
-              "UNATTRIBUTED"
-            ]
+              "UNATTRIBUTED",
+              "CROSS_PRODUCT"
+            ],
+            "description": "CROSS_PRODUCT (1.13.0): the patient came from another Kiorly product. Treated as MARKETPLACE by a partner that does not know it; it can only remove a fee, never add one."
           },
           "decisionId": {
             "type": "string",
@@ -1215,6 +1217,12 @@
               "LAB",
               "NURSE"
             ]
+          },
+          "factRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Optional fact reference (1.13.0). decisionId is used when absent."
           }
         }
       }

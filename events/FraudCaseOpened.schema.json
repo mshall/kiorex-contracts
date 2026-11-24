@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/FraudCaseOpened.schema.json",
+  "title": "FraudCaseOpened",
+  "description": "INTERNAL (Kiorex outbox only). A fraud case was opened (shadow or enforced). Case id, surface, band and rule ids only: never an identity, a phone, a device id or a reward holder (identity lookup is a separate audited action). 1.13.0.",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "FraudCaseOpened"
+    },
+    "aggregateType": {
+      "const": "FraudCase"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "surface": {
+          "enum": [
+            "REFERRAL_CLAIM",
+            "REWARD",
+            "REFERRAL_ELIGIBILITY",
+            "WIDGET",
+            "TOUCH",
+            "PROVIDER_REVIEW"
+          ]
+        },
+        "band": {
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH"
+          ]
+        },
+        "ruleIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^r_[a-z_]{2,30}$"
+          },
+          "maxItems": 20
+        },
+        "enforced": {
+          "type": "boolean"
+        },
+        "resolution": {
+          "enum": [
+            "CONFIRMED",
+            "DISMISSED",
+            "UPHELD_APPEAL",
+            "EXPIRED"
+          ]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "caseId",
+        "surface",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

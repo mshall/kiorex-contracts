@@ -12,9 +12,9 @@ const SEO_BASE = { canonicalHost: "https://kiorex.com", locales: ["ar", "en"], d
 
 describe("1.11.0 is an additive minor over 1.10.0", () => {
   it("version", () => {
-    expect(CONTRACTS_VERSION).toMatch(/^1\.(11|12)\.\d+$/);
-    expect(readJson("package.json").version).toMatch(/^1\.(11|12)\.\d+$/);
-    expect(market.info.version).toMatch(/^1\.[56]\.\d+$/);
+    expect(CONTRACTS_VERSION).toMatch(/^1\.(11|12|13)\.\d+$/);
+    expect(readJson("package.json").version).toMatch(/^1\.(11|12|13)\.\d+$/);
+    expect(market.info.version).toMatch(/^1\.[567]\.\d+$/);
   });
 
   it("no 1.10.0 event lost a required field or changed a property; no required field was added", () => {

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Kiorex Marketplace API",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "description": "Platform connector for Kiorex (KX-01). Authenticate with HMAC headers. v1.2.0 (KX-09 Rev 2.3, additive): provider sync profession/edition/home-visit fields, serviceLocation+district on slots, visitAddress on holds, 422 OUT_OF_COVERAGE, care-plan-requests (P3 draft). The same client serves both Kiorly editions (Clinic and Nurse). v1.4.0 (contracts 1.10.0, additive): optional signed `acquisition` block on POST /bookings (growth attribution evidence, ARCH section 6.7); a Clinic that does not know it ignores it and treats the booking as UNATTRIBUTED; booking GET and every response are unchanged. v1.5.0 (contracts 1.11.0, additive): optional Clinic link token `lt` on POST /bookings (GRW-P1-C/D1: a valid, unexpired token of an ACTIVE referral link of the booking organisation makes the booking provider-led; it can only remove a commission); signed link-registry lookup `GET /referral-links/{code}` and reconciliation list `GET /referral-links` (a code is known to Kiorex before its first token; revocations are visible). v1.6.0 (contracts 1.12.0, additive): booking `channel` accepts KIOREX_WHATSAPP; the Kiorex pay-link registration call is documented (`POST /pay/links`, hosted on Kiorex, called by Kiorly); provider listings may declare `modalities` including VIDEO; events WAITLIST_OFFER_CREATED/EXPIRED, optional Rx `items[]` and optional `followUp.intervalDays` on the visit summary; waitlist join/leave and slot capacity were already documented in 1.1.0 and are unchanged. Rewards never reach the clinic: no referral or reward field exists on any marketplace call. Rev 2.6 additions (still 1.6.0, additive): signed promotion commands `POST /promotions/{promotionId}/reserve` and `/release` (provider-sponsored promotions, P2-S: the clinic funds its own discount, it is never a Kiorex discount), optional `sponsoredDiscount` block on `POST /bookings`, optional `tender` on the two deposit-paid calls (gross and funding sources, never a patient identity)."
   },
   "servers": [
@@ -557,7 +557,20 @@
         },
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "sponsoredDiscount": {
+                      "$ref": "#/components/schemas/SponsoredDiscountAnswer"
+                    }
+                  }
+                }
+              }
+            }
           },
           "400": {
             "description": "BOOKING_PAGE_MISMATCH when the slug belongs to another clinic or doctor; ACQUISITION_BLOCK_INVALID or ACQUISITION_EVIDENCE_HASH_INVALID when the optional acquisition block is malformed",
@@ -1646,6 +1659,9 @@
               }
             }
           },
+          "404": {
+            "description": "Unknown promotion"
+          },
           "409": {
             "description": "Refused with a reason",
             "content": {
@@ -1655,9 +1671,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Unknown promotion"
           }
         }
       }
@@ -1692,6 +1705,120 @@
           },
           "404": {
             "description": "Unknown promotion"
+          }
+        }
+      }
+    },
+    "/promotions/{promotionId}/reverse": {
+      "post": {
+        "operationId": "marketplaceReversePromotion",
+        "summary": "Kiorex reverses a promotion debit after a refund or dispute (idempotent)",
+        "description": "Added in 1.13.0. The clinic gets its credit back once; an unknown reservation answers {reversed:false}.",
+        "parameters": [
+          {
+            "name": "promotionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromotionReleaseRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{reversed: boolean}"
+          },
+          "404": {
+            "description": "Unknown promotion"
+          }
+        }
+      }
+    },
+    "/promotions/{promotionId}/review-decision": {
+      "post": {
+        "operationId": "marketplacePromotionReviewDecision",
+        "summary": "Kiorex review decision (PromotionReviewDecided): author cannot decide; HIGH_VALUE needs a second approver",
+        "description": "Added in 1.13.0.",
+        "parameters": [
+          {
+            "name": "promotionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromotionReviewDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{id, status}"
+          },
+          "400": {
+            "description": "INVALID_BODY"
+          },
+          "404": {
+            "description": "Unknown promotion"
+          }
+        }
+      }
+    },
+    "/growth/staff-phone-match": {
+      "get": {
+        "operationId": "marketplaceStaffPhoneMatch",
+        "summary": "Do any of these keyed phone hashes belong to staff of a clinic? (referral fraud rule RF_PROVIDER_COLLUSION)",
+        "description": "Added in 1.13.0. Kiorex sends keyed hashes only and receives one boolean; the clinic never returns a name, a phone or a count. The hash is base64url(HMAC-SHA256(key = HMAC-SHA256(clientSecret, 'kx-staff-phone-match-v1'), message = last ten digits of the phone)). At most 20 hashes. Never logged. Vectors in fixtures/growth-v1.13/staff-phone-match-vectors.json.",
+        "parameters": [
+          {
+            "name": "clinicId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hashes",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Comma separated, 1 to 20 base64url hashes"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffPhoneMatchResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_HASHES"
           }
         }
       }
@@ -2490,6 +2617,83 @@
             "type": "string",
             "minLength": 8,
             "maxLength": 128
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          }
+        }
+      },
+      "PromotionReviewDecisionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "reviewKind",
+          "decision",
+          "decidedBy"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reviewKind": {
+            "enum": [
+              "CONTENT",
+              "SCOPE",
+              "HIGH_VALUE"
+            ]
+          },
+          "decision": {
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "NEEDS_CHANGES"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "decidedBy": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "description": "Opaque operator reference"
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StaffPhoneMatchResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "match"
+        ],
+        "properties": {
+          "match": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SponsoredDiscountAnswer": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Added in 1.13.0 on the booking 201 answer (optional).",
+        "required": [
+          "applied"
+        ],
+        "properties": {
+          "applied": {
+            "type": "boolean"
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 0
           },
           "reason": {
             "type": "string",

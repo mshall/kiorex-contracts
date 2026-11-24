@@ -37,6 +37,15 @@
           "type": "string",
           "pattern": "^[A-Z]{2}$"
         },
+        "product": {
+          "enum": [
+            "CLINIC",
+            "PHARMACY",
+            "LAB",
+            "NURSE"
+          ],
+          "description": "Aggregate rollup dimension (1.13.0, optional). Absent = CLINIC."
+        },
         "recordedAt": {
           "type": "string",
           "format": "date-time"

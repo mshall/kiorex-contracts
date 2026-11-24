@@ -167,6 +167,76 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "model"
     ]
   },
+  "ATTRIBUTION_MODELS": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/ATTRIBUTION_MODELS.schema.json",
+    "title": "Growth config: ATTRIBUTION_MODELS",
+    "description": "Reporting models only (GRW-P3-B): windows, half-life, position shares and the data-driven gate. NEVER read by the money decision (ATTRIBUTION_POLICY owns that); no model changes a commission. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "windows": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "webAppDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "description": "Web and app touch window. PROPOSED_DEFAULT 30."
+          },
+          "campaignDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "description": "Campaign window. PROPOSED_DEFAULT 7."
+          },
+          "providerLinkDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "description": "Provider link window. PROPOSED_DEFAULT 30."
+          }
+        }
+      },
+      "halfLifeDays": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "maximum": 90,
+        "description": "Time-decay half-life. PROPOSED_DEFAULT 7."
+      },
+      "positionFirstBp": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10000,
+        "description": "Position-based first-touch share in basis points. PROPOSED_DEFAULT 4000."
+      },
+      "positionLastBp": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10000,
+        "description": "Position-based last-touch share. positionFirstBp + positionLastBp must not exceed 10000. PROPOSED_DEFAULT 4000."
+      },
+      "dataDriven": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "minConversions": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 10000000,
+            "description": "Attended new patients needed in the lookback before the data-driven model runs. PROPOSED_DEFAULT 1000."
+          },
+          "minNodeK": {
+            "type": "integer",
+            "minimum": 10,
+            "maximum": 10000,
+            "description": "Paths a node must occur in before it is shown; smaller nodes are folded. Never below 10."
+          }
+        }
+      }
+    }
+  },
   "ATTRIBUTION_POLICY": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/ATTRIBUTION_POLICY.schema.json",
@@ -253,6 +323,103 @@ export const GROWTH_CONFIG_SCHEMAS = {
           "SESSION_HASH"
         ],
         "description": "Added in 1.12.0 (optional). SESSION_HASH binds the link-touch token to a hash of the first-seen session and refuses it elsewhere. Absent means NONE (behaviour unchanged). PROPOSED_DEFAULT NONE."
+      },
+      "products": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Added in 1.13.0 (optional). Per-product decision windows for Pharmacy, Lab and Nurse; absent products use the top-level windows. PROPOSED_DEFAULT absent.",
+        "properties": {
+          "PHARMACY": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "windows": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "providerTouchWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Provider link window for this product"
+                  },
+                  "patientReferralWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Referral window for this product"
+                  },
+                  "campaignClickWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Campaign click window for this product"
+                  }
+                }
+              }
+            }
+          },
+          "LAB": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "windows": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "providerTouchWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Provider link window for this product"
+                  },
+                  "patientReferralWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Referral window for this product"
+                  },
+                  "campaignClickWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Campaign click window for this product"
+                  }
+                }
+              }
+            }
+          },
+          "NURSE": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "windows": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "providerTouchWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Provider link window for this product"
+                  },
+                  "patientReferralWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Referral window for this product"
+                  },
+                  "campaignClickWindowDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 90,
+                    "description": "Campaign click window for this product"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "required": [
@@ -269,6 +436,70 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "precedence",
       "allowOfflineEvidence"
     ]
+  },
+  "AUTOMATION_POLICY": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/AUTOMATION_POLICY.schema.json",
+    "title": "Growth config: AUTOMATION_POLICY",
+    "description": "Journey builder limits (GRW-P3-E extension). Frequency caps for custom journeys; they sit on top of COMMS_CAPS and LIFECYCLE_POLICY and can only tighten them. Holdout 0 until set. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "maxNodes": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 50,
+        "description": "PROPOSED_DEFAULT 12"
+      },
+      "minWaitMinutes": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1440,
+        "description": "PROPOSED_DEFAULT 15"
+      },
+      "maxWaitMinutes": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 525600,
+        "description": "PROPOSED_DEFAULT 129600 (90 days)"
+      },
+      "cycleMinWaitMinutes": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 525600,
+        "description": "A loop needs at least this wait. PROPOSED_DEFAULT 1440."
+      },
+      "maxSendsPerJourney": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "description": "PROPOSED_DEFAULT 3"
+      },
+      "maxSendsPer30Days": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "description": "Across every builder journey for one person. PROPOSED_DEFAULT 4"
+      },
+      "maxCompiledSteps": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "description": "PROPOSED_DEFAULT 24"
+      },
+      "maxBranchArms": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 5,
+        "description": "PROPOSED_DEFAULT 3"
+      },
+      "holdoutPercent": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 50,
+        "description": "Share of eligible people never messaged by builder journeys, for measurement. PROPOSED_DEFAULT 0."
+      }
+    }
   },
   "CAMPAIGN_POLICY": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -599,6 +830,397 @@ export const GROWTH_CONFIG_SCHEMAS = {
       }
     }
   },
+  "EXPERIMENT_POLICY": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/EXPERIMENT_POLICY.schema.json",
+    "title": "Growth config: EXPERIMENT_POLICY",
+    "description": "Experiment guardrails (GRW-P3-A): run length, SRM alpha, concurrency, k-anonymity. First-party funnel facts only; no health surface, no money surface. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "minRunDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 90,
+        "description": "Shortest run. PROPOSED_DEFAULT 7."
+      },
+      "srmAlpha": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "maximum": 0.05,
+        "description": "p-value under which results are hidden. PROPOSED_DEFAULT 0.001."
+      },
+      "maxConcurrentPerSurface": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "description": "PROPOSED_DEFAULT 1"
+      },
+      "maxVariants": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 8,
+        "description": "PROPOSED_DEFAULT 5"
+      },
+      "kAnonymity": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 1000,
+        "description": "Smallest cell a result may show; never below 10."
+      },
+      "assignmentTtlSeconds": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 86400,
+        "description": "Cacheable assignment time"
+      },
+      "maxRunFactor": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "description": "An experiment short of its sample at this multiple of its planned days is stopped"
+      },
+      "guardrailMinEvents": {
+        "type": "integer",
+        "minimum": 5,
+        "maximum": 1000,
+        "description": "Events in the treatment arm before a guardrail breach can be declared"
+      },
+      "conversionWindowDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 30,
+        "description": "Conversions are attributed within this many days after exposure"
+      },
+      "maxCookieExperiments": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10,
+        "description": "Experiments a single visitor key may be in"
+      },
+      "deniedTags": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]{2,40}$"
+        },
+        "maxItems": 50,
+        "description": "Surface tags that may never be experimented on (health, price, fees)"
+      }
+    }
+  },
+  "FRAUD_RULES": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/FRAUD_RULES.schema.json",
+    "title": "Growth config: FRAUD_RULES",
+    "description": "Fraud scoring rules (GRW-P3-D): weights, bands, per-surface actions. Shadow by default (enforce=false). Money relevant: two-person rule; twoPersonOnMoney can never be switched off. A surface can never be given an action that reaches attribution, commission, booking or a provider. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enforce": {
+        "type": "boolean",
+        "description": "Master switch; false = shadow (cases are opened, nothing is held or rejected). PROPOSED_DEFAULT false."
+      },
+      "bands": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "review": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99,
+            "description": "Score from which a case is opened. Must be below hold."
+          },
+          "hold": {
+            "type": "integer",
+            "minimum": 2,
+            "maximum": 100,
+            "description": "Score from which the HOLD action applies."
+          }
+        }
+      },
+      "diminishing": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1,
+        "description": "Each next-strongest signal counts this fraction of its own contribution."
+      },
+      "reviewSlaHours": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 720,
+        "description": "Review SLA"
+      },
+      "holdDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 365,
+        "description": "A hold with no decision is released after this many days"
+      },
+      "suspendDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 365,
+        "description": "Referral suspension length"
+      },
+      "appealWindowDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 90,
+        "description": "Appeal window"
+      },
+      "banMaxDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 730,
+        "description": "Longest ban"
+      },
+      "twoPersonOnMoney": {
+        "const": true,
+        "description": "A decision that moves money is a two-person decision. Cannot be switched off."
+      },
+      "rules": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "r_self": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_dup": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_bot": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_farm": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_fakebooking": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_collusion": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_cancel": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_redeem": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_touch_burst": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_widget_abuse": {
+            "$ref": "#/$defs/rule"
+          },
+          "r_lt_replay": {
+            "$ref": "#/$defs/rule"
+          }
+        }
+      },
+      "actions": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "REFERRAL_CLAIM": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "REVIEW": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "REJECT_CLAIM"
+                ]
+              },
+              "HOLD": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "REJECT_CLAIM"
+                ]
+              }
+            }
+          },
+          "REWARD": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "REVIEW": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "HOLD_REWARD"
+                ]
+              },
+              "HOLD": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "HOLD_REWARD"
+                ]
+              }
+            }
+          },
+          "REFERRAL_ELIGIBILITY": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "REVIEW": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "SUSPEND_REFERRAL"
+                ]
+              },
+              "HOLD": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "SUSPEND_REFERRAL"
+                ]
+              }
+            }
+          },
+          "WIDGET": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "REVIEW": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "THROTTLE_ORIGIN"
+                ]
+              },
+              "HOLD": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "THROTTLE_ORIGIN"
+                ]
+              }
+            }
+          },
+          "TOUCH": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "REVIEW": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "QUARANTINE_TOUCH"
+                ]
+              },
+              "HOLD": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "QUARANTINE_TOUCH"
+                ]
+              }
+            }
+          },
+          "PROVIDER_REVIEW": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "REVIEW": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "OPEN_PROVIDER_REVIEW"
+                ]
+              },
+              "HOLD": {
+                "enum": [
+                  "NONE",
+                  "OPEN_CASE",
+                  "OPEN_PROVIDER_REVIEW"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "thresholds": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "touchBurstPerMinute": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Signal threshold"
+          },
+          "widgetOriginMismatches": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Signal threshold"
+          },
+          "widgetDistinctOriginsPerKey1h": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Signal threshold"
+          },
+          "widgetRequestsPerOrigin5m": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Signal threshold"
+          },
+          "widgetTokenReplays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Signal threshold"
+          },
+          "ltUseCountLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Signal threshold"
+          },
+          "ltDistinctSubjectsLimit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Signal threshold"
+          }
+        }
+      }
+    },
+    "$defs": {
+      "rule": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "weight": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Score contribution"
+          },
+          "cap": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Highest contribution after repeats"
+          },
+          "enforce": {
+            "type": "boolean",
+            "description": "Per-rule enforcement; effective only when the master enforce is also true"
+          }
+        }
+      }
+    }
+  },
   "INTEGRATION": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION.schema.json",
@@ -820,6 +1442,78 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "holdoutBps"
     ]
   },
+  "LTV_POLICY": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/LTV_POLICY.schema.json",
+    "title": "Growth config: LTV_POLICY",
+    "description": "Cohort retention and LTV model settings (GRW-P3-C). Reporting only (AD-10). Nothing here can lower the k-anonymity floor: both minimums are at least 10. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "horizonMonths": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 36,
+        "description": "Months of contribution an LTV covers. PROPOSED_DEFAULT 12."
+      },
+      "tailFitWindowMonths": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 12,
+        "description": "Observed months the geometric tail decay is estimated from. PROPOSED_DEFAULT 6."
+      },
+      "discountRateBp": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 3000,
+        "description": "Annual discount rate in basis points. PROPOSED_DEFAULT 0."
+      },
+      "includeRewardCost": {
+        "type": "boolean",
+        "description": "Subtract platform-funded reward redemptions from revenue."
+      },
+      "includeCampaignCost": {
+        "type": "boolean",
+        "description": "Show payback against blended CAC from approved spend."
+      },
+      "bootstrapResamples": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 5000,
+        "description": "Bootstrap resamples. PROPOSED_DEFAULT 1000."
+      },
+      "seed": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483647,
+        "description": "Bootstrap seed"
+      },
+      "intervalPercent": {
+        "type": "integer",
+        "minimum": 50,
+        "maximum": 99,
+        "description": "Interval width in percent. PROPOSED_DEFAULT 90."
+      },
+      "minCohortPatients": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 1000,
+        "description": "k-anonymity floor for cells and estimates; never below 10."
+      },
+      "minPatientsPerObservedMonth": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 1000,
+        "description": "Patients old enough to have a month before it is used; never below 10."
+      },
+      "maxBootstrapPatients": {
+        "type": "integer",
+        "minimum": 1000,
+        "maximum": 100000,
+        "description": "Cap on patients per bootstrap"
+      }
+    }
+  },
   "MARKET_GROWTH": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/MARKET_GROWTH.schema.json",
@@ -913,6 +1607,206 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "marketingLicenceConfirmed",
       "integrations"
     ]
+  },
+  "MARKET_PROFILE": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/MARKET_PROFILE.schema.json",
+    "title": "Growth config: MARKET_PROFILE",
+    "description": "Market facts (GRW-P3-G): replaces the hard-coded market map as the source (the code map stays the fallback). The market is not live until the human gate market.<cc>.live is set; this config never turns a market on. Two-person rule. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "cc",
+      "name",
+      "currency",
+      "minorUnits",
+      "phoneCode",
+      "timezone",
+      "locales",
+      "defaultLocale",
+      "canonicalSegment",
+      "quietHours",
+      "workingWeek",
+      "regulation"
+    ],
+    "properties": {
+      "cc": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}$"
+      },
+      "name": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ar",
+          "en"
+        ],
+        "properties": {
+          "ar": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "en": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        }
+      },
+      "currency": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$"
+      },
+      "minorUnits": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4,
+        "description": "Decimal places of the currency"
+      },
+      "phoneCode": {
+        "type": "string",
+        "pattern": "^\\+[0-9]{1,4}$"
+      },
+      "phoneRegion": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}$"
+      },
+      "timezone": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 64,
+        "description": "IANA zone (checked by the consumer)"
+      },
+      "locales": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "enum": [
+            "ar",
+            "en"
+          ]
+        }
+      },
+      "defaultLocale": {
+        "enum": [
+          "ar",
+          "en"
+        ]
+      },
+      "canonicalSegment": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$",
+        "description": "Lower-case market code"
+      },
+      "quietHours": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "start": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+          }
+        }
+      },
+      "workingWeek": {
+        "type": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6,
+          "description": "Day of week, 0 = Sunday"
+        }
+      },
+      "geographyRef": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+      },
+      "specialtiesRef": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+      },
+      "dataCellId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+      },
+      "consentDefaultsRef": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "pattern": "^[a-z][a-z0-9_-]{1,40}$"
+      },
+      "providerImportBatchId": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 64
+      },
+      "regulation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "marketingLicenceRequired",
+          "marketingLicenceHeld",
+          "consentRegimeId",
+          "minimumAge",
+          "healthAdvertisingRestricted",
+          "reviewMarkupAllowed",
+          "dataExportRuleId"
+        ],
+        "properties": {
+          "marketingLicenceRequired": {
+            "type": "boolean"
+          },
+          "marketingLicenceHeld": {
+            "type": "boolean",
+            "description": "Needs marketingLicenceRequired (checked by the consumer)"
+          },
+          "consentRegimeId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,31}$"
+          },
+          "minimumAge": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 25,
+            "description": "Minimum age"
+          },
+          "healthAdvertisingRestricted": {
+            "type": "boolean"
+          },
+          "reviewMarkupAllowed": {
+            "type": "boolean"
+          },
+          "dataExportRuleId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,31}$"
+          }
+        }
+      }
+    }
   },
   "REFERRAL_RULES": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1978,6 +2872,299 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "reviewMarkupEnabled",
       "districtPagesEnabled"
     ]
+  },
+  "SEO_AUTOMATION": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/SEO_AUTOMATION.schema.json",
+    "title": "Growth config: SEO_AUTOMATION",
+    "description": "SEO quality gate, internal-link planner and Core Web Vitals budgets (GRW-P3-F). autoNoindex is false by default: a failed gate raises an ops item and SeoQualityGateFailed but never changes a page until a human switched it on (maker-checker). Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "autoNoindex": {
+        "type": "boolean",
+        "description": "A failed blocking check makes the page noindex. PROPOSED_DEFAULT false."
+      },
+      "minUniqueWords": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "home": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "hub": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "city": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "district": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "care-district": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "city-hub": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "district-hub": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "same-day": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "telemedicine": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "doctor": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "nurse": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "clinic": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "pharmacy": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          },
+          "lab": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5000,
+            "description": "Minimum unique words of visible text for the template"
+          }
+        }
+      },
+      "maxSimilarityPercent": {
+        "type": "integer",
+        "minimum": 30,
+        "maximum": 100,
+        "description": "Near-duplicate threshold against the parent hub or a sibling"
+      },
+      "shingleSize": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 8,
+        "description": "Shingle size of the similarity check"
+      },
+      "title": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "min",
+          "max"
+        ],
+        "properties": {
+          "min": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 400,
+            "description": "Title length minimum (must be below max)"
+          },
+          "max": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600,
+            "description": "Title length maximum"
+          }
+        }
+      },
+      "description": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "min",
+          "max"
+        ],
+        "properties": {
+          "min": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 400,
+            "description": "Meta description length minimum (must be below max)"
+          },
+          "max": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 600,
+            "description": "Meta description length maximum"
+          }
+        }
+      },
+      "blocking": {
+        "type": "array",
+        "items": {
+          "enum": [
+            "thin-content",
+            "similarity",
+            "parity-ar-en",
+            "title-meta",
+            "structured-data",
+            "canonical",
+            "hreflang",
+            "orphan",
+            "claims",
+            "empty-page",
+            "review-markup",
+            "available-providers"
+          ]
+        },
+        "uniqueItems": true,
+        "description": "Checks whose failure makes a page noindex when autoNoindex is on; the others only warn"
+      },
+      "forbiddenClaims": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "en": {
+            "type": "array",
+            "maxItems": 60,
+            "items": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 80,
+              "pattern": "^[^<>]*$"
+            }
+          },
+          "ar": {
+            "type": "array",
+            "maxItems": 60,
+            "items": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 80,
+              "pattern": "^[^<>]*$"
+            }
+          }
+        }
+      },
+      "links": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "maxPerPage": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 200,
+            "description": "Links"
+          },
+          "maxPerAnchorKind": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Cross-links per anchor kind"
+          },
+          "topDoctors": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50,
+            "description": "Top doctors"
+          },
+          "clinicDoctors": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50,
+            "description": "Clinic doctors"
+          },
+          "minAnchorVariety": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "relatedSpecialties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]{2,60}$"
+              }
+            }
+          }
+        }
+      },
+      "vitals": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lcpMs": {
+            "type": "number",
+            "minimum": 500,
+            "maximum": 10000
+          },
+          "inpMs": {
+            "type": "number",
+            "minimum": 50,
+            "maximum": 2000
+          },
+          "cls": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "tbtMs": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000
+          },
+          "perfScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      },
+      "alertTargets": {
+        "type": "array",
+        "maxItems": 10,
+        "items": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "pattern": "^[^<>]*$"
+        }
+      }
+    }
   },
   "SPONSORED_PROMOTION_POLICY": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

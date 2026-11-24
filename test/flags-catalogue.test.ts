@@ -54,6 +54,8 @@ describe("flag catalogue (KX-08 §09)", () => {
       ...["googleads", "searchconsole", "ga4", "playconsole", "appstoreconnect", "metaads", "tiktok", "whatsappcloud", "fcmapns", "crux"].map((k) => `growth.integrations.${k}`),
       // 1.12.0 Rev 2.6: patient credit, goodwill, sponsored promotions, provider credit v2
       "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate", "clinic.provider_credit_v2", "clinic.usage_bundles",
+      // 1.13.0 consolidated
+      "growth.attribution_models", "growth.cohorts_ltv", "growth.fraud_scoring", "growth.automation_journeys", "growth.ai_recommendations", "growth.seo_automation", "growth.market_onboarding", "clinic.sponsored_promotions",
     ];
     expect(cat.flags.map((f: any) => f.key).sort()).toEqual(expected.sort());
   });
@@ -84,6 +86,8 @@ describe("flag catalogue (KX-08 §09)", () => {
       "growth.assistant_real_model",
       // 1.12.0 Rev 2.6: counsel-gated credit and promotion flags
       "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate",
+      // 1.13.0
+      "growth.ai_recommendations",
     ].sort());
   });
 });

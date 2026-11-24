@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/SeoQualityGateFailed.schema.json",
+  "title": "SeoQualityGateFailed",
+  "description": "INTERNAL (Kiorex outbox only). A public page failed a blocking SEO quality check (thin content, near duplicate, AR/EN parity, structured data, canonical, hreflang, claims, empty page, review markup, available providers). Page key and check ids only. `wouldNoindex` says what autoNoindex would do; nothing changes unless SEO_AUTOMATION.autoNoindex is on (1.13.0).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "SeoQualityGateFailed"
+    },
+    "aggregateType": {
+      "const": "SeoPage"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "pageKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "locale": {
+          "enum": [
+            "ar",
+            "en"
+          ]
+        },
+        "templateKind": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "failedChecks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "maxItems": 30
+        },
+        "wouldNoindex": {
+          "type": "boolean"
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "market",
+        "pageKey",
+        "locale",
+        "failedChecks",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

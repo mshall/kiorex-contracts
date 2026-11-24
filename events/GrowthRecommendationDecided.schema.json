@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/GrowthRecommendationDecided.schema.json",
+  "title": "GrowthRecommendationDecided",
+  "description": "INTERNAL (Kiorex outbox only). A person accepted, dismissed or let a recommendation expire. Rule id, kind and market only; a recommendation is built from aggregates (k >= 10) and never carries a person (error RECOMMENDATION_NOT_AGGREGATE). 1.13.0.",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "GrowthRecommendationDecided"
+    },
+    "aggregateType": {
+      "const": "GrowthRecommendation"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "recommendationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "kind": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z_]{2,40}$"
+        },
+        "ruleId": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "decision": {
+          "enum": [
+            "ACCEPTED",
+            "DISMISSED",
+            "EXPIRED"
+          ]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "recommendationId",
+        "kind",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

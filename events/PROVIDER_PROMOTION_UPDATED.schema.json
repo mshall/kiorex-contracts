@@ -131,6 +131,45 @@
           "type": "string",
           "pattern": "^[0-9a-f]{64}$"
         },
+        "name": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Internal promotion name (1.13.0, optional)."
+        },
+        "budgetCapMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Funding ceiling in minor units (1.13.0, optional)."
+        },
+        "perPatientLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Redemptions per patient (1.13.0, optional)."
+        },
+        "eligibility": {
+          "enum": [
+            "ALL",
+            "NEW_PATIENTS",
+            "RETURNING"
+          ],
+          "description": "1.13.0, optional."
+        },
+        "fundingMode": {
+          "enum": [
+            "PROVIDER_FUNDED",
+            "PROVIDER_CREDIT"
+          ],
+          "description": "1.13.0, optional."
+        },
+        "reviewKinds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z_]{2,40}$"
+          },
+          "maxItems": 10,
+          "description": "Why the review was required (1.13.0, optional)."
+        },
         "at": {
           "type": "string",
           "format": "date-time"

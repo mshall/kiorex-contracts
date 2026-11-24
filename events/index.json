@@ -722,6 +722,118 @@
       "producer": "kiorly-clinic",
       "aggregateType": "ProviderB2BReferral",
       "status": "v2-draft"
+    },
+    {
+      "type": "ExperimentStarted",
+      "aliases": [],
+      "file": "ExperimentStarted",
+      "producer": "kiorex",
+      "aggregateType": "GrowthExperiment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ExperimentStopped",
+      "aliases": [],
+      "file": "ExperimentStopped",
+      "producer": "kiorex",
+      "aggregateType": "GrowthExperiment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ExperimentConcluded",
+      "aliases": [],
+      "file": "ExperimentConcluded",
+      "producer": "kiorex",
+      "aggregateType": "GrowthExperiment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ExperimentSrmDetected",
+      "aliases": [],
+      "file": "ExperimentSrmDetected",
+      "producer": "kiorex",
+      "aggregateType": "GrowthExperiment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ExperimentShipRequested",
+      "aliases": [],
+      "file": "ExperimentShipRequested",
+      "producer": "kiorex",
+      "aggregateType": "GrowthExperiment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "FraudCaseOpened",
+      "aliases": [],
+      "file": "FraudCaseOpened",
+      "producer": "kiorex",
+      "aggregateType": "FraudCase",
+      "status": "v2-draft"
+    },
+    {
+      "type": "FraudCaseResolved",
+      "aliases": [],
+      "file": "FraudCaseResolved",
+      "producer": "kiorex",
+      "aggregateType": "FraudCase",
+      "status": "v2-draft"
+    },
+    {
+      "type": "GrowthRecommendationProposed",
+      "aliases": [],
+      "file": "GrowthRecommendationProposed",
+      "producer": "kiorex",
+      "aggregateType": "GrowthRecommendation",
+      "status": "v2-draft"
+    },
+    {
+      "type": "GrowthRecommendationDecided",
+      "aliases": [],
+      "file": "GrowthRecommendationDecided",
+      "producer": "kiorex",
+      "aggregateType": "GrowthRecommendation",
+      "status": "v2-draft"
+    },
+    {
+      "type": "GrowthJourneyPublished",
+      "aliases": [],
+      "file": "GrowthJourneyPublished",
+      "producer": "kiorex",
+      "aggregateType": "GrowthJourney",
+      "status": "v2-draft"
+    },
+    {
+      "type": "GrowthJourneyKilled",
+      "aliases": [],
+      "file": "GrowthJourneyKilled",
+      "producer": "kiorex",
+      "aggregateType": "GrowthJourney",
+      "status": "v2-draft"
+    },
+    {
+      "type": "MarketOnboardingStateChanged",
+      "aliases": [],
+      "file": "MarketOnboardingStateChanged",
+      "producer": "kiorex",
+      "aggregateType": "MarketOnboarding",
+      "status": "v2-draft"
+    },
+    {
+      "type": "SeoQualityGateFailed",
+      "aliases": [],
+      "file": "SeoQualityGateFailed",
+      "producer": "kiorex",
+      "aggregateType": "SeoPage",
+      "status": "v2-draft"
+    },
+    {
+      "type": "SeoVitalBudgetBreached",
+      "aliases": [],
+      "file": "SeoVitalBudgetBreached",
+      "producer": "kiorex",
+      "aggregateType": "SeoVital",
+      "status": "v2-draft"
     }
   ]
 }

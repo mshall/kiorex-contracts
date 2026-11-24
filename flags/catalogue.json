@@ -1522,6 +1522,137 @@
       "gate": "Counsel (employee data processing, benefit tax treatment) and CFO (invoicing); contract template and prices are NEEDS_HUMAN (H-16)",
       "note": "PROPOSED_DEFAULT (growth Phase 4, work package P4-C; unreleased)",
       "keyPattern": false
+    },
+    {
+      "key": "growth.attribution_models",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "Reporting models fall back to the position-based default report; no money decision ever reads this flag",
+      "dependsOn": [
+        "growth.attribution"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "note": "PROPOSED_DEFAULT (growth Phases 3 and 4, consolidated contracts 1.13.0): ships ON per ADR-023 unless stated",
+      "keyPattern": false
+    },
+    {
+      "key": "growth.cohorts_ltv",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "Cohort, retention and LTV rollups stop and the ops pages show 'not enabled'; stored estimates stay readable",
+      "dependsOn": [
+        "growth.attribution"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "note": "PROPOSED_DEFAULT (growth Phases 3 and 4, consolidated contracts 1.13.0): ships ON per ADR-023 unless stated",
+      "keyPattern": false
+    },
+    {
+      "key": "growth.fraud_scoring",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "No fraud score is computed; referral, reward, widget and touch surfaces keep their hard rules only (self-referral and duplicate-account blocks stay in code)",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "PROPOSED_DEFAULT (growth Phase 3, consolidated contracts 1.13.0): ships ON in SHADOW (FRAUD_RULES.enforce=false); enforcement is a separate maker-checker change",
+      "keyPattern": false
+    },
+    {
+      "key": "growth.automation_journeys",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "The journey builder is read-only and no custom journey starts; built-in lifecycle journeys are unaffected. Any MARKETING send still needs growth.marketing_messaging",
+      "dependsOn": [
+        "growth.lifecycle_journeys"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "note": "PROPOSED_DEFAULT (growth Phases 3 and 4, consolidated contracts 1.13.0): ships ON per ADR-023 unless stated",
+      "keyPattern": false
+    },
+    {
+      "key": "growth.ai_recommendations",
+      "product": "kiorex",
+      "scopes": [
+        "global"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "No recommendation is generated or summarised by a model; rule-based proposals stay visible read-only",
+      "dependsOn": [
+        "growth.assistant_real_model"
+      ],
+      "launchLocked": true,
+      "gate": "KX-11 governance review of the recommendation model and prompts signed by the CMO and DPO (NEEDS_HUMAN)",
+      "note": "PROPOSED_DEFAULT (growth Phase 3, consolidated contracts 1.13.0): OFF until the gate evidence is recorded",
+      "keyPattern": false
+    },
+    {
+      "key": "growth.seo_automation",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Module",
+      "whenOff": "The SEO quality gate, internal-link planner and Core Web Vitals budget checks stop running; pages keep their last published robots state (auto-noindex additionally needs SEO_AUTOMATION.autoNoindex)",
+      "dependsOn": [
+        "growth.ssr_public_pages"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "note": "PROPOSED_DEFAULT (growth Phases 3 and 4, consolidated contracts 1.13.0): ships ON per ADR-023 unless stated",
+      "keyPattern": false
+    },
+    {
+      "key": "growth.market_onboarding",
+      "product": "kiorex",
+      "scopes": [
+        "global"
+      ],
+      "class": "Module",
+      "whenOff": "The ops market onboarding console is read-only; market.<cc>.live stays the human gate",
+      "dependsOn": [],
+      "launchLocked": false,
+      "gate": null,
+      "note": "PROPOSED_DEFAULT (growth Phases 3 and 4, consolidated contracts 1.13.0): ships ON per ADR-023 unless stated",
+      "keyPattern": false
+    },
+    {
+      "key": "clinic.sponsored_promotions",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Module",
+      "whenOff": "The provider-sponsored promotion editor, reserve and review routes are hidden and refuse; discounts already reserved are settled normally",
+      "dependsOn": [
+        "clinic.provider_credit_v2"
+      ],
+      "launchLocked": false,
+      "gate": null,
+      "note": "PROPOSED_DEFAULT (growth Phase 2, consolidated contracts 1.13.0): the Clinic mirror of growth.sponsored_promotions (until now clinic.provider_credit_v2 gated it)",
+      "keyPattern": false
     }
   ]
 }

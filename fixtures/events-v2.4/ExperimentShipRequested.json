@@ -1,0 +1,15 @@
+{
+  "eventId": "01JF3ZEVTEXPERIME",
+  "type": "ExperimentShipRequested",
+  "aggregateType": "GrowthExperiment",
+  "aggregateId": "exp_01JF3ZE000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "experimentId": "exp_01JF3ZE000",
+    "market": "EG",
+    "key": "winback-subject-a-b",
+    "at": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "GrowthExperiment",
+    "aggregateId": "exp_01JF3ZE000"
+  }
+}

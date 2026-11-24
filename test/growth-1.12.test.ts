@@ -13,10 +13,10 @@ const vectors = readJson("fixtures/growth-v1.12/vectors.json");
 
 describe("1.12.0 is an additive minor over 1.11.0", () => {
   it("version and per-spec versions", () => {
-    expect(CONTRACTS_VERSION).toBe("1.12.0");
-    expect(readJson("package.json").version).toBe("1.12.0");
+    expect(CONTRACTS_VERSION).toMatch(/^1\.(12|13)\.0$/);
+    expect(readJson("package.json").version).toMatch(/^1\.(12|13)\.0$/);
     expect(readJson("openapi/kiorex-growth.v1.openapi.json").info.version).toBe("1.1.0");
-    expect(readJson("openapi/kiorly-marketplace.v1.openapi.json").info.version).toBe("1.6.0");
+    expect(readJson("openapi/kiorly-marketplace.v1.openapi.json").info.version).toMatch(/^1\.[67]\.0$/);
     expect(readJson("openapi/kiorex-webhooks.v1.openapi.json").info.version).toBe("1.2.0");
     expect(readJson("package.json").files).toEqual(expect.arrayContaining(["fixtures/growth-v1.12"]));
   });

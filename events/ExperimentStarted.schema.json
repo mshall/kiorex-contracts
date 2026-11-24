@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/ExperimentStarted.schema.json",
+  "title": "ExperimentStarted",
+  "description": "INTERNAL (Kiorex outbox only). An experiment moved to RUNNING. Experiment id, market and key; never a visitor, a person or a health datum (1.13.0).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "ExperimentStarted"
+    },
+    "aggregateType": {
+      "const": "GrowthExperiment"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "experimentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "surface": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "by": {
+          "enum": [
+            "HUMAN",
+            "SYSTEM",
+            "KILL_SWITCH"
+          ]
+        },
+        "verdict": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z_]{2,32}$"
+        },
+        "pValue": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "experimentId",
+        "market",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/AUTOMATION_POLICY.schema.json",
+  "title": "Growth config: AUTOMATION_POLICY",
+  "description": "Journey builder limits (GRW-P3-E extension). Frequency caps for custom journeys; they sit on top of COMMS_CAPS and LIFECYCLE_POLICY and can only tighten them. Holdout 0 until set. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "maxNodes": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 50,
+      "description": "PROPOSED_DEFAULT 12"
+    },
+    "minWaitMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440,
+      "description": "PROPOSED_DEFAULT 15"
+    },
+    "maxWaitMinutes": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 525600,
+      "description": "PROPOSED_DEFAULT 129600 (90 days)"
+    },
+    "cycleMinWaitMinutes": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 525600,
+      "description": "A loop needs at least this wait. PROPOSED_DEFAULT 1440."
+    },
+    "maxSendsPerJourney": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "PROPOSED_DEFAULT 3"
+    },
+    "maxSendsPer30Days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "description": "Across every builder journey for one person. PROPOSED_DEFAULT 4"
+    },
+    "maxCompiledSteps": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "PROPOSED_DEFAULT 24"
+    },
+    "maxBranchArms": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 5,
+      "description": "PROPOSED_DEFAULT 3"
+    },
+    "holdoutPercent": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50,
+      "description": "Share of eligible people never messaged by builder journeys, for measurement. PROPOSED_DEFAULT 0."
+    }
+  }
+}

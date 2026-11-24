@@ -20,9 +20,9 @@ const cat = readJson("flags/catalogue.json");
 
 describe("1.10.0 growth contract is an additive minor", () => {
   it("version (the 1.11.0 minor only adds to it, see test/link-registry-1.11.test.ts)", () => {
-    expect(CONTRACTS_VERSION).toMatch(/^1\.(11|12)\.\d+$/);
-    expect(readJson("package.json").version).toMatch(/^1\.(11|12)\.\d+$/);
-    expect(market.info.version).toMatch(/^1\.[56]\.\d+$/);
+    expect(CONTRACTS_VERSION).toMatch(/^1\.(11|12|13)\.\d+$/);
+    expect(readJson("package.json").version).toMatch(/^1\.(11|12|13)\.\d+$/);
+    expect(market.info.version).toMatch(/^1\.[567]\.\d+$/);
   });
 
   it("no 1.9.0 event schema lost a required field, a property or changed a property's schema (diff against the 1.9.0 snapshot)", () => {
@@ -274,7 +274,7 @@ describe("growth flags (ADR-023/024/025)", () => {
     if (f.launchLocked) expect(f.gate).toContain("NEEDS_HUMAN");
   });
   it("exactly the counsel-gated flags are launch-locked; the pattern key is a pattern", () => {
-    expect(cat.flags.filter((f: any) => f.key.startsWith("growth.") && f.launchLocked).map((f: any) => f.key).sort()).toEqual([...LOCKED.filter((k) => k.startsWith("growth.")), "growth.assistant_real_model", "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate"].sort()); // 1.12.0 adds locked keys
+    expect(cat.flags.filter((f: any) => f.key.startsWith("growth.") && f.launchLocked).map((f: any) => f.key).sort()).toEqual([...LOCKED.filter((k) => k.startsWith("growth.")), "growth.assistant_real_model", "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate", "growth.ai_recommendations"].sort()); // 1.12.0 adds locked keys
     expect(by("growth.integrations.<kind>").keyPattern).toBe(true);
     expect(FLAGS.GROWTH_ATTRIBUTION).toBe("growth.attribution");
   });

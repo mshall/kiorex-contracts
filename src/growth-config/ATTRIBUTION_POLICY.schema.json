@@ -84,6 +84,103 @@
         "SESSION_HASH"
       ],
       "description": "Added in 1.12.0 (optional). SESSION_HASH binds the link-touch token to a hash of the first-seen session and refuses it elsewhere. Absent means NONE (behaviour unchanged). PROPOSED_DEFAULT NONE."
+    },
+    "products": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Added in 1.13.0 (optional). Per-product decision windows for Pharmacy, Lab and Nurse; absent products use the top-level windows. PROPOSED_DEFAULT absent.",
+      "properties": {
+        "PHARMACY": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "windows": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "providerTouchWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Provider link window for this product"
+                },
+                "patientReferralWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Referral window for this product"
+                },
+                "campaignClickWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Campaign click window for this product"
+                }
+              }
+            }
+          }
+        },
+        "LAB": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "windows": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "providerTouchWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Provider link window for this product"
+                },
+                "patientReferralWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Referral window for this product"
+                },
+                "campaignClickWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Campaign click window for this product"
+                }
+              }
+            }
+          }
+        },
+        "NURSE": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "windows": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "providerTouchWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Provider link window for this product"
+                },
+                "patientReferralWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Referral window for this product"
+                },
+                "campaignClickWindowDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 90,
+                  "description": "Campaign click window for this product"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "required": [

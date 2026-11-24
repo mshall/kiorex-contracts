@@ -577,6 +577,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/promotions/{promotionId}/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kiorex reverses a promotion debit after a refund or dispute (idempotent)
+         * @description Added in 1.13.0. The clinic gets its credit back once; an unknown reservation answers {reversed:false}.
+         */
+        post: operations["marketplaceReversePromotion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/promotions/{promotionId}/review-decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kiorex review decision (PromotionReviewDecided): author cannot decide; HIGH_VALUE needs a second approver
+         * @description Added in 1.13.0.
+         */
+        post: operations["marketplacePromotionReviewDecision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/staff-phone-match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Do any of these keyed phone hashes belong to staff of a clinic? (referral fraud rule RF_PROVIDER_COLLUSION)
+         * @description Added in 1.13.0. Kiorex sends keyed hashes only and receives one boolean; the clinic never returns a name, a phone or a count. The hash is base64url(HMAC-SHA256(key = HMAC-SHA256(clientSecret, 'kx-staff-phone-match-v1'), message = last ten digits of the phone)). At most 20 hashes. Never logged. Vectors in fixtures/growth-v1.13/staff-phone-match-vectors.json.
+         */
+        get: operations["marketplaceStaffPhoneMatch"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export interface webhooks {
     kiorexOutboxEvent: {
@@ -829,6 +889,27 @@ export interface components {
         PromotionReleaseRequest: {
             reservationRef: string;
             idempotencyKey: string;
+            reason?: string;
+        };
+        PromotionReviewDecisionRequest: {
+            version: number;
+            /** @enum {unknown} */
+            reviewKind: "CONTENT" | "SCOPE" | "HIGH_VALUE";
+            /** @enum {unknown} */
+            decision: "APPROVED" | "REJECTED" | "NEEDS_CHANGES";
+            note?: string;
+            /** @description Opaque operator reference */
+            decidedBy: string;
+            /** Format: date-time */
+            decidedAt?: string;
+        };
+        StaffPhoneMatchResult: {
+            match: boolean;
+        };
+        /** @description Added in 1.13.0 on the booking 201 answer (optional). */
+        SponsoredDiscountAnswer: {
+            applied: boolean;
+            amountMinor?: number;
             reason?: string;
         };
     };
@@ -1218,7 +1299,13 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": {
+                        sponsoredDiscount?: components["schemas"]["SponsoredDiscountAnswer"];
+                    } & {
+                        [key: string]: unknown;
+                    };
+                };
             };
             /** @description BOOKING_PAGE_MISMATCH when the slug belongs to another clinic or doctor; ACQUISITION_BLOCK_INVALID or ACQUISITION_EVIDENCE_HASH_INVALID when the optional acquisition block is malformed */
             400: {
@@ -1982,6 +2069,105 @@ export interface operations {
             };
             /** @description Unknown promotion */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceReversePromotion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionReleaseRequest"];
+            };
+        };
+        responses: {
+            /** @description {reversed: boolean} */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown promotion */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplacePromotionReviewDecision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionReviewDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description {id, status} */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description INVALID_BODY */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown promotion */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceStaffPhoneMatch: {
+        parameters: {
+            query: {
+                clinicId: string;
+                hashes: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffPhoneMatchResult"];
+                };
+            };
+            /** @description INVALID_HASHES */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };

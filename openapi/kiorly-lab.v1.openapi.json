@@ -1517,8 +1517,10 @@
             "enum": [
               "PROVIDER_LED",
               "MARKETPLACE",
-              "UNATTRIBUTED"
-            ]
+              "UNATTRIBUTED",
+              "CROSS_PRODUCT"
+            ],
+            "description": "CROSS_PRODUCT (1.13.0): the patient came from another Kiorly product. Treated as MARKETPLACE by a partner that does not know it; it can only remove a fee, never add one."
           },
           "decisionId": {
             "type": "string",
@@ -1547,6 +1549,12 @@
               "LAB",
               "NURSE"
             ]
+          },
+          "factRef": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "Optional fact reference (1.13.0). decisionId is used when absent."
           }
         }
       }

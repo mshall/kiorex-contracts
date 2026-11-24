@@ -640,7 +640,7 @@ export const EVENTS = [
   {
     type: "PatientAcquisitionRecorded", producer: "kiorex", aggregateType: "PatientProfile", status: "v2-draft", group: "growth",
     description: "INTERNAL (Kiorex outbox only). The first time a subject receives an acquisition origin (registration or first booking). Origin, source kind and market only: no identifiers beyond the aggregate.",
-    data: { properties: { origin: ACQ_ORIGIN, sourceKind: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,32}$" }, market: { type: "string", pattern: "^[A-Z]{2}$" }, recordedAt: TS, ...AGG }, required: ["origin", "sourceKind", "market"] },
+    data: { properties: { origin: ACQ_ORIGIN, sourceKind: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,32}$" }, market: { type: "string", pattern: "^[A-Z]{2}$" }, product: { ...PRODUCT, description: "Aggregate rollup dimension (1.13.0, optional). Absent = CLINIC." }, recordedAt: TS, ...AGG }, required: ["origin", "sourceKind", "market"] },
     example: { aggregateId: "pp_01JF3ZD000", data: { origin: "MARKETPLACE", sourceKind: "ORGANIC_SEARCH", market: "EG", recordedAt: "2027-03-04T09:12:44.000Z", aggregateType: "PatientProfile", aggregateId: "pp_01JF3ZD000" } },
   },
   {
@@ -793,7 +793,7 @@ export const EVENTS = [
   {
     type: "PROVIDER_PROMOTION_UPDATED", producer: "kiorly-clinic", aggregateType: "SponsoredPromotion", status: "v2-draft", group: "growth",
     description: "A clinic created, changed, paused or ended a provider-sponsored promotion; Kiorex keeps a projection of the ACTIVE ones to show 'Discount sponsored by <clinic>' and to quote (1.12.0, work package P2-S). The patient copy is public advertising text, reviewed before activation; never clinical content.",
-    data: { properties: { promotionId: ID, version: { type: "integer", minimum: 1 }, orgRef: LINK_ORG_REF, clinicId: ID, status: { enum: ["DRAFT", "SUBMITTED", "IN_REVIEW", "APPROVED", "ACTIVE", "PAUSED", "EXHAUSTED", "EXPIRED", "REJECTED", "ARCHIVED"] }, discount: { type: "object", properties: { kind: { enum: ["FIXED_MINOR", "PERCENT_BP"] }, value: { type: "integer", minimum: 1 }, maxPerBookingMinor: { type: "integer", minimum: 1 } }, required: ["kind", "value"] }, scope: { type: "object", properties: { doctorIds: { type: "array", items: ID, maxItems: 200 }, appointmentTypeIds: { type: "array", items: ID, maxItems: 200 }, careTypes: { type: "array", items: { enum: ["IN_CLINIC", "VIDEO", "HOME_VISIT"] } } } }, startsAt: TS, endsAt: TS, patientCopy: { type: "object", properties: { ar: { type: "string", maxLength: 300 }, en: { type: "string", maxLength: 300 } } }, contentHash: { type: "string", pattern: "^[0-9a-f]{64}$" }, at: TS, ...AGG }, required: ["promotionId", "version", "orgRef", "status", "at"] },
+    data: { properties: { promotionId: ID, version: { type: "integer", minimum: 1 }, orgRef: LINK_ORG_REF, clinicId: ID, status: { enum: ["DRAFT", "SUBMITTED", "IN_REVIEW", "APPROVED", "ACTIVE", "PAUSED", "EXHAUSTED", "EXPIRED", "REJECTED", "ARCHIVED"] }, discount: { type: "object", properties: { kind: { enum: ["FIXED_MINOR", "PERCENT_BP"] }, value: { type: "integer", minimum: 1 }, maxPerBookingMinor: { type: "integer", minimum: 1 } }, required: ["kind", "value"] }, scope: { type: "object", properties: { doctorIds: { type: "array", items: ID, maxItems: 200 }, appointmentTypeIds: { type: "array", items: ID, maxItems: 200 }, careTypes: { type: "array", items: { enum: ["IN_CLINIC", "VIDEO", "HOME_VISIT"] } } } }, startsAt: TS, endsAt: TS, patientCopy: { type: "object", properties: { ar: { type: "string", maxLength: 300 }, en: { type: "string", maxLength: 300 } } }, contentHash: { type: "string", pattern: "^[0-9a-f]{64}$" }, name: { type: "string", maxLength: 120, description: "Internal promotion name (1.13.0, optional)." }, budgetCapMinor: { type: "integer", minimum: 0, description: "Funding ceiling in minor units (1.13.0, optional)." }, perPatientLimit: { type: "integer", minimum: 1, description: "Redemptions per patient (1.13.0, optional)." }, eligibility: { enum: ["ALL", "NEW_PATIENTS", "RETURNING"], description: "1.13.0, optional." }, fundingMode: { enum: ["PROVIDER_FUNDED", "PROVIDER_CREDIT"], description: "1.13.0, optional." }, reviewKinds: { type: "array", items: { type: "string", pattern: "^[A-Z][A-Z_]{2,40}$" }, maxItems: 10, description: "Why the review was required (1.13.0, optional)." }, at: TS, ...AGG }, required: ["promotionId", "version", "orgRef", "status", "at"] },
     example: { aggregateId: "spr_01JF3ZS000", data: { promotionId: "spr_01JF3ZS000", version: 2, orgRef: "ten_01JF3Z0000", clinicId: "clinic_01JF3Z7ZZZ", status: "ACTIVE", discount: { kind: "FIXED_MINOR", value: 10000, maxPerBookingMinor: 10000 }, scope: { careTypes: ["IN_CLINIC"] }, startsAt: "2027-03-10T00:00:00.000Z", endsAt: "2027-04-10T00:00:00.000Z", patientCopy: { ar: "خصم برعاية العيادة", en: "Discount sponsored by the clinic" }, contentHash: "c".repeat(64), at: "2027-03-04T09:12:44.000Z", aggregateType: "SponsoredPromotion", aggregateId: "spr_01JF3ZS000" } },
   },
   {
@@ -826,6 +826,55 @@ export const EVENTS = [
     description: "A provider referred a company to Kiorex as an enterprise lead (Clinic to Kiorex). Company name, an optional size bucket and an opaque contact reference only: never a staff member's name, phone or e-mail, never a patient datum. No fee share or reward is created by this event (work package P4-C; any fee share is counsel and CEO gated).",
     data: { properties: { referralId: ID, orgRef: LINK_ORG_REF, clinicId: ID, companyName: { type: "string", minLength: 2, maxLength: 120 }, sizeBucket: { enum: ["1_49", "50_199", "200_999", "1000_PLUS", "UNKNOWN"] }, contactRef: { type: "string", maxLength: 80, description: "Opaque reference held by the referring provider; Kiorex ops asks the provider for the contact. Never a name, phone or e-mail." }, referredAt: TS, ...AGG }, required: ["referralId", "orgRef", "companyName", "referredAt"] },
     example: { aggregateId: "b2b_01JF3ZC222", data: { referralId: "b2b_01JF3ZC222", orgRef: "ten_01JF3Z0000", clinicId: "clinic_01JF3Z7ZZZ", companyName: "Nile Logistics", sizeBucket: "200_999", contactRef: "ref-hr-1", referredAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderB2BReferral", aggregateId: "b2b_01JF3ZC222" } },
+  },
+  // ── 1.13.0 consolidated additive set (wave 7 to 9 lanes; see CHANGELOG "1.13.0"). Kiorex-internal growth events: aggregate references and counters only, never a person.
+  ...[
+    ["ExperimentStarted", "GrowthExperiment", "An experiment moved to RUNNING."],
+    ["ExperimentStopped", "GrowthExperiment", "An experiment was stopped by a person or by the kill switch (reason is a short operator text, never a person)."],
+    ["ExperimentConcluded", "GrowthExperiment", "An experiment reached a verdict."],
+    ["ExperimentSrmDetected", "GrowthExperiment", "The sample-ratio-mismatch check failed; results are hidden until a person looks."],
+    ["ExperimentShipRequested", "GrowthExperiment", "A winner was proposed for shipping; a human turns the flag on through the maker-checker (ship-winner never flips a flag)."],
+  ].map(([t, agg, d]) => ({
+    type: t, producer: "kiorex", aggregateType: agg, status: "v2-draft", group: "growth",
+    description: `INTERNAL (Kiorex outbox only). ${d} Experiment id, market and key; never a visitor, a person or a health datum (1.13.0).`,
+    data: { properties: { experimentId: ID, market: MARKET, key: { type: "string", minLength: 1, maxLength: 80 }, surface: { type: "string", maxLength: 120 }, reason: { type: "string", maxLength: 200 }, by: { enum: ["HUMAN", "SYSTEM", "KILL_SWITCH"] }, verdict: { type: "string", pattern: "^[A-Z][A-Z_]{2,32}$" }, pValue: { type: "number", minimum: 0, maximum: 1 }, at: TS, ...AGG }, required: ["experimentId", "market", "at"] },
+    example: { aggregateId: "exp_01JF3ZE000", data: { experimentId: "exp_01JF3ZE000", market: "EG", key: "winback-subject-a-b", at: "2027-03-04T09:12:44.000Z", aggregateType: agg, aggregateId: "exp_01JF3ZE000" } },
+  })),
+  ...["FraudCaseOpened", "FraudCaseResolved"].map((t) => ({
+    type: t, producer: "kiorex", aggregateType: "FraudCase", status: "v2-draft", group: "growth",
+    description: `INTERNAL (Kiorex outbox only). ${t === "FraudCaseOpened" ? "A fraud case was opened (shadow or enforced)" : "A fraud case was resolved by a person or expired"}. Case id, surface, band and rule ids only: never an identity, a phone, a device id or a reward holder (identity lookup is a separate audited action). 1.13.0.`,
+    data: { properties: { caseId: ID, market: MARKET, surface: { enum: ["REFERRAL_CLAIM", "REWARD", "REFERRAL_ELIGIBILITY", "WIDGET", "TOUCH", "PROVIDER_REVIEW"] }, band: { enum: ["LOW", "MEDIUM", "HIGH"] }, ruleIds: { type: "array", items: { type: "string", pattern: "^r_[a-z_]{2,30}$" }, maxItems: 20 }, enforced: { type: "boolean" }, resolution: { enum: ["CONFIRMED", "DISMISSED", "UPHELD_APPEAL", "EXPIRED"] }, at: TS, ...AGG }, required: ["caseId", "surface", "at"] },
+    example: { aggregateId: "fc_01JF3ZF000", data: { caseId: "fc_01JF3ZF000", market: "EG", surface: "REWARD", band: "HIGH", ruleIds: ["r_farm"], enforced: false, ...(t === "FraudCaseResolved" ? { resolution: "DISMISSED" } : {}), at: "2027-03-04T09:12:44.000Z", aggregateType: "FraudCase", aggregateId: "fc_01JF3ZF000" } },
+  })),
+  ...["GrowthRecommendationProposed", "GrowthRecommendationDecided"].map((t) => ({
+    type: t, producer: "kiorex", aggregateType: "GrowthRecommendation", status: "v2-draft", group: "growth",
+    description: `INTERNAL (Kiorex outbox only). ${t === "GrowthRecommendationProposed" ? "A recommendation was proposed from aggregate counts" : "A person accepted, dismissed or let a recommendation expire"}. Rule id, kind and market only; a recommendation is built from aggregates (k >= 10) and never carries a person (error RECOMMENDATION_NOT_AGGREGATE). 1.13.0.`,
+    data: { properties: { recommendationId: ID, market: MARKET, kind: { type: "string", pattern: "^[A-Z][A-Z_]{2,40}$" }, ruleId: { type: "string", maxLength: 60 }, decision: { enum: ["ACCEPTED", "DISMISSED", "EXPIRED"] }, at: TS, ...AGG }, required: ["recommendationId", "kind", "at"] },
+    example: { aggregateId: "rec_01JF3ZG000", data: { recommendationId: "rec_01JF3ZG000", market: "EG", kind: "PAUSE_CAMPAIGN", ruleId: "campaign-cpa-high", ...(t === "GrowthRecommendationDecided" ? { decision: "DISMISSED" } : {}), at: "2027-03-04T09:12:44.000Z", aggregateType: "GrowthRecommendation", aggregateId: "rec_01JF3ZG000" } },
+  })),
+  ...["GrowthJourneyPublished", "GrowthJourneyKilled"].map((t) => ({
+    type: t, producer: "kiorex", aggregateType: "GrowthJourney", status: "v2-draft", group: "growth",
+    description: `INTERNAL (Kiorex outbox only). ${t === "GrowthJourneyPublished" ? "A custom automation journey was published (two-person rule)" : "A custom journey was killed or auto-stopped"}. Journey id, version and checksum only; never an audience list or message text. Any MARKETING send still needs growth.marketing_messaging. 1.13.0.`,
+    data: { properties: { journeyId: ID, version: { type: "integer", minimum: 1 }, market: MARKET, checksum: { type: "string", pattern: "^[0-9a-f]{16,64}$" }, reason: { type: "string", maxLength: 200 }, at: TS, ...AGG }, required: ["journeyId", "at"] },
+    example: { aggregateId: "jny_01JF3ZH000", data: { journeyId: "jny_01JF3ZH000", version: 1, market: "EG", checksum: "a".repeat(32), at: "2027-03-04T09:12:44.000Z", aggregateType: "GrowthJourney", aggregateId: "jny_01JF3ZH000" } },
+  })),
+  {
+    type: "MarketOnboardingStateChanged", producer: "kiorex", aggregateType: "MarketOnboarding", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Kiorex outbox only). A market moved between onboarding states (DRAFT, STAGED, READY, LIVE_REQUESTED, PAUSED). `market.<cc>.live` stays the human gate; this event records the step, never turns anything on (1.13.0).",
+    data: { properties: { market: MARKET, from: { type: "string", pattern: "^[A-Z][A-Z_]{2,30}$" }, to: { type: "string", pattern: "^[A-Z][A-Z_]{2,30}$" }, at: TS, ...AGG }, required: ["market", "to", "at"] },
+    example: { aggregateId: "ZY", data: { market: "ZY", from: "DRAFT", to: "STAGED", at: "2027-03-04T09:12:44.000Z", aggregateType: "MarketOnboarding", aggregateId: "ZY" } },
+  },
+  {
+    type: "SeoQualityGateFailed", producer: "kiorex", aggregateType: "SeoPage", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Kiorex outbox only). A public page failed a blocking SEO quality check (thin content, near duplicate, AR/EN parity, structured data, canonical, hreflang, claims, empty page, review markup, available providers). Page key and check ids only. `wouldNoindex` says what autoNoindex would do; nothing changes unless SEO_AUTOMATION.autoNoindex is on (1.13.0).",
+    data: { properties: { market: MARKET, pageKey: { type: "string", minLength: 1, maxLength: 300 }, locale: { enum: ["ar", "en"] }, templateKind: { type: "string", maxLength: 40 }, score: { type: "number", minimum: 0, maximum: 100 }, failedChecks: { type: "array", items: { type: "string", maxLength: 60 }, maxItems: 30 }, wouldNoindex: { type: "boolean" }, at: TS, ...AGG }, required: ["market", "pageKey", "locale", "failedChecks", "at"] },
+    example: { aggregateId: "doctor/dr-sample|ar", data: { market: "EG", pageKey: "doctor/dr-sample", locale: "ar", templateKind: "doctor", score: 61, failedChecks: ["thin-content"], wouldNoindex: true, at: "2027-03-04T09:12:44.000Z", aggregateType: "SeoPage", aggregateId: "doctor/dr-sample|ar" } },
+  },
+  {
+    type: "SeoVitalBudgetBreached", producer: "kiorex", aggregateType: "SeoVital", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Kiorex outbox only). A Core Web Vitals p75 (lab or field) of a template went over its budget from SEO_AUTOMATION.vitals. Template kind, metric, source and the p75 only. Blocks nothing in code (1.13.0).",
+    data: { properties: { market: MARKET, templateKind: { type: "string", maxLength: 40 }, metric: { enum: ["lcpMs", "inpMs", "cls", "tbtMs", "perfScore"] }, source: { enum: ["LAB", "FIELD"] }, p75: { type: "number" }, budget: { type: "number" }, day: { type: "string", pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }, targets: { type: "array", items: { type: "string", maxLength: 80 }, maxItems: 10 }, ...AGG }, required: ["market", "templateKind", "metric", "source", "p75", "day"] },
+    example: { aggregateId: "doctor|lcpMs|FIELD", data: { market: "EG", templateKind: "doctor", metric: "lcpMs", source: "FIELD", p75: 3100, budget: 2500, day: "2027-03-04", targets: ["ops"], aggregateType: "SeoVital", aggregateId: "doctor|lcpMs|FIELD" } },
   },
 ];
 

@@ -1,0 +1,17 @@
+{
+  "eventId": "01JF3ZEVTGROWTHRE",
+  "type": "GrowthRecommendationDecided",
+  "aggregateType": "GrowthRecommendation",
+  "aggregateId": "rec_01JF3ZG000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "recommendationId": "rec_01JF3ZG000",
+    "market": "EG",
+    "kind": "PAUSE_CAMPAIGN",
+    "ruleId": "campaign-cpa-high",
+    "decision": "DISMISSED",
+    "at": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "GrowthRecommendation",
+    "aggregateId": "rec_01JF3ZG000"
+  }
+}

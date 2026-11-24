@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/FRAUD_RULES.schema.json",
+  "title": "Growth config: FRAUD_RULES",
+  "description": "Fraud scoring rules (GRW-P3-D): weights, bands, per-surface actions. Shadow by default (enforce=false). Money relevant: two-person rule; twoPersonOnMoney can never be switched off. A surface can never be given an action that reaches attribution, commission, booking or a provider. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enforce": {
+      "type": "boolean",
+      "description": "Master switch; false = shadow (cases are opened, nothing is held or rejected). PROPOSED_DEFAULT false."
+    },
+    "bands": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "review": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99,
+          "description": "Score from which a case is opened. Must be below hold."
+        },
+        "hold": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 100,
+          "description": "Score from which the HOLD action applies."
+        }
+      }
+    },
+    "diminishing": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Each next-strongest signal counts this fraction of its own contribution."
+    },
+    "reviewSlaHours": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 720,
+      "description": "Review SLA"
+    },
+    "holdDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 365,
+      "description": "A hold with no decision is released after this many days"
+    },
+    "suspendDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 365,
+      "description": "Referral suspension length"
+    },
+    "appealWindowDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "Appeal window"
+    },
+    "banMaxDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 730,
+      "description": "Longest ban"
+    },
+    "twoPersonOnMoney": {
+      "const": true,
+      "description": "A decision that moves money is a two-person decision. Cannot be switched off."
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "r_self": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_dup": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_bot": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_farm": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_fakebooking": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_collusion": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_cancel": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_redeem": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_touch_burst": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_widget_abuse": {
+          "$ref": "#/$defs/rule"
+        },
+        "r_lt_replay": {
+          "$ref": "#/$defs/rule"
+        }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "REFERRAL_CLAIM": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "REVIEW": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "REJECT_CLAIM"
+              ]
+            },
+            "HOLD": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "REJECT_CLAIM"
+              ]
+            }
+          }
+        },
+        "REWARD": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "REVIEW": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "HOLD_REWARD"
+              ]
+            },
+            "HOLD": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "HOLD_REWARD"
+              ]
+            }
+          }
+        },
+        "REFERRAL_ELIGIBILITY": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "REVIEW": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "SUSPEND_REFERRAL"
+              ]
+            },
+            "HOLD": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "SUSPEND_REFERRAL"
+              ]
+            }
+          }
+        },
+        "WIDGET": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "REVIEW": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "THROTTLE_ORIGIN"
+              ]
+            },
+            "HOLD": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "THROTTLE_ORIGIN"
+              ]
+            }
+          }
+        },
+        "TOUCH": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "REVIEW": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "QUARANTINE_TOUCH"
+              ]
+            },
+            "HOLD": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "QUARANTINE_TOUCH"
+              ]
+            }
+          }
+        },
+        "PROVIDER_REVIEW": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "REVIEW": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "OPEN_PROVIDER_REVIEW"
+              ]
+            },
+            "HOLD": {
+              "enum": [
+                "NONE",
+                "OPEN_CASE",
+                "OPEN_PROVIDER_REVIEW"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "touchBurstPerMinute": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Signal threshold"
+        },
+        "widgetOriginMismatches": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Signal threshold"
+        },
+        "widgetDistinctOriginsPerKey1h": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Signal threshold"
+        },
+        "widgetRequestsPerOrigin5m": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Signal threshold"
+        },
+        "widgetTokenReplays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Signal threshold"
+        },
+        "ltUseCountLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Signal threshold"
+        },
+        "ltDistinctSubjectsLimit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000,
+          "description": "Signal threshold"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "weight": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Score contribution"
+        },
+        "cap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Highest contribution after repeats"
+        },
+        "enforce": {
+          "type": "boolean",
+          "description": "Per-rule enforcement; effective only when the master enforce is also true"
+        }
+      }
+    }
+  }
+}

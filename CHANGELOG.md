@@ -2,7 +2,27 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
-## Unreleased (Phase 4 corporate set, work package GRW-P4-C; to be published as 1.14.0 together with the still unpublished 1.13.0 by ONE owner)
+## 1.13.0 (consolidated; PREPARED on branch `contracts-1.13.0`, NOT tagged, NOT published: the founder decides the publish)
+
+Additive minor over 1.12.0 (no field, type string, path, enum value (one request enum gains a value), config key or flag removed or renamed; every new field is optional; no required field added to an existing event, schema or request). This one release **replaces** the "unreleased 1.13.0 and 1.14.0" arrangement: the Phase 4 corporate set that was waiting for "1.14.0" (below) is part of this release, so one publish carries everything every wave asked for (launch guide 11.38, 11.41, 11.63, 11.76, 11.81, 11.88, 11.91, 11.94, 11.121). Additive proof: `test/growth-1.13.test.ts` against `test/growth-baseline-1.12.0.json`.
+
+### Added
+- **Config kinds** (JSON Schema, also `@kiorex/contracts/growth-config/*`): `FRAUD_RULES` (twoPersonOnMoney cannot be switched off; per-surface actions closed so a surface can never reach attribution, commission or booking), `SEO_AUTOMATION` (`autoNoindex` default false), `LTV_POLICY` and `EXPERIMENT_POLICY` (k floor 10), `ATTRIBUTION_MODELS` (reporting only), `AUTOMATION_POLICY` (journey caps), `MARKET_PROFILE` (market facts; `market.<cc>.live` stays the human gate), and the Phase 4 `CORPORATE_POLICY`. Optional `ATTRIBUTION_POLICY.products.<PHARMACY|LAB|NURSE>.windows`. Shapes are the ones the Kiorex API already validates locally, so the local validators can be removed after publishing.
+- **Flags** (catalogue 102 keys): `growth.attribution_models`, `growth.cohorts_ltv`, `growth.fraud_scoring` (ON, shadow), `growth.automation_journeys`, `growth.ai_recommendations` (**launch-locked**, KX-11 governance), `growth.seo_automation`, `growth.market_onboarding`, `clinic.sponsored_promotions` (Clinic mirror, org scope), plus `growth.corporate` (launch-locked). A flag absent from the catalogue evaluates ON today; after the publish these have documented defaults.
+- **Events** (Kiorex outbox, aggregate references only): `ExperimentStarted`, `ExperimentStopped`, `ExperimentConcluded`, `ExperimentSrmDetected`, `ExperimentShipRequested`, `FraudCaseOpened`, `FraudCaseResolved`, `GrowthRecommendationProposed`, `GrowthRecommendationDecided`, `GrowthJourneyPublished`, `GrowthJourneyKilled`, `MarketOnboardingStateChanged`, `SeoQualityGateFailed`, `SeoVitalBudgetBreached`, and the Phase 4 `CorporateAccountCreated`, `CorporateCodeRedeemed`, `CorporateLeadReferred`. Optional fields: `PROVIDER_PROMOTION_UPDATED` gains `name`, `budgetCapMinor`, `perPatientLimit`, `eligibility`, `fundingMode`, `reviewKinds`; `PatientAcquisitionRecorded` gains `product`.
+- **OpenAPI**: marketplace 1.7.0: `POST /promotions/{promotionId}/reverse`, `POST /promotions/{promotionId}/review-decision`, `GET /growth/staff-phone-match` (keyed hashes in, one boolean out), the optional `sponsoredDiscount {applied, amountMinor, reason}` on the `POST /bookings` 201 answer. Pharmacy and Lab `ProductAcquisitionBlock`: `origin` accepts `CROSS_PRODUCT`, optional `factRef`.
+- **`src/growth.ts`**: `PHASE3_ERROR_CODES` (`JOURNEY_INVALID`, `RECOMMENDATION_NOT_AGGREGATE`) with statuses, `GROWTH_FLAGS_1_13`, `PRODUCT_FUNNEL_EVENTS` (`order_started`, `order_placed`, `lab_booking_started`, `lab_booking_placed`), `QUARANTINE_TOUCH_ACTION`, `PROMOTION_EXPENSE_LINE_CODE`, `staffPhoneMatchHash` / `staffPhoneMatchDigits` and `fixtures/growth-v1.13/staff-phone-match-vectors.json` (the Clinic and Kiorex keep their own copy and prove it against the vectors).
+
+### Not in 1.13.0 (needs a person)
+- A separate `growth.product_ingest` flag: `growth.attribution` keeps gating it unless the founder asks for a switch.
+- Ratification of the draft partner events (`OrderReady`, `DispenseCompleted`, `OrderRejected`, `LabResultReleased`) stays human (G-14).
+- Counsel and founder gates on every launch-locked flag.
+
+### Package
+- `CONTRACTS_VERSION` = 1.13.0. Consumers pin it with `npm run pack:local` after the founder publishes.
+
+### (history) the corporate set that was written as unreleased 1.14.0, now inside 1.13.0
+
 
 Additive only. `package.json` stays 1.12.0 and no tarball is packed: 1.13.0 (wave 7 kinds, events and flags) has not been published, so a version jump here would hide it. Consumers keep the vendored 1.12.0 tarball and validate these items locally until the single publish.
 
