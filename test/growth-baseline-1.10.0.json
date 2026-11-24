@@ -1,0 +1,4274 @@
+{
+ "_source": "Snapshot of the 1.10.0 contract surface taken from git HEAD before 1.11.0 (test/link-registry-1.11.test.ts proves 1.11.0 only ADDS to it).",
+ "events": {
+  "APPOINTMENT_CONFIRMED.schema.json": {
+   "type": {
+    "const": "APPOINTMENT_CONFIRMED"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "previousStatus",
+     "nextStatus",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "enum": [
+       "SCHEDULED",
+       "CONFIRMED",
+       "CHECKED_IN",
+       "COMPLETED",
+       "CANCELLED",
+       "NO_SHOW"
+      ]
+     },
+     "nextStatus": {
+      "const": "CONFIRMED"
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "source": {
+      "type": "string",
+      "description": "e.g. waitlist_autofill"
+     },
+     "clinicianId": {
+      "type": "string"
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isNewPatientAtBooking": {
+      "type": "boolean"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "acquisitionOrigin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "APPOINTMENT_RESCHEDULED.schema.json": {
+   "type": {
+    "enum": [
+     "RESCHEDULED",
+     "APPOINTMENT_RESCHEDULED"
+    ]
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "startsAt"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ]
+     }
+    }
+   }
+  },
+  "AttributionAssigned.schema.json": {
+   "type": {
+    "const": "AttributionAssigned"
+   },
+   "aggregateType": {
+    "const": "BookingIntent"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "bookingId",
+     "decisionId",
+     "origin",
+     "reason",
+     "policyVersion"
+    ],
+    "properties": {
+     "bookingId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "decisionId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "origin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "reason": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+     },
+     "policyVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+     },
+     "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+     },
+     "decidedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "CANCELLED_BY_CLINIC.schema.json": {
+   "type": {
+    "const": "CANCELLED_BY_CLINIC"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "previousStatus",
+     "nextStatus",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "enum": [
+       "SCHEDULED",
+       "CONFIRMED",
+       "CHECKED_IN",
+       "COMPLETED",
+       "CANCELLED",
+       "NO_SHOW"
+      ]
+     },
+     "nextStatus": {
+      "const": "CANCELLED"
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "source": {
+      "type": "string",
+      "description": "e.g. waitlist_autofill"
+     },
+     "clinicianId": {
+      "type": "string"
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isNewPatientAtBooking": {
+      "type": "boolean"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "acquisitionOrigin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "cancelledBy": {
+      "enum": [
+       "CLINIC",
+       "SYSTEM"
+      ]
+     },
+     "cancellationReason": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Shown to the patient. Required (min 3 chars) by Kiorly for clinic cancellations of Kiorex bookings."
+     },
+     "depositRefundable": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "Kiorex Pay refunds automatically when true (KXMPAY02)."
+     }
+    }
+   }
+  },
+  "CANCELLED_BY_PATIENT.schema.json": {
+   "type": {
+    "const": "CANCELLED_BY_PATIENT"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "previousStatus",
+     "nextStatus",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "enum": [
+       "SCHEDULED",
+       "CONFIRMED",
+       "CHECKED_IN",
+       "COMPLETED",
+       "CANCELLED",
+       "NO_SHOW"
+      ]
+     },
+     "nextStatus": {
+      "const": "CANCELLED"
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "source": {
+      "type": "string",
+      "description": "e.g. waitlist_autofill"
+     },
+     "clinicianId": {
+      "type": "string"
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isNewPatientAtBooking": {
+      "type": "boolean"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "acquisitionOrigin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "cancelledBy": {
+      "enum": [
+       "PATIENT"
+      ]
+     },
+     "cancellationReason": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Shown to the patient. Required (min 3 chars) by Kiorly for clinic cancellations of Kiorex bookings."
+     },
+     "depositRefundable": {
+      "type": [
+       "boolean",
+       "null"
+      ],
+      "description": "Kiorex Pay refunds automatically when true (KXMPAY02)."
+     }
+    }
+   }
+  },
+  "CARE_PLAN_CONFIRMED.schema.json": {
+   "type": {
+    "const": "CARE_PLAN_CONFIRMED"
+   },
+   "aggregateType": {
+    "const": "CarePlan"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "carePlanId",
+     "clinicId",
+     "confirmedAt",
+     "visits"
+    ],
+    "properties": {
+     "carePlanId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "requestRef": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "requestRef of the Kiorex care-plan request, when it originated there."
+     },
+     "edition": {
+      "const": "NURSE"
+     },
+     "confirmedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "visits": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "properties": {
+        "appointmentId": {
+         "type": "string",
+         "minLength": 1
+        },
+        "startsAt": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "endsAt": {
+         "type": "string",
+         "format": "date-time"
+        },
+        "serviceLocation": {
+         "enum": [
+          "IN_CLINIC",
+          "HOME"
+         ]
+        }
+       },
+       "required": [
+        "appointmentId",
+        "startsAt"
+       ]
+      }
+     },
+     "visitAddress": false,
+     "address": false,
+     "line1": false,
+     "lat": false,
+     "lng": false,
+     "latitude": false,
+     "longitude": false,
+     "geostamp": false,
+     "phone": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "CARE_PLAN_ENDED.schema.json": {
+   "type": {
+    "const": "CARE_PLAN_ENDED"
+   },
+   "aggregateType": {
+    "const": "CarePlan"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "carePlanId",
+     "clinicId",
+     "endedAt",
+     "reason"
+    ],
+    "properties": {
+     "carePlanId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "requestRef": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "requestRef of the Kiorex care-plan request, when it originated there."
+     },
+     "endedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "reason": {
+      "enum": [
+       "COMPLETED",
+       "CANCELLED_BY_PATIENT",
+       "CANCELLED_BY_PROVIDER",
+       "EXPIRED"
+      ],
+      "description": "Assumption: narrowest set; no clinical reason."
+     },
+     "visitsCompleted": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "cancelledAppointmentIds": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "minLength": 1
+      }
+     },
+     "visitAddress": false,
+     "address": false,
+     "line1": false,
+     "lat": false,
+     "lng": false,
+     "latitude": false,
+     "longitude": false,
+     "geostamp": false,
+     "phone": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "CHECKED_IN.schema.json": {
+   "type": {
+    "const": "CHECKED_IN"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "previousStatus",
+     "nextStatus",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "enum": [
+       "SCHEDULED",
+       "CONFIRMED",
+       "CHECKED_IN",
+       "COMPLETED",
+       "CANCELLED",
+       "NO_SHOW"
+      ]
+     },
+     "nextStatus": {
+      "const": "CHECKED_IN"
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "source": {
+      "type": "string",
+      "description": "e.g. waitlist_autofill"
+     },
+     "clinicianId": {
+      "type": "string"
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isNewPatientAtBooking": {
+      "type": "boolean"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "acquisitionOrigin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "CHECK_IN_REVERTED.schema.json": {
+   "type": {
+    "const": "CHECK_IN_REVERTED"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "previousStatus",
+     "nextStatus",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "const": "CHECKED_IN"
+     },
+     "nextStatus": {
+      "enum": [
+       "SCHEDULED",
+       "CONFIRMED",
+       "CANCELLED",
+       "NO_SHOW"
+      ]
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "source": {
+      "type": "string",
+      "description": "e.g. waitlist_autofill"
+     },
+     "clinicianId": {
+      "type": "string"
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isNewPatientAtBooking": {
+      "type": "boolean"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "acquisitionOrigin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "COMMISSION_CHARGE_CREATED.schema.json": {
+   "type": {
+    "const": "COMMISSION_CHARGE_CREATED"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "chargeId",
+     "appointmentId",
+     "amount",
+     "currency",
+     "status",
+     "attendedAt"
+    ],
+    "properties": {
+     "chargeId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "amount": {
+      "type": "string",
+      "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+      "description": "Decimal string, 2 dp."
+     },
+     "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+     },
+     "status": {
+      "enum": [
+       "PENDING",
+       "CONFIRMED",
+       "DISPUTED",
+       "REVERSED",
+       "WAIVED",
+       "BILLED"
+      ]
+     },
+     "attendedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "decisionRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+     },
+     "origin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "policyVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "COMMISSION_CHARGE_REVERSED.schema.json": {
+   "type": {
+    "const": "COMMISSION_CHARGE_REVERSED"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "chargeId",
+     "appointmentId",
+     "amount",
+     "currency",
+     "status",
+     "attendedAt",
+     "reason"
+    ],
+    "properties": {
+     "chargeId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "amount": {
+      "type": "string",
+      "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+      "description": "Decimal string, 2 dp."
+     },
+     "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+     },
+     "status": {
+      "enum": [
+       "PENDING",
+       "CONFIRMED",
+       "DISPUTED",
+       "REVERSED",
+       "WAIVED",
+       "BILLED"
+      ]
+     },
+     "attendedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "decisionRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+     },
+     "origin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "policyVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+     },
+     "reason": {
+      "type": "string"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "COMPLETED.schema.json": {
+   "type": {
+    "const": "COMPLETED"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "previousStatus",
+     "nextStatus",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "enum": [
+       "SCHEDULED",
+       "CONFIRMED",
+       "CHECKED_IN",
+       "COMPLETED",
+       "CANCELLED",
+       "NO_SHOW"
+      ]
+     },
+     "nextStatus": {
+      "const": "COMPLETED"
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "source": {
+      "type": "string",
+      "description": "e.g. waitlist_autofill"
+     },
+     "clinicianId": {
+      "type": "string"
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isNewPatientAtBooking": {
+      "type": "boolean"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "acquisitionOrigin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "CommissionAdjusted.schema.json": {
+   "type": {
+    "const": "CommissionAdjusted"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "chargeId",
+     "appointmentId",
+     "previousAmount",
+     "adjustedAmount",
+     "currency",
+     "reason",
+     "adjustedAt"
+    ],
+    "properties": {
+     "chargeId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousAmount": {
+      "type": "string",
+      "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+      "description": "Decimal string, 2 dp."
+     },
+     "adjustedAmount": {
+      "type": "string",
+      "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+      "description": "Decimal string, 2 dp; 0.00 when waived."
+     },
+     "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+     },
+     "reason": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+      "description": "Machine reason, e.g. PROVIDER_LED_EVIDENCE, GOODWILL_WAIVER, POLICY_CORRECTION."
+     },
+     "decisionRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+     },
+     "origin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "policyVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+     },
+     "adjustedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "DispenseCompleted.schema.json": {
+   "type": {
+    "const": "DispenseCompleted"
+   },
+   "aggregateType": {
+    "const": "PharmacyOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "pharmacyId",
+     "dispensedAt",
+     "pharmacistSignoff"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "pharmacyId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "branchId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "dispensedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "pharmacistSignoff": {
+      "type": "object",
+      "properties": {
+       "userId": {
+        "type": "string",
+        "minLength": 1
+       },
+       "signedAt": {
+        "type": "string",
+        "format": "date-time"
+       }
+      },
+      "required": [
+       "userId",
+       "signedAt"
+      ]
+     },
+     "partial": {
+      "type": "boolean"
+     },
+     "lines": {
+      "type": "array",
+      "description": "Per-line fulfilment (1.8.0). `sku` = the catalogue sku of the order line; `quantityDispensed` <= `quantityRequested`.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "sku": {
+         "type": "string",
+         "minLength": 1
+        },
+        "quantityRequested": {
+         "type": "integer",
+         "minimum": 1
+        },
+        "quantityDispensed": {
+         "type": "integer",
+         "minimum": 0
+        }
+       },
+       "required": [
+        "sku",
+        "quantityRequested",
+        "quantityDispensed"
+       ]
+      }
+     },
+     "deliveryMade": {
+      "type": "boolean",
+      "description": "1.8.0: DELIVERY orders only. false = the pharmacy did not deliver (Kiorex refunds the delivery fee per the market policy). Absent = delivered / not applicable."
+     }
+    }
+   }
+  },
+  "HOME_VISIT_ABORTED_UNSAFE.schema.json": {
+   "type": {
+    "const": "HOME_VISIT_ABORTED_UNSAFE"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "serviceLocation",
+     "abortedAt",
+     "reasonCategory",
+     "noShow",
+     "depositAction"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "serviceLocation": {
+      "const": "HOME"
+     },
+     "abortedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "reasonCategory": {
+      "enum": [
+       "THREAT_OR_VIOLENCE",
+       "UNSAFE_ENVIRONMENT",
+       "PATIENT_IMPAIRED_OR_AGGRESSIVE",
+       "OTHER"
+      ],
+      "description": "Assumption: narrowest category set; no free text (may contain PHI/address)."
+     },
+     "noShow": {
+      "const": false
+     },
+     "depositAction": {
+      "const": "HOLD_FOR_REVIEW"
+     },
+     "district": {
+      "type": "string",
+      "description": "District code only."
+     },
+     "reason": false,
+     "visitAddress": false,
+     "address": false,
+     "line1": false,
+     "lat": false,
+     "lng": false,
+     "latitude": false,
+     "longitude": false,
+     "geostamp": false,
+     "phone": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "HOME_VISIT_ASSIGNED.schema.json": {
+   "type": {
+    "const": "HOME_VISIT_ASSIGNED"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "serviceLocation",
+     "assignee",
+     "assignedAt"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "serviceLocation": {
+      "const": "HOME"
+     },
+     "assignee": {
+      "type": "object",
+      "properties": {
+       "clinicianId": {
+        "type": "string",
+        "minLength": 1
+       },
+       "displayName": {
+        "type": "string",
+        "minLength": 1
+       },
+       "photoUrl": {
+        "type": [
+         "string",
+         "null"
+        ],
+        "format": "uri"
+       },
+       "badge": {
+        "type": [
+         "string",
+         "null"
+        ],
+        "description": "Profession badge text, e.g. 'Verified nurse' (PRVER02)."
+       },
+       "profession": {
+        "enum": [
+         "PHYSICIAN",
+         "DENTIST",
+         "PHYSIOTHERAPIST",
+         "NURSE"
+        ],
+        "description": "ADR-029. Market packs may extend the list in a later additive minor."
+       },
+       "phone": false,
+       "mobile": false,
+       "email": false
+      },
+      "required": [
+       "clinicianId",
+       "displayName"
+      ]
+     },
+     "assignedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "visitAddress": false,
+     "address": false,
+     "line1": false,
+     "lat": false,
+     "lng": false,
+     "latitude": false,
+     "longitude": false,
+     "geostamp": false,
+     "phone": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "HOME_VISIT_EN_ROUTE.schema.json": {
+   "type": {
+    "const": "HOME_VISIT_EN_ROUTE"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "serviceLocation",
+     "enRouteAt"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "serviceLocation": {
+      "const": "HOME"
+     },
+     "enRouteAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "etaMinutes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 480,
+      "description": "Optional coarse ETA in minutes from enRouteAt."
+     },
+     "visitAddress": false,
+     "address": false,
+     "line1": false,
+     "lat": false,
+     "lng": false,
+     "latitude": false,
+     "longitude": false,
+     "geostamp": false,
+     "phone": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "LISTING_STATUS_CHANGED.schema.json": {
+   "type": {
+    "const": "LISTING_STATUS_CHANGED"
+   },
+   "aggregateType": {
+    "const": "MarketplaceListing"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "listingId",
+     "clinicId",
+     "clinicianId",
+     "previousStatus",
+     "nextStatus"
+    ],
+    "properties": {
+     "listingId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicianId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "enum": [
+       "DRAFT",
+       "PENDING_VERIFICATION",
+       "LIVE",
+       "PAUSED"
+      ]
+     },
+     "nextStatus": {
+      "enum": [
+       "DRAFT",
+       "PENDING_VERIFICATION",
+       "LIVE",
+       "PAUSED"
+      ]
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "LabCriticalEscalated.schema.json": {
+   "type": {
+    "const": "LabCriticalEscalated"
+   },
+   "aggregateType": {
+    "const": "CriticalAlert"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "alertId",
+     "level"
+    ],
+    "properties": {
+     "alertId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderId": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "level": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "New escalation level (1 = lab director, 2 = owner)."
+     },
+     "values": false,
+     "results": false
+    }
+   }
+  },
+  "LabInvoiceIssued.schema.json": {
+   "type": {
+    "const": "LabInvoiceIssued"
+   },
+   "aggregateType": {
+    "const": "Invoice"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "invoiceId",
+     "orderId",
+     "currency",
+     "total"
+    ],
+    "properties": {
+     "invoiceId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "sourceRef": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+     },
+     "total": {
+      "type": "number",
+      "minimum": 0
+     }
+    }
+   }
+  },
+  "LabOrderCreated.schema.json": {
+   "type": {
+    "const": "LabOrderCreated"
+   },
+   "aggregateType": {
+    "const": "LabOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "orderNumber",
+     "source",
+     "labId"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderNumber": {
+      "type": "string",
+      "minLength": 1
+     },
+     "source": {
+      "enum": [
+       "KIOREX_BOOKING",
+       "KIORLY_CLINIC"
+      ]
+     },
+     "originEdition": {
+      "enum": [
+       "NURSE"
+      ],
+      "description": "Present when the order was collected by Kiorly Nurse (KIORLY_NURSE inbound client); source stays KIORLY_CLINIC (ADR-031). Additive in 1.6.0."
+     },
+     "sourceRef": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Caller's idempotency reference from POST /integration/v1/orders."
+     },
+     "labId": {
+      "type": "string",
+      "minLength": 1
+     }
+    }
+   }
+  },
+  "LabOrderPlaced.schema.json": {
+   "type": {
+    "const": "LabOrderPlaced"
+   },
+   "aggregateType": {
+    "const": "LabOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "clinicId",
+     "patientRef",
+     "consentToken",
+     "orderedAt",
+     "items"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "encounterId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "patientRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Kiorly patient reference; never a national ID."
+     },
+     "orderingClinicianId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "consentToken": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string"
+        },
+        "nameEn": {
+         "type": "string",
+         "minLength": 1
+        },
+        "nameAr": {
+         "type": "string"
+        }
+       },
+       "required": [
+        "nameEn"
+       ]
+      }
+     },
+     "notes": {
+      "type": "string"
+     },
+     "preferredLabId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "originEdition": {
+      "enum": [
+       "CLINIC",
+       "NURSE"
+      ],
+      "description": "Edition that produced the hand-off (ADR-031). Additive in 1.6.0."
+     },
+     "prescriberName": {
+      "type": "string",
+      "description": "Doctor who requested the tests (nurse transcribes a doctor's order); relayed as referringDoctor.name."
+     },
+     "identifiersChecked": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+       "enum": [
+        "fullName",
+        "dateOfBirth",
+        "phone",
+        "nationalId",
+        "externalId"
+       ]
+      },
+      "description": "Kinds of the >= 2 DISTINCT identifiers the nurse verified against the patient record at collection (the Lab's vocabulary, plus fullName for nurse intake). Kinds only, never values."
+     },
+     "patient": {
+      "type": "object",
+      "description": "Minimum demographics the lab needs to accession a nurse-collected sample, sent only under the consent token. Kiorex relays it to the lab and does not store it (receipt payload is redacted). Never a national id.",
+      "properties": {
+       "fullName": {
+        "type": "string",
+        "minLength": 2
+       },
+       "dateOfBirth": {
+        "type": "string"
+       },
+       "sex": {
+        "enum": [
+         "M",
+         "F",
+         "OTHER",
+         "UNKNOWN"
+        ]
+       },
+       "phone": {
+        "type": "string"
+       },
+       "preferredLocale": {
+        "enum": [
+         "ar",
+         "en"
+        ]
+       }
+      },
+      "required": [
+       "fullName"
+      ]
+     },
+     "nurseCollection": {
+      "type": "object",
+      "description": "The collection facts recorded by the nurse (tube labels become specimen barcodes; chain of custody starts at collectedAt).",
+      "properties": {
+       "visitRef": {
+        "type": "string",
+        "minLength": 1
+       },
+       "collectorRef": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Opaque collector reference; never a phone number or national id."
+       },
+       "collectorName": {
+        "type": "string"
+       },
+       "collectedAt": {
+        "type": "string",
+        "format": "date-time"
+       },
+       "handedOverAt": {
+        "type": "string",
+        "format": "date-time"
+       },
+       "temperatureC": {
+        "type": "number",
+        "minimum": -40,
+        "maximum": 60
+       },
+       "samples": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 20,
+        "items": {
+         "type": "object",
+         "properties": {
+          "label": {
+           "type": "string",
+           "pattern": "^[\\x21-\\x7e]{3,40}$"
+          },
+          "specimenType": {
+           "type": "string",
+           "minLength": 2
+          },
+          "container": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "label",
+          "specimenType"
+         ]
+        }
+       }
+      },
+      "required": [
+       "visitRef",
+       "collectorRef",
+       "collectedAt",
+       "samples"
+      ]
+     }
+    }
+   }
+  },
+  "LabOrderStatusChanged.schema.json": {
+   "type": {
+    "const": "LabOrderStatusChanged"
+   },
+   "aggregateType": {
+    "const": "LabOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "orderNumber",
+     "source",
+     "previousStatus",
+     "nextStatus"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderNumber": {
+      "type": "string",
+      "minLength": 1
+     },
+     "source": {
+      "enum": [
+       "KIOREX_BOOKING",
+       "KIORLY_CLINIC"
+      ]
+     },
+     "originEdition": {
+      "enum": [
+       "NURSE"
+      ],
+      "description": "Present when the order was collected by Kiorly Nurse (KIORLY_NURSE inbound client); source stays KIORLY_CLINIC (ADR-031). Additive in 1.6.0."
+     },
+     "sourceRef": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "previousStatus": {
+      "enum": [
+       "DRAFT",
+       "AWAITING_COLLECTION",
+       "COLLECTED",
+       "IN_LAB",
+       "PARTIALLY_RESULTED",
+       "AWAITING_VALIDATION",
+       "VALIDATED",
+       "RELEASED",
+       "CANCELLED"
+      ]
+     },
+     "nextStatus": {
+      "enum": [
+       "DRAFT",
+       "AWAITING_COLLECTION",
+       "COLLECTED",
+       "IN_LAB",
+       "PARTIALLY_RESULTED",
+       "AWAITING_VALIDATION",
+       "VALIDATED",
+       "RELEASED",
+       "CANCELLED"
+      ]
+     }
+    }
+   }
+  },
+  "LabPaymentRecorded.schema.json": {
+   "type": {
+    "const": "LabPaymentRecorded"
+   },
+   "aggregateType": {
+    "const": "Payment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "paymentId",
+     "invoiceId",
+     "method",
+     "amount",
+     "currency"
+    ],
+    "properties": {
+     "paymentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "invoiceId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "sourceRef": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "method": {
+      "enum": [
+       "CASH",
+       "CARD"
+      ]
+     },
+     "amount": {
+      "type": "number",
+      "exclusiveMinimum": 0
+     },
+     "currency": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 3
+     }
+    }
+   }
+  },
+  "LabReportCorrected.schema.json": {
+   "type": {
+    "const": "LabReportCorrected"
+   },
+   "aggregateType": {
+    "const": "LabReport"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "reportId",
+     "orderId",
+     "reportVersion"
+    ],
+    "properties": {
+     "reportId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "reportVersion": {
+      "type": "integer",
+      "minimum": 2
+     },
+     "values": false,
+     "results": false
+    }
+   }
+  },
+  "LabResultReleased.schema.json": {
+   "type": {
+    "const": "LabResultReleased"
+   },
+   "aggregateType": {
+    "const": "LabReport"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "reportId",
+     "orderId",
+     "labId",
+     "patientRef",
+     "reportVersion",
+     "signedAt",
+     "secureLink"
+    ],
+    "properties": {
+     "reportId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "labId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "patientRef": {
+      "type": "string",
+      "minLength": 1
+     },
+     "reportVersion": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "signedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "secureLink": {
+      "type": "string",
+      "format": "uri"
+     },
+     "channels": {
+      "type": "array",
+      "items": {
+       "enum": [
+        "PATIENT_LINK",
+        "KIOREX_VAULT",
+        "KIORLY_CLINIC",
+        "PRINTED"
+       ]
+      }
+     },
+     "values": false,
+     "results": false
+    }
+   }
+  },
+  "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT.schema.json": {
+   "type": {
+    "const": "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "platformIntegrationClientId": {
+      "type": [
+       "string",
+       "null"
+      ]
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "MedicationOrderShared.schema.json": {
+   "type": {
+    "const": "MedicationOrderShared"
+   },
+   "aggregateType": {
+    "const": "DoctorOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "fromClinicId",
+     "patientRef",
+     "prescriberId",
+     "orderVersion",
+     "signedAt",
+     "expiresAt",
+     "consentToken"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "fromClinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "toClinicId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Receiving Nurse-edition tenant (organization of one for a solo nurse)."
+     },
+     "patientRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Kiorex subject or Kiorly patient reference; never a national ID."
+     },
+     "prescriberId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "orderVersion": {
+      "type": "integer",
+      "minimum": 1
+     },
+     "signedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "consentToken": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque token derived from the patient's active record-share grant (rsc_...)."
+     },
+     "secureLink": {
+      "type": "string",
+      "format": "uri"
+     },
+     "items": false,
+     "medications": false,
+     "lines": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "NO_SHOW.schema.json": {
+   "type": {
+    "const": "NO_SHOW"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "previousStatus",
+     "nextStatus",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "previousStatus": {
+      "enum": [
+       "SCHEDULED",
+       "CONFIRMED",
+       "CHECKED_IN",
+       "COMPLETED",
+       "CANCELLED",
+       "NO_SHOW"
+      ]
+     },
+     "nextStatus": {
+      "const": "NO_SHOW"
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) for marketplace bookings."
+     },
+     "source": {
+      "type": "string",
+      "description": "e.g. waitlist_autofill"
+     },
+     "clinicianId": {
+      "type": "string"
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "isNewPatientAtBooking": {
+      "type": "boolean"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "acquisitionOrigin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "OrderOutForDelivery.schema.json": {
+   "type": {
+    "const": "OrderOutForDelivery"
+   },
+   "aggregateType": {
+    "const": "PharmacyOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "pharmacyId",
+     "outForDeliveryAt"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "pharmacyId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "branchId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "outForDeliveryAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "estimatedDeliveryMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440,
+      "description": "Optional courier ETA in minutes from outForDeliveryAt."
+     },
+     "dispatchedBy": {
+      "type": "object",
+      "properties": {
+       "userId": {
+        "type": "string",
+        "minLength": 1
+       }
+      },
+      "required": [
+       "userId"
+      ],
+      "description": "Pharmacy staff user who dispatched the order."
+     }
+    }
+   }
+  },
+  "OrderReady.schema.json": {
+   "type": {
+    "const": "OrderReady"
+   },
+   "aggregateType": {
+    "const": "PharmacyOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "pharmacyId",
+     "readyAt",
+     "pharmacistSignoff"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "pharmacyId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "branchId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "readyAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "pharmacistSignoff": {
+      "type": "object",
+      "properties": {
+       "userId": {
+        "type": "string",
+        "minLength": 1
+       },
+       "signedAt": {
+        "type": "string",
+        "format": "date-time"
+       }
+      },
+      "required": [
+       "userId",
+       "signedAt"
+      ]
+     }
+    }
+   }
+  },
+  "OrderRejected.schema.json": {
+   "type": {
+    "const": "OrderRejected"
+   },
+   "aggregateType": {
+    "const": "PharmacyOrder"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orderId",
+     "pharmacyId",
+     "rejectedAt",
+     "reason"
+    ],
+    "properties": {
+     "orderId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "pharmacyId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "rejectedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "reason": {
+      "type": "string",
+      "minLength": 1
+     },
+     "reasonCode": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "PRESCRIPTION_SHARED.schema.json": {
+   "type": {
+    "const": "PRESCRIPTION_SHARED"
+   },
+   "aggregateType": {
+    "enum": [
+     "Encounter",
+     "Record"
+    ]
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "patientId",
+     "scope",
+     "encounterId",
+     "clinicId",
+     "signedAt"
+    ],
+    "properties": {
+     "patientId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "scope": {
+      "const": "PRESCRIPTIONS"
+     },
+     "encounterId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "signedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "pdf": {
+      "type": "object",
+      "description": "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.",
+      "properties": {
+       "url": {
+        "type": "string",
+        "format": "uri"
+       },
+       "expiresAt": {
+        "type": "string",
+        "format": "date-time"
+       }
+      },
+      "required": [
+       "url",
+       "expiresAt"
+      ]
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "PROVIDER_PROFILE_UPDATED.schema.json": {
+   "type": {
+    "const": "PROVIDER_PROFILE_UPDATED"
+   },
+   "aggregateType": {
+    "const": "MarketplaceListing"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "listingId",
+     "clinicId",
+     "clinicianId",
+     "status",
+     "completenessPercent",
+     "updatedAt",
+     "provider",
+     "clinic"
+    ],
+    "properties": {
+     "listingId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicianId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "status": {
+      "enum": [
+       "DRAFT",
+       "PENDING_VERIFICATION",
+       "LIVE",
+       "PAUSED"
+      ]
+     },
+     "completenessPercent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+     },
+     "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "provider": {
+      "type": "object",
+      "description": "Published provider profile (see provider-profile-schema in Kiorly)."
+     },
+     "clinic": {
+      "type": "object",
+      "description": "Published clinic profile."
+     },
+     "widgetOrigins": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+       "type": "string",
+       "pattern": "^https://[a-z0-9.-]+(:[0-9]{1,5})?$",
+       "maxLength": 255
+      },
+      "description": "Exact https origins the organisation allows to embed the Kiorex booking widget (no wildcard, at most 10). Additive in 1.10.0; absent = none."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "PatientAcquisitionRecorded.schema.json": {
+   "type": {
+    "const": "PatientAcquisitionRecorded"
+   },
+   "aggregateType": {
+    "const": "PatientProfile"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "origin",
+     "sourceKind",
+     "market"
+    ],
+    "properties": {
+     "origin": {
+      "enum": [
+       "PROVIDER_LED",
+       "MARKETPLACE",
+       "UNATTRIBUTED"
+      ],
+      "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+     },
+     "sourceKind": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,32}$"
+     },
+     "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+     },
+     "recordedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "PatientConsentUpdated.schema.json": {
+   "type": {
+    "const": "PatientConsentUpdated"
+   },
+   "aggregateType": {
+    "const": "PatientConsent"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "subRef",
+     "purpose",
+     "granted",
+     "textVersion",
+     "source",
+     "at"
+    ],
+    "properties": {
+     "subRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque reference to the subject used internally; never the Passport sub of a partner-visible patient."
+     },
+     "purpose": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,48}$",
+      "description": "ANALYTICS_MEASUREMENT, MARKETING_WHATSAPP, MARKETING_SMS, MARKETING_EMAIL, MARKETING_PUSH or a purpose added later."
+     },
+     "channel": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{1,24}$",
+      "description": "Optional channel when the purpose is channel-specific."
+     },
+     "granted": {
+      "type": "boolean"
+     },
+     "textVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "Id of the exact approved wording (AR and EN) shown to the person. Placeholder until counsel approves."
+     },
+     "source": {
+      "enum": [
+       "web",
+       "app",
+       "whatsapp",
+       "widget",
+       "ops-import"
+      ]
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "PrescriptionIssued.schema.json": {
+   "type": {
+    "const": "PrescriptionIssued"
+   },
+   "aggregateType": {
+    "const": "Prescription"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "prescriptionId",
+     "clinicId",
+     "patientRef",
+     "prescriberId",
+     "consentToken",
+     "issuedAt",
+     "items"
+    ],
+    "properties": {
+     "prescriptionId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "encounterId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "patientRef": {
+      "type": "string",
+      "description": "Kiorex subject or Kiorly patient reference; never a national ID."
+     },
+     "prescriberId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "consentToken": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque token derived from the patient's active PRESCRIPTIONS record-share grant (rsc_...)."
+     },
+     "issuedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+       "type": "object",
+       "properties": {
+        "activeIngredient": {
+         "type": "string"
+        },
+        "drugName": {
+         "type": "string"
+        },
+        "strength": {
+         "type": "string"
+        },
+        "dose": {
+         "type": "string"
+        },
+        "quantity": {
+         "type": "number",
+         "exclusiveMinimum": 0
+        },
+        "controlled": {
+         "type": "boolean"
+        }
+       },
+       "required": [
+        "activeIngredient",
+        "quantity"
+       ]
+      }
+     }
+    }
+   }
+  },
+  "RECORD_SHARE_REVOKED.schema.json": {
+   "type": {
+    "const": "RECORD_SHARE_REVOKED"
+   },
+   "aggregateType": {
+    "enum": [
+     "Patient",
+     "Record"
+    ]
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "patientId",
+     "scope",
+     "action"
+    ],
+    "properties": {
+     "patientId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "scope": {
+      "enum": [
+       "VISIT_SUMMARY",
+       "PRESCRIPTIONS",
+       "LAB_RESULTS",
+       "SHARE_WITH_OTHER_CLINICS"
+      ]
+     },
+     "action": {
+      "const": "DELETE_REQUESTED"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "REVIEW_INVITATION_ELIGIBLE.schema.json": {
+   "type": {
+    "const": "REVIEW_INVITATION_ELIGIBLE"
+   },
+   "aggregateType": {
+    "const": "Appointment"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "appointmentId",
+     "clinicId",
+     "bookingSource"
+    ],
+    "properties": {
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "bookingSource": {
+      "enum": [
+       "FRONT_DESK",
+       "PHONE",
+       "WALK_IN",
+       "CLINIC_LINK",
+       "KIOREX_MARKETPLACE",
+       "KIOREX_WHATSAPP",
+       "INTEGRATION",
+       "IMPORT"
+      ]
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "REVIEW_REPLY_POSTED.schema.json": {
+   "type": {
+    "const": "REVIEW_REPLY_POSTED"
+   },
+   "aggregateType": {
+    "const": "KiorexReview"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "kiorexReviewId",
+     "clinicId",
+     "replyText",
+     "repliedAt"
+    ],
+    "properties": {
+     "kiorexReviewId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "replyText": {
+      "type": "string"
+     },
+     "repliedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "ReferralIssued.schema.json": {
+   "type": {
+    "const": "ReferralIssued"
+   },
+   "aggregateType": {
+    "const": "Referral"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "referralId",
+     "fromClinicId",
+     "patientRef",
+     "referrerId",
+     "consentToken",
+     "issuedAt"
+    ],
+    "properties": {
+     "referralId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "fromClinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "toClinicId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Receiving clinic when the patient chose one; otherwise the receiver is resolved by Kiorex."
+     },
+     "toProfession": {
+      "enum": [
+       "PHYSICIAN",
+       "DENTIST",
+       "PHYSIOTHERAPIST",
+       "NURSE"
+      ],
+      "description": "ADR-029. Market packs may extend the list in a later additive minor."
+     },
+     "patientRef": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Kiorex subject or Kiorly patient reference; never a national ID."
+     },
+     "referrerId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "consentToken": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque token derived from the patient's active record-share grant (rsc_...)."
+     },
+     "issuedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "secureLink": {
+      "type": "string",
+      "format": "uri"
+     },
+     "diagnosis": false,
+     "notes": false,
+     "content": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "ReferralLinkCreated.schema.json": {
+   "type": {
+    "const": "ReferralLinkCreated"
+   },
+   "aggregateType": {
+    "const": "ProviderReferralLink"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "linkCode",
+     "ownerScope",
+     "channelKind"
+    ],
+    "properties": {
+     "linkCode": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$",
+      "description": "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2."
+     },
+     "ownerScope": {
+      "enum": [
+       "ORG",
+       "CLINIC",
+       "BRANCH",
+       "DOCTOR",
+       "DESK"
+      ]
+     },
+     "channelKind": {
+      "enum": [
+       "WEB_LINK",
+       "QR_POSTER",
+       "QR_DESK",
+       "SOCIAL",
+       "SMS",
+       "WHATSAPP_SHARE",
+       "EMAIL_SIG",
+       "GOOGLE_PROFILE"
+      ]
+     },
+     "createdAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "SAFETY_ALERT_RAISED.schema.json": {
+   "type": {
+    "const": "SAFETY_ALERT_RAISED"
+   },
+   "aggregateType": {
+    "const": "SafetyAlert"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "alertId",
+     "clinicId",
+     "kind",
+     "raisedAt",
+     "deliverTo",
+     "deliverWithinSeconds"
+    ],
+    "properties": {
+     "alertId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "appointmentId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "externalReference": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Kiorex booking reference (kx_bk_...) when the visit came from Kiorex."
+     },
+     "kind": {
+      "enum": [
+       "TIMER_EXPIRED",
+       "SOS",
+       "UNSAFE_ABORT"
+      ]
+     },
+     "raisedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "deliverTo": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+       "enum": [
+        "ORG_SAFETY_CONTACT",
+        "KIOREX_OPS"
+       ]
+      }
+     },
+     "deliverWithinSeconds": {
+      "const": 60
+     },
+     "district": {
+      "type": "string",
+      "description": "District code only."
+     },
+     "message": false,
+     "visitAddress": false,
+     "address": false,
+     "line1": false,
+     "lat": false,
+     "lng": false,
+     "latitude": false,
+     "longitude": false,
+     "geostamp": false,
+     "phone": false,
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "SLOTS_CHANGED.schema.json": {
+   "type": {
+    "const": "SLOTS_CHANGED"
+   },
+   "aggregateType": {
+    "const": "Clinic"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "clinicId",
+     "clinicianId",
+     "reason",
+     "at"
+    ],
+    "properties": {
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicianId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "reason": {
+      "type": "string"
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "VISIT_SUMMARY_SHARED.schema.json": {
+   "type": {
+    "const": "VISIT_SUMMARY_SHARED"
+   },
+   "aggregateType": {
+    "enum": [
+     "Encounter",
+     "Record"
+    ]
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "patientId",
+     "scope",
+     "summary",
+     "signature"
+    ],
+    "properties": {
+     "patientId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "scope": {
+      "const": "VISIT_SUMMARY"
+     },
+     "summary": {
+      "type": "object",
+      "properties": {
+       "encounterId": {
+        "type": "string",
+        "minLength": 1
+       },
+       "clinicId": {
+        "type": "string",
+        "minLength": 1
+       },
+       "signedAt": {
+        "type": "string",
+        "format": "date-time"
+       },
+       "soap": {
+        "type": "object",
+        "properties": {
+         "chiefComplaint": {
+          "type": [
+           "string",
+           "null"
+          ]
+         },
+         "subjective": {
+          "type": [
+           "string",
+           "null"
+          ]
+         },
+         "objective": {
+          "type": [
+           "string",
+           "null"
+          ]
+         },
+         "assessment": {
+          "type": [
+           "string",
+           "null"
+          ]
+         },
+         "plan": {
+          "type": [
+           "string",
+           "null"
+          ]
+         }
+        }
+       }
+      },
+      "required": [
+       "encounterId",
+       "clinicId",
+       "signedAt",
+       "soap"
+      ]
+     },
+     "signature": {
+      "type": "string",
+      "description": "hex HMAC-SHA256 over JSON.stringify(summary) with KIOREX_RECORD_SHARE_HMAC_SECRET."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "WAITLIST_OFFER.schema.json": {
+   "type": {
+    "const": "WAITLIST_OFFER"
+   },
+   "aggregateType": {
+    "const": "WaitlistOffer"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "offerId",
+     "waitlistRef",
+     "clinicId",
+     "clinicianId",
+     "startsAt",
+     "expiresAt"
+    ],
+    "properties": {
+     "offerId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "waitlistRef": {
+      "type": "string",
+      "description": "The externalRef the patient joined with."
+     },
+     "clinicId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "clinicianId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "typeId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "startsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "endsAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "feeAmount": {
+      "type": "string",
+      "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+      "description": "Decimal string."
+     },
+     "aggregateType": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     },
+     "aggregateId": {
+      "type": "string",
+      "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+     }
+    }
+   }
+  },
+  "account.merged.schema.json": {
+   "type": {
+    "const": "account.merged"
+   },
+   "aggregateType": {
+    "const": "Account"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "linkId",
+     "primarySub",
+     "mergedSub",
+     "change",
+     "at"
+    ],
+    "properties": {
+     "linkId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "primarySub": {
+      "type": "string",
+      "minLength": 1
+     },
+     "mergedSub": {
+      "type": "string",
+      "minLength": 1
+     },
+     "change": {
+      "enum": [
+       "merged",
+       "reversed"
+      ]
+     },
+     "reversible": {
+      "type": "boolean"
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   }
+  },
+  "envelope.schema.json": {
+   "type": {
+    "type": "string",
+    "minLength": 1
+   },
+   "aggregateType": {
+    "type": "string",
+    "minLength": 1
+   },
+   "required": [
+    "eventId",
+    "type",
+    "aggregateType",
+    "aggregateId",
+    "occurredAt",
+    "data"
+   ],
+   "data": {
+    "required": [],
+    "properties": {}
+   }
+  },
+  "flag.changed.schema.json": {
+   "type": {
+    "const": "flag.changed"
+   },
+   "aggregateType": {
+    "const": "Flag"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "product",
+     "key",
+     "scope",
+     "newValue",
+     "snapshotVersion",
+     "changedAt"
+    ],
+    "properties": {
+     "product": {
+      "enum": [
+       "kiorly-clinic",
+       "kiorex",
+       "kiorex-account",
+       "kiorly-pharmacy",
+       "kiorly-lab"
+      ]
+     },
+     "key": {
+      "type": "string",
+      "minLength": 1
+     },
+     "scope": {
+      "enum": [
+       "global",
+       "market",
+       "org"
+      ]
+     },
+     "scopeId": {
+      "type": [
+       "string",
+       "null"
+      ],
+      "description": "Market code or org id; null for global."
+     },
+     "previousValue": {
+      "enum": [
+       "ON",
+       "OFF",
+       "INHERIT"
+      ]
+     },
+     "newValue": {
+      "enum": [
+       "ON",
+       "OFF",
+       "INHERIT"
+      ]
+     },
+     "snapshotVersion": {
+      "type": "integer",
+      "minimum": 0
+     },
+     "changedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "reason": {
+      "type": "string"
+     },
+     "actor": {
+      "type": "string"
+     },
+     "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional auto-revert time for an OFF."
+     }
+    }
+   }
+  },
+  "guardian.link.changed.schema.json": {
+   "type": {
+    "const": "guardian.link.changed"
+   },
+   "aggregateType": {
+    "const": "GuardianLink"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "linkId",
+     "guardianSub",
+     "dependantSub",
+     "change",
+     "effectiveAt"
+    ],
+    "properties": {
+     "linkId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "guardianSub": {
+      "type": "string",
+      "minLength": 1
+     },
+     "dependantSub": {
+      "type": "string",
+      "minLength": 1
+     },
+     "change": {
+      "enum": [
+       "created",
+       "activated",
+       "revoked",
+       "expired"
+      ]
+     },
+     "relationship": {
+      "enum": [
+       "parent",
+       "legal_guardian",
+       "grandparent",
+       "other_relative"
+      ]
+     },
+     "evidenceType": {
+      "enum": [
+       "self_declared",
+       "birth_certificate_ref",
+       "court_order_ref",
+       "provider_attested"
+      ]
+     },
+     "reason": {
+      "type": "string",
+      "description": "For revoked/expired, e.g. age_of_majority, revoked_by_guardian, guardian_deleted."
+     },
+     "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Age-of-majority expiry of the link."
+     },
+     "effectiveAt": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   }
+  },
+  "membership.changed.schema.json": {
+   "type": {
+    "const": "membership.changed"
+   },
+   "aggregateType": {
+    "const": "Membership"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "orgId",
+     "sub",
+     "roleHint",
+     "change",
+     "at"
+    ],
+    "properties": {
+     "orgId": {
+      "type": "string",
+      "minLength": 1
+     },
+     "sub": {
+      "type": "string",
+      "minLength": 1
+     },
+     "roleHint": {
+      "type": "string",
+      "description": "Role hint, e.g. owner, admin, doctor, nurse, receptionist, finance, pharmacist, lab_technician, staff."
+     },
+     "change": {
+      "enum": [
+       "added",
+       "removed",
+       "role_changed"
+      ]
+     },
+     "at": {
+      "type": "string",
+      "format": "date-time"
+     }
+    }
+   }
+  },
+  "session.revoked.schema.json": {
+   "type": {
+    "const": "session.revoked"
+   },
+   "aggregateType": {
+    "const": "Session"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "sub",
+     "revokedAt"
+    ],
+    "properties": {
+     "sub": {
+      "type": "string",
+      "minLength": 1
+     },
+     "sid": {
+      "type": "string",
+      "minLength": 1
+     },
+     "revokedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "reason": {
+      "enum": [
+       "logout",
+       "remote_revoke",
+       "reuse_detected",
+       "password_or_credential_change",
+       "admin"
+      ]
+     }
+    }
+   }
+  },
+  "subject.deleted.schema.json": {
+   "type": {
+    "const": "subject.deleted"
+   },
+   "aggregateType": {
+    "const": "Subject"
+   },
+   "required": [
+    "type",
+    "aggregateType",
+    "data"
+   ],
+   "data": {
+    "required": [
+     "sub",
+     "deletedAt"
+    ],
+    "properties": {
+     "sub": {
+      "type": "string",
+      "minLength": 1
+     },
+     "deletedAt": {
+      "type": "string",
+      "format": "date-time"
+     },
+     "requestedBy": {
+      "enum": [
+       "subject",
+       "operator",
+       "guardian"
+      ]
+     },
+     "retainLegalRecords": {
+      "type": "boolean"
+     }
+    }
+   }
+  }
+ },
+ "openapi": {
+  "kiorex-control-plane": {
+   "paths": {
+    "/control/v1/flags/snapshot": {
+     "get": "controlGetFlagsSnapshot"
+    },
+    "/feature-flags/kiorex/changed": {
+     "post": "productFlagChanged"
+    }
+   },
+   "schemas": [
+    "Error",
+    "FeatureDisabledError",
+    "FlagChangedWebhook",
+    "FlagClass",
+    "FlagDefinition",
+    "FlagScope",
+    "FlagSnapshot",
+    "FlagValue",
+    "FlagValues"
+   ]
+  },
+  "kiorex-growth": {
+   "paths": {
+    "/growth/v1/touch": {
+     "post": "growthRecordTouch"
+    },
+    "/growth/v1/events": {
+     "post": "growthRecordEvents"
+    },
+    "/growth/v1/evidence/{bookingId}": {
+     "get": "growthGetEvidence"
+    },
+    "/bootstrap": {
+     "get": "getBootstrap"
+    }
+   },
+   "schemas": [
+    "Bootstrap",
+    "EventsRequest",
+    "Evidence",
+    "GrowthError",
+    "GrowthEventInput",
+    "TouchAccepted",
+    "TouchRequest"
+   ]
+  },
+  "kiorex-partner-intake": {
+   "paths": {
+    "/partners/v1/connection-requests": {
+     "post": "submitConnectionRequest"
+    },
+    "/partners/v1/connection-requests/{id}": {
+     "get": "getConnectionRequestStatus"
+    }
+   },
+   "schemas": [
+    "ConnectionRequest",
+    "ConnectionRequestAccepted",
+    "ConnectionStatus",
+    "Error"
+   ]
+  },
+  "kiorex-webhooks": {
+   "paths": {
+    "/webhooks/kiorly": {
+     "post": "receiveKiorlyWebhook"
+    },
+    "/webhooks/psp/{provider}": {
+     "post": "receivePspWebhook"
+    },
+    "/auth/backchannel-logout": {
+     "post": "receiveBackchannelLogout"
+    },
+    "/webhooks/pharmacy": {
+     "post": "receivePharmacyWebhook"
+    },
+    "/webhooks/lab": {
+     "post": "receiveLabWebhook"
+    }
+   },
+   "schemas": [
+    "Error",
+    "KiorlyEventEnvelope",
+    "PspWebhook",
+    "WebhookAck"
+   ]
+  },
+  "kiorly-lab": {
+   "paths": {
+    "/integration/v1/orders": {
+     "post": "labCreateOrder"
+    },
+    "/integration/v1/orders/{sourceRef}": {
+     "get": "labGetOrderStatus"
+    },
+    "/integration/v1/orders/{sourceRef}/cancel": {
+     "post": "labCancelOrder"
+    },
+    "/integration/v1/reports/{reportId}/pdf": {
+     "get": "labGetReportPdf"
+    },
+    "/integration/v1/labs": {
+     "get": "labListLabs"
+    },
+    "/integration/v1/tests": {
+     "get": "labListTests"
+    },
+    "/integration/v1/tests/quote": {
+     "post": "labQuote"
+    },
+    "/integration/v1/labs/{labId}/slots": {
+     "get": "labSlots"
+    },
+    "/integration/v1/orders/{sourceRef}/custody": {
+     "get": "labGetOrderCustody"
+    }
+   },
+   "schemas": [
+    "Error",
+    "InboundLabOrder",
+    "InboundLabOrderResult",
+    "LabList",
+    "LabOrderCustody",
+    "LabOrderStatus",
+    "LabOrderStatusEnum",
+    "LabQuote",
+    "LabQuoteRequest",
+    "LabSlots",
+    "NurseCollection",
+    "TestList"
+   ]
+  },
+  "kiorly-marketplace": {
+   "paths": {
+    "/deposit-links/{token}/paid": {
+     "post": "marketplaceDepositLinkPaid"
+    },
+    "/bookings/{externalRef}/deposit-paid": {
+     "post": "marketplaceDepositPaid"
+    },
+    "/payouts": {
+     "post": "marketplaceRecordPayout"
+    },
+    "/auth/verify": {
+     "get": "marketplaceAuthVerify"
+    },
+    "/clinics": {
+     "get": "marketplaceListClinics"
+    },
+    "/providers": {
+     "get": "marketplaceListProviders"
+    },
+    "/physicians": {
+     "get": "marketplaceListPhysicians"
+    },
+    "/clinics/{clinicId}/slots": {
+     "get": "marketplaceListSlots"
+    },
+    "/appointments/availability": {
+     "get": "marketplaceAvailability"
+    },
+    "/holds": {
+     "post": "marketplaceCreateHold"
+    },
+    "/holds/{id}": {
+     "delete": "marketplaceReleaseHold"
+    },
+    "/bookings": {
+     "post": "marketplaceCreateBooking"
+    },
+    "/bookings/{externalRef}": {
+     "get": "marketplaceGetBooking"
+    },
+    "/bookings/{externalRef}/cancel": {
+     "post": "marketplaceCancelBooking"
+    },
+    "/analytics/slot-capacity": {
+     "get": "marketplaceSlotCapacity"
+    },
+    "/waitlist": {
+     "post": "marketplaceJoinWaitlist"
+    },
+    "/waitlist/{externalRef}": {
+     "get": "marketplaceGetWaitlist",
+     "delete": "marketplaceLeaveWaitlist"
+    },
+    "/waitlist/offers/{offerId}/accept": {
+     "post": "marketplaceAcceptWaitlistOffer"
+    },
+    "/waitlist/offers/{offerId}/decline": {
+     "post": "marketplaceDeclineWaitlistOffer"
+    },
+    "/analytics/profile-views": {
+     "post": "marketplaceSyncProfileViews"
+    },
+    "/reviews/aggregate": {
+     "post": "marketplaceSyncReviews"
+    },
+    "/bookings/{externalRef}/reschedule": {
+     "post": "marketplaceRescheduleBooking"
+    },
+    "/appointments": {
+     "post": "marketplaceBookAppointment"
+    },
+    "/appointments/{id}": {
+     "get": "marketplaceGetAppointment"
+    },
+    "/appointments/{id}/cancel": {
+     "post": "marketplaceCancelAppointment"
+    },
+    "/patients/{id}/consents": {
+     "post": "marketplaceUpsertPatientRecordShareConsents"
+    },
+    "/care-plan-requests": {
+     "post": "marketplaceCreateCarePlanRequest"
+    },
+    "/lab-orders/{orderId}/status": {
+     "post": "marketplaceLabOrderStatus"
+    }
+   },
+   "schemas": [
+    "AcquisitionBlock",
+    "AcquisitionError",
+    "CarePlanRequest",
+    "CarePlanRequestAck",
+    "Edition",
+    "OutOfCoverageError",
+    "Profession",
+    "ProviderList",
+    "ProviderV23Fields",
+    "ProviderVerification",
+    "ServiceLocation",
+    "Slot",
+    "SlotHold",
+    "SlotHoldRequest",
+    "VisitAddress"
+   ]
+  },
+  "kiorly-pharmacy": {
+   "paths": {
+    "/marketplace/v1/pharmacies": {
+     "get": "pharmacyListPharmacies"
+    },
+    "/marketplace/v1/catalogue": {
+     "get": "pharmacyCatalogue"
+    },
+    "/marketplace/v1/catalogue/quote": {
+     "post": "pharmacyQuote"
+    },
+    "/marketplace/v1/orders": {
+     "post": "pharmacyCreateOrder"
+    },
+    "/marketplace/v1/prescriptions/validate": {
+     "post": "pharmacyValidatePrescription"
+    },
+    "/marketplace/v1/orders/{orderId}/cancel": {
+     "post": "pharmacyCancelOrder"
+    },
+    "/marketplace/v1/availability": {
+     "get": "pharmacyAvailability"
+    }
+   },
+   "schemas": [
+    "CancelRequest",
+    "CatalogueItem",
+    "Error",
+    "OrderIntent",
+    "OrderResult",
+    "Pharmacy",
+    "Quote",
+    "QuoteRequest",
+    "RxValidateRequest",
+    "RxValidateResult"
+   ]
+  }
+ },
+ "seo": {
+  "required": [
+   "canonicalHost",
+   "locales",
+   "defaultLocale",
+   "minLiveProviders",
+   "minUniqueBlocks",
+   "maxSiblingSimilarityPercent",
+   "sitemapShardSize",
+   "edgeCacheSeconds",
+   "staleWhileRevalidateSeconds",
+   "delistedGoneAfterDays",
+   "reviewMarkupEnabled",
+   "districtPagesEnabled"
+  ],
+  "properties": {
+   "canonicalHost": {
+    "type": "string",
+    "pattern": "^https://[a-z0-9.-]+$",
+    "description": "Absolute canonical origin, e.g. https://kiorex.com (NEEDS_HUMAN per environment)."
+   },
+   "locales": {
+    "type": "array",
+    "minItems": 1,
+    "uniqueItems": true,
+    "items": {
+     "enum": [
+      "ar",
+      "en"
+     ]
+    },
+    "description": "PROPOSED_DEFAULT [ar,en]."
+   },
+   "defaultLocale": {
+    "enum": [
+     "ar",
+     "en"
+    ],
+    "description": "PROPOSED_DEFAULT ar."
+   },
+   "minLiveProviders": {
+    "type": "integer",
+    "minimum": 1,
+    "maximum": 50,
+    "description": "Thin-page guard: LIVE providers with slots needed before a generated page is indexable. PROPOSED_DEFAULT 3."
+   },
+   "minUniqueBlocks": {
+    "type": "integer",
+    "minimum": 1,
+    "maximum": 20,
+    "description": "Thin-page guard: data-derived content blocks needed. PROPOSED_DEFAULT 3."
+   },
+   "maxSiblingSimilarityPercent": {
+    "type": "integer",
+    "minimum": 0,
+    "maximum": 100,
+    "description": "Thin-page guard: maximum provider-list overlap with a sibling page. PROPOSED_DEFAULT 70."
+   },
+   "sitemapShardSize": {
+    "type": "integer",
+    "minimum": 100,
+    "maximum": 50000,
+    "description": "URLs per sitemap file. PROPOSED_DEFAULT 10000."
+   },
+   "edgeCacheSeconds": {
+    "type": "integer",
+    "minimum": 0,
+    "maximum": 86400,
+    "description": "s-maxage for public HTML. PROPOSED_DEFAULT 300."
+   },
+   "staleWhileRevalidateSeconds": {
+    "type": "integer",
+    "minimum": 0,
+    "maximum": 604800,
+    "description": "stale-while-revalidate for public HTML. PROPOSED_DEFAULT 3600."
+   },
+   "delistedGoneAfterDays": {
+    "type": "integer",
+    "minimum": 1,
+    "maximum": 365,
+    "description": "A DELISTED page answers 301 to the hub, then 410 after this many days when no hub exists. PROPOSED_DEFAULT 30."
+   },
+   "reviewMarkupEnabled": {
+    "type": "boolean",
+    "description": "Emit aggregateRating only from visible verified reviews. PROPOSED_DEFAULT True."
+   },
+   "districtPagesEnabled": {
+    "type": "boolean",
+    "description": "Generate district-level pages when they pass the guard. PROPOSED_DEFAULT True."
+   }
+  }
+ }
+}

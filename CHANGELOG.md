@@ -2,6 +2,24 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.11.0
+
+Additive minor (no field, type string, path, enum value or flag removed or renamed; every new field is optional; no required field added). Closes the contract gaps listed in the growth Wave 2 and 3 as-built notes (packages F, C, J, D1). Every default is `PROPOSED_DEFAULT`. Consumers pin 1.11.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.11.0.tgz`).
+
+### Added
+- `src/growth-config/SEO.schema.json`: optional keys `templates` (title and description per locale `ar`/`en` and page type `home, hub, city, district, care-district, city-hub, district-hub, same-day, telemedicine, doctor, nurse, clinic, pharmacy, lab`; no markup, at most 120/320 characters), `paginatedIndexable`, `reviewMarkupMinCount` (1..1000), `sameDayWindowHours` (1..72), `minAvailableProviders` (1..50), `maxParentSimilarityPercent` (50..100). They are the keys kiorex-platform `validateSeoExtensions` (apps/api/src/growth/seo) already honours, so the maker-checker write path can now store them. Placeholder names inside a template are validated by Kiorex (the JSON Schema cannot express them).
+- `openapi/kiorly-marketplace.v1.openapi.json` 1.4.0 -> 1.5.0: optional `lt` (Clinic link-touch token) on `POST /bookings`; signed link registry lookup `GET /referral-links/{code}` (`marketplaceGetReferralLink`, 404 `REFERRAL_LINK_NOT_FOUND`) and the reconciliation feed `GET /referral-links` (`marketplaceListReferralLinks`, `updatedSince`, `limit`, `cursor`); schemas `ReferralLinkRecord`, `ReferralLinkPage`, `ReferralLinkError`. Both reads use the existing marketplace HMAC; no patient data.
+- Events: `ReferralLinkCreated` gains optional `orgRef` and `clinicRef`; new Clinic-produced `ReferralLinkRevoked` (`linkCode`, `orgRef` required, `revokedAt`, optional `reason`). Kiorex consumes both to keep its link registry (code known before its first token; a revoked code stops deciding PROVIDER_LED for new bookings). Fixtures in `fixtures/events-v2.4/`.
+
+### Link registry mechanism (ARCH 4.2 and 6.4)
+1. The Clinic emits `ReferralLinkCreated` / `ReferralLinkRevoked` (and `PAUSED` is visible through the lookup) through its outbox, with the organisation reference.
+2. Kiorex `LinkRegistryService` stores code -> organisation and the status. A code can belong to one organisation only (a conflicting claim is never honoured).
+3. When an event was missed, Kiorex reads `GET /referral-links/{code}` (signed) at decision time for an unknown or stale code, and reconciles with `GET /referral-links?updatedSince=`.
+4. A revoked or paused code never makes a new booking PROVIDER_LED, whatever the age of the signed `lt`. Revocation can only remove a fee, never add one. The Clinic keeps its own booking-time check.
+
+### Package
+- `CONTRACTS_VERSION` = 1.11.0. Tests: `test/link-registry-1.11.test.ts` (additive diff against `test/growth-baseline-1.10.0.json`, SEO keys, `lt`, registry operations, events); older tests accept 1.11.
+
 ## 1.10.0
 
 Additive minor (no field, type string, path, enum value or flag removed or renamed; every new field is optional; the root entry point only gains exports). Publishes the contract of the **growth and patient acquisition engine** (ARCH `_docs/growth/GROWTH_ARCHITECTURE_DECISIONS.md`, work package GRW-P1-A). Every default below is `PROPOSED_DEFAULT` until the founder ratifies it. Consumers pin 1.10.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.10.0.tgz`).

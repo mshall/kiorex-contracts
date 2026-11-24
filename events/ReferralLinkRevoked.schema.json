@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/ReferralLinkRevoked.schema.json",
+  "title": "ReferralLinkRevoked",
+  "description": "A provider revoked a referral link or QR (1.11.0, additive). Delivered to Kiorex through the Clinic outbox so the link registry stops treating the code as provider-led for NEW bookings; a still-valid signed `lt` of this code no longer decides PROVIDER_LED. Revocation can only remove a fee, never add one. Link code and organisation reference only: never patient data.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "ReferralLinkRevoked"
+    },
+    "aggregateType": {
+      "const": "ProviderReferralLink"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "linkCode": {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$",
+          "description": "8 Crockford base32 characters (ARCH section 4.2)."
+        },
+        "orgRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+        },
+        "clinicRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "description": "Optional machine reason, e.g. PROVIDER_REQUEST, ABUSE, REPLACED."
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "linkCode",
+        "orgRef",
+        "revokedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

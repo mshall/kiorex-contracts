@@ -353,6 +353,557 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "districtPagesEnabled": {
         "type": "boolean",
         "description": "Generate district-level pages when they pass the guard. PROPOSED_DEFAULT True."
+      },
+      "templates": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Title and description templates per locale and page type (PROPOSED_DEFAULT: the built-in copy; Arabic needs CMO review). Placeholders: {name} {specialty} {city} {district} {country} {clinic} {count} {fees} {rating} {where} {care} {brand}; unknown placeholders, markup and unbalanced braces are rejected by the Kiorex write path. Additive in 1.11.0.",
+        "properties": {
+          "ar": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "home": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "hub": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "city": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "district": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "care-district": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "city-hub": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "district-hub": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "same-day": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "telemedicine": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "doctor": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "nurse": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "clinic": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "pharmacy": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "lab": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              }
+            }
+          },
+          "en": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "home": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "hub": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "city": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "district": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "care-district": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "city-hub": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "district-hub": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "same-day": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "telemedicine": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "doctor": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "nurse": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "clinic": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "pharmacy": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              },
+              "lab": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "pattern": "^[^<>]*$"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 320,
+                    "pattern": "^[^<>]*$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "paginatedIndexable": {
+        "type": "boolean",
+        "description": "Page 2 and beyond of a listing are indexable (self-canonical). PROPOSED_DEFAULT false: they are noindex,follow and not in sitemaps. Additive in 1.11.0."
+      },
+      "reviewMarkupMinCount": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 1000,
+        "description": "Visible, verified reviews needed before Physician or Pharmacy pages emit aggregateRating. PROPOSED_DEFAULT 5. Additive in 1.11.0."
+      },
+      "sameDayWindowHours": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 72,
+        "description": "A provider is same day when its next slot starts within this many hours. PROPOSED_DEFAULT 24. Additive in 1.11.0."
+      },
+      "minAvailableProviders": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "description": "Same-day and telemedicine hubs need this many providers with real availability or declared video. PROPOSED_DEFAULT 2. Additive in 1.11.0."
+      },
+      "maxParentSimilarityPercent": {
+        "type": "integer",
+        "minimum": 50,
+        "maximum": 100,
+        "description": "A district or city-hub page whose provider set overlaps its parent by more than this percent is noindex,follow (doorway rule). PROPOSED_DEFAULT 100. Additive in 1.11.0."
       }
     },
     "required": [

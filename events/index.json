@@ -418,6 +418,14 @@
       "producer": "kiorly-clinic",
       "aggregateType": "ProviderReferralLink",
       "status": "v2-draft"
+    },
+    {
+      "type": "ReferralLinkRevoked",
+      "aliases": [],
+      "file": "ReferralLinkRevoked",
+      "producer": "kiorly-clinic",
+      "aggregateType": "ProviderReferralLink",
+      "status": "v2-draft"
     }
   ]
 }

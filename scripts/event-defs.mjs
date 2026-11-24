@@ -23,6 +23,7 @@ const NO_LOCATION = { visitAddress: false, address: false, line1: false, lat: fa
 // 1.10.0 growth engine (additive). Commission-relevant origin of a booking (ARCH section 6.1); see src/growth.ts.
 const ACQ_ORIGIN = { enum: ["PROVIDER_LED", "MARKETPLACE", "UNATTRIBUTED"], description: "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply." };
 const ACQ_DECISION_REF = { type: "string", minLength: 1, description: "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0." };
+const LINK_ORG_REF = { type: "string", minLength: 1, description: "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked." };
 const ACQ_POLICY_VERSION = { type: "string", minLength: 1, maxLength: 64, description: "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0." };
 const AGG = {
   aggregateType: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
@@ -634,9 +635,15 @@ export const EVENTS = [
   },
   {
     type: "ReferralLinkCreated", producer: "kiorly-clinic", aggregateType: "ProviderReferralLink", status: "v2-draft", group: "growth",
-    description: "INTERNAL (Clinic audit/outbox; mirrored to Kiorex only as an aggregate when the org is connected). A provider created a referral link or QR. Link code, scope and channel only: never patient data.",
-    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2." }, ownerScope: { enum: ["ORG", "CLINIC", "BRANCH", "DOCTOR", "DESK"] }, channelKind: { enum: ["WEB_LINK", "QR_POSTER", "QR_DESK", "SOCIAL", "SMS", "WHATSAPP_SHARE", "EMAIL_SIG", "GOOGLE_PROFILE"] }, createdAt: TS, ...AGG }, required: ["linkCode", "ownerScope", "channelKind"] },
-    example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "7K2M9X4Q", ownerScope: "DOCTOR", channelKind: "QR_DESK", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
+    description: "A provider created a referral link or QR. Since 1.11.0 the Clinic delivers it to Kiorex through its outbox with the organisation reference (`orgRef`), so the link registry knows a code before its first signed token. Link code, scope, channel and organisation reference only: never patient data.",
+    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2." }, ownerScope: { enum: ["ORG", "CLINIC", "BRANCH", "DOCTOR", "DESK"] }, channelKind: { enum: ["WEB_LINK", "QR_POSTER", "QR_DESK", "SOCIAL", "SMS", "WHATSAPP_SHARE", "EMAIL_SIG", "GOOGLE_PROFILE"] }, orgRef: LINK_ORG_REF, clinicRef: { type: ["string", "null"], description: "Clinic the link belongs to, when scoped to one. Additive in 1.11.0." }, createdAt: TS, ...AGG }, required: ["linkCode", "ownerScope", "channelKind"] },
+    example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "7K2M9X4Q", ownerScope: "DOCTOR", channelKind: "QR_DESK", orgRef: "ten_01JF3Z0000", clinicRef: "clinic_01JF3Z7ZZZ", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
+  },
+  {
+    type: "ReferralLinkRevoked", producer: "kiorly-clinic", aggregateType: "ProviderReferralLink", status: "v2-draft", group: "growth",
+    description: "A provider revoked a referral link or QR (1.11.0, additive). Delivered to Kiorex through the Clinic outbox so the link registry stops treating the code as provider-led for NEW bookings; a still-valid signed `lt` of this code no longer decides PROVIDER_LED. Revocation can only remove a fee, never add one. Link code and organisation reference only: never patient data.",
+    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (ARCH section 4.2)." }, orgRef: LINK_ORG_REF, clinicRef: { type: ["string", "null"] }, revokedAt: TS, reason: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,63}$", description: "Optional machine reason, e.g. PROVIDER_REQUEST, ABUSE, REPLACED." }, ...AGG }, required: ["linkCode", "orgRef", "revokedAt"] },
+    example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "7K2M9X4Q", orgRef: "ten_01JF3Z0000", clinicRef: "clinic_01JF3Z7ZZZ", revokedAt: "2027-03-20T08:00:00.000Z", reason: "PROVIDER_REQUEST", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
   },
 ];
 

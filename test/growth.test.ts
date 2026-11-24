@@ -19,10 +19,10 @@ const growth = readJson("openapi/kiorex-growth.v1.openapi.json");
 const cat = readJson("flags/catalogue.json");
 
 describe("1.10.0 growth contract is an additive minor", () => {
-  it("version", () => {
-    expect(CONTRACTS_VERSION).toBe("1.10.0");
-    expect(readJson("package.json").version).toBe("1.10.0");
-    expect(market.info.version).toBe("1.4.0");
+  it("version (the 1.11.0 minor only adds to it, see test/link-registry-1.11.test.ts)", () => {
+    expect(CONTRACTS_VERSION).toBe("1.11.0");
+    expect(readJson("package.json").version).toBe("1.11.0");
+    expect(market.info.version).toBe("1.5.0");
   });
 
   it("no 1.9.0 event schema lost a required field, a property or changed a property's schema (diff against the 1.9.0 snapshot)", () => {

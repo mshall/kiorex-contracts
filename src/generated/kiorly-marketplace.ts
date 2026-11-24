@@ -480,6 +480,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/referral-links/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Signed lookup of one referral link (link registry)
+         * @description Kiorex asks the Clinic which organisation owns a link code and whether it is still active. Authenticated like every marketplace call (HMAC). Returns the same record the `ReferralLinkCreated` and `ReferralLinkRevoked` events carry, so a code is known to Kiorex before its first token and a revocation can be read back after a missed event. No patient data.
+         */
+        get: operations["marketplaceGetReferralLink"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/referral-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Link registry reconciliation feed
+         * @description Links created or changed since a timestamp, oldest first, for the periodic reconciliation that repairs a missed event. Cursor pagination.
+         */
+        get: operations["marketplaceListReferralLinks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export interface webhooks {
     kiorexOutboxEvent: {
@@ -657,6 +697,39 @@ export interface components {
             statusCode?: 400;
             /** @enum {unknown} */
             code: "ACQUISITION_BLOCK_INVALID" | "ACQUISITION_EVIDENCE_HASH_INVALID";
+            message?: string;
+        };
+        ReferralLinkRecord: {
+            code: string;
+            /** @description Organisation (tenant) reference; the same value the signed `lt` carries as `o`. */
+            orgRef: string;
+            /** @description Clinic the link belongs to, when scoped to one. */
+            clinicRef?: string | null;
+            /** @enum {unknown} */
+            ownerScope: "ORG" | "CLINIC" | "BRANCH" | "DOCTOR" | "DESK";
+            /** @enum {unknown} */
+            channelKind: "WEB_LINK" | "QR_POSTER" | "QR_DESK" | "SOCIAL" | "SMS" | "WHATSAPP_SHARE" | "EMAIL_SIG" | "GOOGLE_PROFILE";
+            /**
+             * @description A PAUSED or REVOKED link never makes a new booking provider-led.
+             * @enum {unknown}
+             */
+            status: "ACTIVE" | "PAUSED" | "REVOKED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: date-time */
+            revokedAt?: string | null;
+        };
+        ReferralLinkPage: {
+            items: components["schemas"]["ReferralLinkRecord"][];
+            nextCursor?: string | null;
+        };
+        ReferralLinkError: {
+            /** @enum {unknown} */
+            statusCode?: 404;
+            /** @enum {unknown} */
+            code: "REFERRAL_LINK_NOT_FOUND";
             message?: string;
         };
     };
@@ -1032,6 +1105,8 @@ export interface operations {
                         [key: string]: unknown;
                     };
                     acquisition?: components["schemas"]["AcquisitionBlock"];
+                    /** @description Signed link-touch token issued by the Clinic for a provider referral link, QR or widget (`<base64url claims>.<base64url hmac>`, claims {o: organisation, c: 8-character link code, t: issued-at ms, v: 1}, 72 h lifetime; domain-separated HMAC over `kx-lt1\n` + payload). Kiorex forwards the token it verified at decision time and only when the signed `acquisition.origin` is PROVIDER_LED. The Clinic re-checks the link at booking time (ACTIVE, same organisation); an invalid, expired, other-organisation or revoked token is ignored (the booking is then not attributed to the link) and is never an error. Optional and additive: absent = today's rules. Never a patient or visitor identifier. */
+                    lt?: string;
                 };
             };
         };
@@ -1645,6 +1720,62 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    marketplaceGetReferralLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 8 Crockford base32 characters */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralLinkRecord"];
+                };
+            };
+            /** @description REFERRAL_LINK_NOT_FOUND: no link with this code exists */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralLinkError"];
+                };
+            };
+        };
+    };
+    marketplaceListReferralLinks: {
+        parameters: {
+            query?: {
+                updatedSince?: string;
+                limit?: number;
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralLinkPage"];
+                };
             };
         };
     };

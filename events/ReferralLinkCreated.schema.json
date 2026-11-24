@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://contracts.kiorex.com/events/ReferralLinkCreated.schema.json",
   "title": "ReferralLinkCreated",
-  "description": "INTERNAL (Clinic audit/outbox; mirrored to Kiorex only as an aggregate when the org is connected). A provider created a referral link or QR. Link code, scope and channel only: never patient data.",
+  "description": "A provider created a referral link or QR. Since 1.11.0 the Clinic delivers it to Kiorex through its outbox with the organisation reference (`orgRef`), so the link registry knows a code before its first signed token. Link code, scope, channel and organisation reference only: never patient data.",
   "x-producer": "kiorly-clinic",
   "x-status": "v2-draft",
   "allOf": [
@@ -46,6 +46,18 @@
             "EMAIL_SIG",
             "GOOGLE_PROFILE"
           ]
+        },
+        "orgRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+        },
+        "clinicRef": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Clinic the link belongs to, when scoped to one. Additive in 1.11.0."
         },
         "createdAt": {
           "type": "string",

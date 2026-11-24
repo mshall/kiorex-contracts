@@ -4634,7 +4634,7 @@ export const EVENT_SCHEMAS = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/events/ReferralLinkCreated.schema.json",
     "title": "ReferralLinkCreated",
-    "description": "INTERNAL (Clinic audit/outbox; mirrored to Kiorex only as an aggregate when the org is connected). A provider created a referral link or QR. Link code, scope and channel only: never patient data.",
+    "description": "A provider created a referral link or QR. Since 1.11.0 the Clinic delivers it to Kiorex through its outbox with the organisation reference (`orgRef`), so the link registry knows a code before its first signed token. Link code, scope, channel and organisation reference only: never patient data.",
     "x-producer": "kiorly-clinic",
     "x-status": "v2-draft",
     "allOf": [
@@ -4679,6 +4679,18 @@ export const EVENT_SCHEMAS = {
               "GOOGLE_PROFILE"
             ]
           },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "clinicRef": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Clinic the link belongs to, when scoped to one. Additive in 1.11.0."
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -4696,6 +4708,76 @@ export const EVENT_SCHEMAS = {
           "linkCode",
           "ownerScope",
           "channelKind"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ReferralLinkRevoked": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ReferralLinkRevoked.schema.json",
+    "title": "ReferralLinkRevoked",
+    "description": "A provider revoked a referral link or QR (1.11.0, additive). Delivered to Kiorex through the Clinic outbox so the link registry stops treating the code as provider-led for NEW bookings; a still-valid signed `lt` of this code no longer decides PROVIDER_LED. Revocation can only remove a fee, never add one. Link code and organisation reference only: never patient data.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ReferralLinkRevoked"
+      },
+      "aggregateType": {
+        "const": "ProviderReferralLink"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "linkCode": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$",
+            "description": "8 Crockford base32 characters (ARCH section 4.2)."
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "clinicRef": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "revokedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+            "description": "Optional machine reason, e.g. PROVIDER_REQUEST, ABUSE, REPLACED."
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "linkCode",
+          "orgRef",
+          "revokedAt"
         ]
       }
     },
@@ -5652,7 +5734,26 @@ export const EVENT_EXAMPLES = {
       "linkCode": "7K2M9X4Q",
       "ownerScope": "DOCTOR",
       "channelKind": "QR_DESK",
+      "orgRef": "ten_01JF3Z0000",
+      "clinicRef": "clinic_01JF3Z7ZZZ",
       "createdAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "ProviderReferralLink",
+      "aggregateId": "prl_01JF3ZE000"
+    }
+  },
+  "ReferralLinkRevoked": {
+    "eventId": "01JF3ZEVTREFERRAL",
+    "type": "ReferralLinkRevoked",
+    "aggregateType": "ProviderReferralLink",
+    "aggregateId": "prl_01JF3ZE000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "linkCode": "7K2M9X4Q",
+      "orgRef": "ten_01JF3Z0000",
+      "clinicRef": "clinic_01JF3Z7ZZZ",
+      "revokedAt": "2027-03-20T08:00:00.000Z",
+      "reason": "PROVIDER_REQUEST",
       "aggregateType": "ProviderReferralLink",
       "aggregateId": "prl_01JF3ZE000"
     }
@@ -5976,10 +6077,16 @@ export const EVENT_META = {
     "aggregateType": "ProviderReferralLink",
     "status": "v2-draft",
     "schemaFile": "ReferralLinkCreated.schema.json"
+  },
+  "ReferralLinkRevoked": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "ProviderReferralLink",
+    "status": "v2-draft",
+    "schemaFile": "ReferralLinkRevoked.schema.json"
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -6093,8 +6200,10 @@ export type AttributionAssignedData = { "bookingId": string; "decisionId": strin
 export type AttributionAssignedEvent = EventEnvelope<"AttributionAssigned", AttributionAssignedData>;
 export type PatientAcquisitionRecordedData = { "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "sourceKind": string; "market": string; "recordedAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PatientAcquisitionRecordedEvent = EventEnvelope<"PatientAcquisitionRecorded", PatientAcquisitionRecordedData>;
-export type ReferralLinkCreatedData = { "linkCode": string; "ownerScope": "ORG" | "CLINIC" | "BRANCH" | "DOCTOR" | "DESK"; "channelKind": "WEB_LINK" | "QR_POSTER" | "QR_DESK" | "SOCIAL" | "SMS" | "WHATSAPP_SHARE" | "EMAIL_SIG" | "GOOGLE_PROFILE"; "createdAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralLinkCreatedData = { "linkCode": string; "ownerScope": "ORG" | "CLINIC" | "BRANCH" | "DOCTOR" | "DESK"; "channelKind": "WEB_LINK" | "QR_POSTER" | "QR_DESK" | "SOCIAL" | "SMS" | "WHATSAPP_SHARE" | "EMAIL_SIG" | "GOOGLE_PROFILE"; "orgRef"?: string; "clinicRef"?: string | null; "createdAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ReferralLinkCreatedEvent = EventEnvelope<"ReferralLinkCreated", ReferralLinkCreatedData>;
+export type ReferralLinkRevokedData = { "linkCode": string; "orgRef": string; "clinicRef"?: string | null; "revokedAt": string; "reason"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralLinkRevokedEvent = EventEnvelope<"ReferralLinkRevoked", ReferralLinkRevokedData>;
 
 export interface EventMap {
   "APPOINTMENT_CONFIRMED": AppointmentConfirmedEvent;
@@ -6149,4 +6258,5 @@ export interface EventMap {
   "AttributionAssigned": AttributionAssignedEvent;
   "PatientAcquisitionRecorded": PatientAcquisitionRecordedEvent;
   "ReferralLinkCreated": ReferralLinkCreatedEvent;
+  "ReferralLinkRevoked": ReferralLinkRevokedEvent;
 }

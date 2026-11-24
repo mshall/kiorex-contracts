@@ -18,4 +18,4 @@ export type * as WebhooksApi from "./generated/webhooks.js";
 export type * as PartnerIntakeApi from "./generated/partner-intake.js";
 export type * as GrowthApi from "./generated/growth.js";
 export { GROWTH_CONFIG_SCHEMAS, ACQUISITION_BLOCK_SCHEMA } from "./generated/growth-schemas.js";
-export const CONTRACTS_VERSION = "1.10.0";
+export const CONTRACTS_VERSION = "1.11.0";
