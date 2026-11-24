@@ -18,6 +18,10 @@ for (const ev of EVENTS) {
     mkdirSync(join(root, "fixtures/events-v2.3"), { recursive: true });
     w(join(root, "fixtures/events-v2.3", `${file}.json`), buildExample(ev));
   }
+  if (ev.group === "growth") {
+    mkdirSync(join(root, "fixtures/events-v2.4"), { recursive: true });
+    w(join(root, "fixtures/events-v2.4", `${file}.json`), buildExample(ev));
+  }
   index.push({ type: ev.type, aliases: ev.aliases ?? [], file, producer: ev.producer, aggregateType: ev.aggregateType, status: ev.status });
 }
 w(join(out, "index.json"), { envelope: "envelope.schema.json", events: index });

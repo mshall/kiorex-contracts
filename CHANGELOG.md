@@ -2,6 +2,23 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.10.0
+
+Additive minor (no field, type string, path, enum value or flag removed or renamed; every new field is optional; the root entry point only gains exports). Publishes the contract of the **growth and patient acquisition engine** (ARCH `_docs/growth/GROWTH_ARCHITECTURE_DECISIONS.md`, work package GRW-P1-A). Every default below is `PROPOSED_DEFAULT` until the founder ratifies it. Consumers pin 1.10.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.10.0.tgz`).
+
+### Added
+- `openapi/kiorly-marketplace.v1.openapi.json` 1.3.0 -> 1.4.0: optional signed `acquisition` block on `POST /bookings` (`AcquisitionBlock`: `origin` PROVIDER_LED | MARKETPLACE | UNATTRIBUTED, `decisionId`, `policyVersion`, `reason`, `evidenceHash` sha256 hex, optional `touch {kind, ref, at}`), optional documented `attribution`, and 400 `ACQUISITION_BLOCK_INVALID` / `ACQUISITION_EVIDENCE_HASH_INVALID`. Responses are unchanged. A Clinic that does not know the block ignores it and treats the booking as `UNATTRIBUTED`; today's chargeability rule applies unchanged. The block can only REMOVE a commission, never add one.
+- `openapi/kiorex-growth.v1.openapi.json` 1.0.0 (new, draft): public `POST /growth/v1/touch`, `POST /growth/v1/events`, `GET /api/v1/bootstrap` (path `/bootstrap` under the `/api/v1` server) and the evidence read `GET /growth/v1/evidence/{bookingId}` (ops session or signed partner). Generated types: `GrowthApi`.
+- Events (JSON Schema, examples, `fixtures/events-v2.4/*`): `CommissionAdjusted` (kiorly-clinic), `PatientConsentUpdated` (kiorex), and the internal-outbox `AttributionAssigned`, `PatientAcquisitionRecorded` (kiorex) and `ReferralLinkCreated` (kiorly-clinic); the internal ones are never delivered to partners.
+- Additive optional fields: `COMMISSION_CHARGE_CREATED` and `COMMISSION_CHARGE_REVERSED` gain `decisionRef`, `origin`, `policyVersion`; `PROVIDER_PROFILE_UPDATED` gains `widgetOrigins[]` (https origins, at most 10); every appointment status event gains `acquisitionOrigin`.
+- Flags (`flags/catalogue.json`, 68 keys now): `growth.provider_links`, `growth.attribution`, `growth.ssr_public_pages`, `growth.seo_landing_pages`, `growth.widgets`, `growth.deep_links`, `growth.campaigns`, `growth.experiments`, pattern `growth.integrations.<kind>`, and launch-locked `growth.analytics_visitor`, `growth.marketing_messaging`, `growth.patient_referral`, `growth.rewards`, `kiorex.whatsapp_ai_assistant`. Safety controls stay out of the catalogue (ADR-025).
+- `src/growth.ts`: `ACQUISITION_ORIGINS`, `ATTRIBUTION_REASON_CODES`, `ACQUISITION_SOURCE_KINDS`, `COMMISSION_DISPUTE_REASONS` (adds `PROVIDER_LED_EVIDENCE`), `GROWTH_EVENT_NAMES` (15 canonical funnel events, client and server partitions), `GROWTH_ERROR_CODES` and `GROWTH_ERROR_STATUS`, `GROWTH_CONFIG_KINDS`, widget origin rule (`isValidWidgetOrigin`, 10 max), `growthCanonicalJson`, `computeAttributionInputsHash` (the `evidenceHash`), `validateAcquisitionBlock`, `validateGrowthConfig`, `acquisitionOriginOf`.
+- `src/growth-config/*.schema.json` (also exported as `@kiorex/contracts/growth-config/*`): JSON Schemas for config kinds `ATTRIBUTION_POLICY`, `SEO`, `WIDGET_POLICY`, `CONSENT_DEFAULTS`, `MARKET_GROWTH`. The other kinds of ARCH section 16 ship with their phase.
+- Fixtures `fixtures/growth-v1.10/{vectors,acquisition-examples}.json`: fixed vectors for the canonical JSON, the evidence hash and the widget origin rule. Clinic keeps its own copy of the helpers (its Docker build context cannot reach this package) and proves them against these vectors, as it does for the 1.9.0 intake helpers.
+
+### Package
+- `CONTRACTS_VERSION` = 1.10.0. Tests: `test/growth.test.ts` (additive diff against a 1.9.0 snapshot, acquisition examples, vectors, events, flags, config schemas), `test/flags-catalogue.test.ts` extended.
+
 ## 1.9.0
 
 Additive minor (no field, type string, path or flag removed or renamed). Publishes the partner **connection intake** that kiorex-platform has served since ADR-040 and secures it. Consumers pin 1.9.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.9.0.tgz`).

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/CommissionAdjusted.schema.json",
+  "title": "CommissionAdjusted",
+  "description": "A commission charge amount was waived or changed (for example a PROVIDER_LED_EVIDENCE dispute was approved). A full reversal stays COMMISSION_CHARGE_REVERSED. Carries the decision that explains it. No patient data.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "CommissionAdjusted"
+    },
+    "aggregateType": {
+      "const": "Appointment"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "chargeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appointmentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "previousAmount": {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+          "description": "Decimal string, 2 dp."
+        },
+        "adjustedAmount": {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+          "description": "Decimal string, 2 dp; 0.00 when waived."
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "description": "Machine reason, e.g. PROVIDER_LED_EVIDENCE, GOODWILL_WAIVER, POLICY_CORRECTION."
+        },
+        "decisionRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+        },
+        "origin": {
+          "enum": [
+            "PROVIDER_LED",
+            "MARKETPLACE",
+            "UNATTRIBUTED"
+          ],
+          "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+        },
+        "policyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+        },
+        "adjustedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "chargeId",
+        "appointmentId",
+        "previousAmount",
+        "adjustedAmount",
+        "currency",
+        "reason",
+        "adjustedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

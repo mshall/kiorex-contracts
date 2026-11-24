@@ -132,6 +132,14 @@ export const EVENT_SCHEMAS = {
             "type": "integer",
             "minimum": 0
           },
+          "acquisitionOrigin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -311,6 +319,14 @@ export const EVENT_SCHEMAS = {
             "type": "integer",
             "minimum": 0
           },
+          "acquisitionOrigin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -440,6 +456,14 @@ export const EVENT_SCHEMAS = {
             "type": "integer",
             "minimum": 0
           },
+          "acquisitionOrigin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -568,6 +592,14 @@ export const EVENT_SCHEMAS = {
             "type": "integer",
             "minimum": 0
           },
+          "acquisitionOrigin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -674,6 +706,14 @@ export const EVENT_SCHEMAS = {
           "version": {
             "type": "integer",
             "minimum": 0
+          },
+          "acquisitionOrigin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
           },
           "aggregateType": {
             "type": "string",
@@ -784,6 +824,14 @@ export const EVENT_SCHEMAS = {
             "type": "integer",
             "minimum": 0
           },
+          "acquisitionOrigin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -892,6 +940,14 @@ export const EVENT_SCHEMAS = {
           "version": {
             "type": "integer",
             "minimum": 0
+          },
+          "acquisitionOrigin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
           },
           "aggregateType": {
             "type": "string",
@@ -1037,6 +1093,17 @@ export const EVENT_SCHEMAS = {
           "clinic": {
             "type": "object",
             "description": "Published clinic profile."
+          },
+          "widgetOrigins": {
+            "type": "array",
+            "maxItems": 10,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^https://[a-z0-9.-]+(:[0-9]{1,5})?$",
+              "maxLength": 255
+            },
+            "description": "Exact https origins the organisation allows to embed the Kiorex booking widget (no wildcard, at most 10). Additive in 1.10.0; absent = none."
           },
           "aggregateType": {
             "type": "string",
@@ -1195,6 +1262,25 @@ export const EVENT_SCHEMAS = {
             "type": "string",
             "format": "date-time"
           },
+          "decisionRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+          },
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -1274,6 +1360,25 @@ export const EVENT_SCHEMAS = {
           "attendedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "decisionRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+          },
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
           },
           "reason": {
             "type": "string"
@@ -4193,6 +4298,411 @@ export const EVENT_SCHEMAS = {
       "aggregateType",
       "data"
     ]
+  },
+  "CommissionAdjusted": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CommissionAdjusted.schema.json",
+    "title": "CommissionAdjusted",
+    "description": "A commission charge amount was waived or changed (for example a PROVIDER_LED_EVIDENCE dispute was approved). A full reversal stays COMMISSION_CHARGE_REVERSED. Carries the decision that explains it. No patient data.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CommissionAdjusted"
+      },
+      "aggregateType": {
+        "const": "Appointment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "appointmentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "previousAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+            "description": "Decimal string, 2 dp."
+          },
+          "adjustedAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+            "description": "Decimal string, 2 dp; 0.00 when waived."
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+            "description": "Machine reason, e.g. PROVIDER_LED_EVIDENCE, GOODWILL_WAIVER, POLICY_CORRECTION."
+          },
+          "decisionRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+          },
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+          },
+          "adjustedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "chargeId",
+          "appointmentId",
+          "previousAmount",
+          "adjustedAmount",
+          "currency",
+          "reason",
+          "adjustedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "PatientConsentUpdated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/PatientConsentUpdated.schema.json",
+    "title": "PatientConsentUpdated",
+    "description": "A patient or visitor granted or withdrew a consent purpose. The payload carries an opaque subject reference only: no name, phone, email or health data. Append-only history; the latest row wins; withdrawal is effective for the send gate within 60 seconds.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "PatientConsentUpdated"
+      },
+      "aggregateType": {
+        "const": "PatientConsent"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "subRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Opaque reference to the subject used internally; never the Passport sub of a partner-visible patient."
+          },
+          "purpose": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,48}$",
+            "description": "ANALYTICS_MEASUREMENT, MARKETING_WHATSAPP, MARKETING_SMS, MARKETING_EMAIL, MARKETING_PUSH or a purpose added later."
+          },
+          "channel": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{1,24}$",
+            "description": "Optional channel when the purpose is channel-specific."
+          },
+          "granted": {
+            "type": "boolean"
+          },
+          "textVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Id of the exact approved wording (AR and EN) shown to the person. Placeholder until counsel approves."
+          },
+          "source": {
+            "enum": [
+              "web",
+              "app",
+              "whatsapp",
+              "widget",
+              "ops-import"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "subRef",
+          "purpose",
+          "granted",
+          "textVersion",
+          "source",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "AttributionAssigned": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/AttributionAssigned.schema.json",
+    "title": "AttributionAssigned",
+    "description": "INTERNAL (Kiorex outbox only, not delivered to partners). The deterministic attribution function produced a decision for a booking. One per booking and policy version.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "AttributionAssigned"
+      },
+      "aggregateType": {
+        "const": "BookingIntent"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decisionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "bookingId",
+          "decisionId",
+          "origin",
+          "reason",
+          "policyVersion"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "PatientAcquisitionRecorded": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/PatientAcquisitionRecorded.schema.json",
+    "title": "PatientAcquisitionRecorded",
+    "description": "INTERNAL (Kiorex outbox only). The first time a subject receives an acquisition origin (registration or first booking). Origin, source kind and market only: no identifiers beyond the aggregate.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "PatientAcquisitionRecorded"
+      },
+      "aggregateType": {
+        "const": "PatientProfile"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
+          "sourceKind": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,32}$"
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "origin",
+          "sourceKind",
+          "market"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ReferralLinkCreated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ReferralLinkCreated.schema.json",
+    "title": "ReferralLinkCreated",
+    "description": "INTERNAL (Clinic audit/outbox; mirrored to Kiorex only as an aggregate when the org is connected). A provider created a referral link or QR. Link code, scope and channel only: never patient data.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ReferralLinkCreated"
+      },
+      "aggregateType": {
+        "const": "ProviderReferralLink"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "linkCode": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{6,16}$"
+          },
+          "ownerScope": {
+            "enum": [
+              "ORG",
+              "CLINIC",
+              "BRANCH",
+              "DOCTOR",
+              "DESK"
+            ]
+          },
+          "channelKind": {
+            "enum": [
+              "WEB_LINK",
+              "QR_POSTER",
+              "QR_DESK",
+              "SOCIAL",
+              "SMS",
+              "WHATSAPP_SHARE",
+              "EMAIL_SIG",
+              "GOOGLE_PROFILE"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "linkCode",
+          "ownerScope",
+          "channelKind"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
   }
 } as const;
 
@@ -5056,6 +5566,95 @@ export const EVENT_EXAMPLES = {
       "aggregateType": "DoctorOrder",
       "aggregateId": "ord_01JF3ZO001"
     }
+  },
+  "CommissionAdjusted": {
+    "eventId": "01JF3ZEVTCOMMISSI",
+    "type": "CommissionAdjusted",
+    "aggregateType": "Appointment",
+    "aggregateId": "apt_01JF3Z8Q0K",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "chargeId": "chg_01JF3Z9AAA",
+      "appointmentId": "apt_01JF3Z8Q0K",
+      "previousAmount": "40.00",
+      "adjustedAmount": "0.00",
+      "currency": "EGP",
+      "reason": "PROVIDER_LED_EVIDENCE",
+      "decisionRef": "cdc_01JF3ZA000",
+      "origin": "PROVIDER_LED",
+      "policyVersion": "agp_01JF3Z0000",
+      "adjustedAt": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "Appointment",
+      "aggregateId": "apt_01JF3Z8Q0K"
+    }
+  },
+  "PatientConsentUpdated": {
+    "eventId": "01JF3ZEVTPATIENTC",
+    "type": "PatientConsentUpdated",
+    "aggregateType": "PatientConsent",
+    "aggregateId": "cns_01JF3ZB000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "subRef": "sref_01JF3ZB111",
+      "purpose": "MARKETING_WHATSAPP",
+      "channel": "WHATSAPP",
+      "granted": false,
+      "textVersion": "TODO_NEEDS_HUMAN_v0",
+      "source": "app",
+      "at": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "PatientConsent",
+      "aggregateId": "cns_01JF3ZB000"
+    }
+  },
+  "AttributionAssigned": {
+    "eventId": "01JF3ZEVTATTRIBUT",
+    "type": "AttributionAssigned",
+    "aggregateType": "BookingIntent",
+    "aggregateId": "bk_01JF3ZC000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "bookingId": "bk_01JF3ZC000",
+      "decisionId": "atd_01JF3ZC111",
+      "origin": "PROVIDER_LED",
+      "reason": "EXPLICIT_PROVIDER_CHANNEL",
+      "policyVersion": "agp_01JF3Z0000",
+      "market": "EG",
+      "decidedAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "BookingIntent",
+      "aggregateId": "bk_01JF3ZC000"
+    }
+  },
+  "PatientAcquisitionRecorded": {
+    "eventId": "01JF3ZEVTPATIENTA",
+    "type": "PatientAcquisitionRecorded",
+    "aggregateType": "PatientProfile",
+    "aggregateId": "pp_01JF3ZD000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "origin": "MARKETPLACE",
+      "sourceKind": "ORGANIC_SEARCH",
+      "market": "EG",
+      "recordedAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "PatientProfile",
+      "aggregateId": "pp_01JF3ZD000"
+    }
+  },
+  "ReferralLinkCreated": {
+    "eventId": "01JF3ZEVTREFERRAL",
+    "type": "ReferralLinkCreated",
+    "aggregateType": "ProviderReferralLink",
+    "aggregateId": "prl_01JF3ZE000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "linkCode": "k7Q2mX9a",
+      "ownerScope": "DOCTOR",
+      "channelKind": "QR_DESK",
+      "createdAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "ProviderReferralLink",
+      "aggregateId": "prl_01JF3ZE000"
+    }
   }
 } as const;
 
@@ -5346,10 +5945,40 @@ export const EVENT_META = {
     "aggregateType": "DoctorOrder",
     "status": "v2-draft",
     "schemaFile": "MedicationOrderShared.schema.json"
+  },
+  "CommissionAdjusted": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "Appointment",
+    "status": "v2-draft",
+    "schemaFile": "CommissionAdjusted.schema.json"
+  },
+  "PatientConsentUpdated": {
+    "producer": "kiorex",
+    "aggregateType": "PatientConsent",
+    "status": "v2-draft",
+    "schemaFile": "PatientConsentUpdated.schema.json"
+  },
+  "AttributionAssigned": {
+    "producer": "kiorex",
+    "aggregateType": "BookingIntent",
+    "status": "v2-draft",
+    "schemaFile": "AttributionAssigned.schema.json"
+  },
+  "PatientAcquisitionRecorded": {
+    "producer": "kiorex",
+    "aggregateType": "PatientProfile",
+    "status": "v2-draft",
+    "schemaFile": "PatientAcquisitionRecorded.schema.json"
+  },
+  "ReferralLinkCreated": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "ProviderReferralLink",
+    "status": "v2-draft",
+    "schemaFile": "ReferralLinkCreated.schema.json"
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -5361,31 +5990,31 @@ export interface EventEnvelope<T extends string = string, D = Record<string, unk
   data: D;
 }
 
-export type AppointmentConfirmedData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CONFIRMED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type AppointmentConfirmedData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CONFIRMED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type AppointmentConfirmedEvent = EventEnvelope<"APPOINTMENT_CONFIRMED", AppointmentConfirmedData>;
 export type AppointmentRescheduledData = { "appointmentId": string; "clinicId": string; "startsAt": string; "aggregateType"?: string; "aggregateId"?: string; "endsAt"?: string; "externalReference"?: string | null; [k: string]: unknown };
 export type AppointmentRescheduledEvent = EventEnvelope<"RESCHEDULED", AppointmentRescheduledData>;
-export type CancelledByClinicData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CANCELLED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "aggregateType"?: string; "aggregateId"?: string; "cancelledBy"?: "CLINIC" | "SYSTEM"; "cancellationReason"?: string | null; "depositRefundable"?: boolean | null; [k: string]: unknown };
+export type CancelledByClinicData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CANCELLED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; "cancelledBy"?: "CLINIC" | "SYSTEM"; "cancellationReason"?: string | null; "depositRefundable"?: boolean | null; [k: string]: unknown };
 export type CancelledByClinicEvent = EventEnvelope<"CANCELLED_BY_CLINIC", CancelledByClinicData>;
-export type CancelledByPatientData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CANCELLED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "aggregateType"?: string; "aggregateId"?: string; "cancelledBy"?: "PATIENT"; "cancellationReason"?: string | null; "depositRefundable"?: boolean | null; [k: string]: unknown };
+export type CancelledByPatientData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CANCELLED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; "cancelledBy"?: "PATIENT"; "cancellationReason"?: string | null; "depositRefundable"?: boolean | null; [k: string]: unknown };
 export type CancelledByPatientEvent = EventEnvelope<"CANCELLED_BY_PATIENT", CancelledByPatientData>;
-export type CheckedInData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CHECKED_IN"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CheckedInData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CHECKED_IN"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CheckedInEvent = EventEnvelope<"CHECKED_IN", CheckedInData>;
-export type CheckInRevertedData = { "appointmentId": string; "clinicId": string; "previousStatus": "CHECKED_IN"; "nextStatus": "SCHEDULED" | "CONFIRMED" | "CANCELLED" | "NO_SHOW"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CheckInRevertedData = { "appointmentId": string; "clinicId": string; "previousStatus": "CHECKED_IN"; "nextStatus": "SCHEDULED" | "CONFIRMED" | "CANCELLED" | "NO_SHOW"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CheckInRevertedEvent = EventEnvelope<"CHECK_IN_REVERTED", CheckInRevertedData>;
-export type CompletedData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "COMPLETED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CompletedData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "COMPLETED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CompletedEvent = EventEnvelope<"COMPLETED", CompletedData>;
-export type NoShowData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "NO_SHOW"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type NoShowData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "NO_SHOW"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type NoShowEvent = EventEnvelope<"NO_SHOW", NoShowData>;
 export type SlotsChangedData = { "clinicId": string; "clinicianId": string; "reason": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type SlotsChangedEvent = EventEnvelope<"SLOTS_CHANGED", SlotsChangedData>;
-export type ProviderProfileUpdatedData = { "listingId": string; "clinicId": string; "clinicianId": string; "status": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "completenessPercent": number; "updatedAt": string; "provider": Record<string, unknown>; "clinic": Record<string, unknown>; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderProfileUpdatedData = { "listingId": string; "clinicId": string; "clinicianId": string; "status": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "completenessPercent": number; "updatedAt": string; "provider": Record<string, unknown>; "clinic": Record<string, unknown>; "widgetOrigins"?: Array<string>; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ProviderProfileUpdatedEvent = EventEnvelope<"PROVIDER_PROFILE_UPDATED", ProviderProfileUpdatedData>;
 export type ListingStatusChangedData = { "listingId": string; "clinicId": string; "clinicianId": string; "previousStatus": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "nextStatus": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ListingStatusChangedEvent = EventEnvelope<"LISTING_STATUS_CHANGED", ListingStatusChangedData>;
-export type CommissionChargeCreatedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionChargeCreatedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CommissionChargeCreatedEvent = EventEnvelope<"COMMISSION_CHARGE_CREATED", CommissionChargeCreatedData>;
-export type CommissionChargeReversedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "reason": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionChargeReversedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "reason": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CommissionChargeReversedEvent = EventEnvelope<"COMMISSION_CHARGE_REVERSED", CommissionChargeReversedData>;
 export type ReviewInvitationEligibleData = { "appointmentId": string; "clinicId": string; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ReviewInvitationEligibleEvent = EventEnvelope<"REVIEW_INVITATION_ELIGIBLE", ReviewInvitationEligibleData>;
@@ -5455,6 +6084,16 @@ export type ReferralIssuedData = { "referralId": string; "fromClinicId": string;
 export type ReferralIssuedEvent = EventEnvelope<"ReferralIssued", ReferralIssuedData>;
 export type MedicationOrderSharedData = { "orderId": string; "fromClinicId": string; "toClinicId"?: string; "patientRef": string; "prescriberId": string; "orderVersion": number; "signedAt": string; "expiresAt": string; "consentToken": string; "secureLink"?: string; "items"?: never; "medications"?: never; "lines"?: never; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type MedicationOrderSharedEvent = EventEnvelope<"MedicationOrderShared", MedicationOrderSharedData>;
+export type CommissionAdjustedData = { "chargeId": string; "appointmentId": string; "previousAmount": string; "adjustedAmount": string; "currency": string; "reason": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "adjustedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionAdjustedEvent = EventEnvelope<"CommissionAdjusted", CommissionAdjustedData>;
+export type PatientConsentUpdatedData = { "subRef": string; "purpose": string; "channel"?: string; "granted": boolean; "textVersion": string; "source": "web" | "app" | "whatsapp" | "widget" | "ops-import"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PatientConsentUpdatedEvent = EventEnvelope<"PatientConsentUpdated", PatientConsentUpdatedData>;
+export type AttributionAssignedData = { "bookingId": string; "decisionId": string; "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "reason": string; "policyVersion": string; "market"?: string; "decidedAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type AttributionAssignedEvent = EventEnvelope<"AttributionAssigned", AttributionAssignedData>;
+export type PatientAcquisitionRecordedData = { "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "sourceKind": string; "market": string; "recordedAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PatientAcquisitionRecordedEvent = EventEnvelope<"PatientAcquisitionRecorded", PatientAcquisitionRecordedData>;
+export type ReferralLinkCreatedData = { "linkCode": string; "ownerScope": "ORG" | "CLINIC" | "BRANCH" | "DOCTOR" | "DESK"; "channelKind": "WEB_LINK" | "QR_POSTER" | "QR_DESK" | "SOCIAL" | "SMS" | "WHATSAPP_SHARE" | "EMAIL_SIG" | "GOOGLE_PROFILE"; "createdAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralLinkCreatedEvent = EventEnvelope<"ReferralLinkCreated", ReferralLinkCreatedData>;
 
 export interface EventMap {
   "APPOINTMENT_CONFIRMED": AppointmentConfirmedEvent;
@@ -5504,4 +6143,9 @@ export interface EventMap {
   "CARE_PLAN_ENDED": CarePlanEndedEvent;
   "ReferralIssued": ReferralIssuedEvent;
   "MedicationOrderShared": MedicationOrderSharedEvent;
+  "CommissionAdjusted": CommissionAdjustedEvent;
+  "PatientConsentUpdated": PatientConsentUpdatedEvent;
+  "AttributionAssigned": AttributionAssignedEvent;
+  "PatientAcquisitionRecorded": PatientAcquisitionRecordedEvent;
+  "ReferralLinkCreated": ReferralLinkCreatedEvent;
 }

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/WIDGET_POLICY.schema.json",
+  "title": "Growth config: WIDGET_POLICY",
+  "description": "Embed and SDK policy (ARCH section 11, ADR-044). Every default is PROPOSED_DEFAULT until the founder ratifies it (ARCH section 6.3 / 16). Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "maxOriginsPerOrg": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Exact https origins a provider may allow. PROPOSED_DEFAULT 10."
+    },
+    "allowLocalhostOrigins": {
+      "type": "boolean",
+      "description": "Allow http://localhost origins (non-production only; always false in production). PROPOSED_DEFAULT False."
+    },
+    "sessionTokenTtlSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 3600,
+      "description": "Widget session token lifetime. PROPOSED_DEFAULT 900."
+    },
+    "maxActiveHoldsPerPhone": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "description": "Slot hoarding limit per phone. PROPOSED_DEFAULT 3."
+    },
+    "maxActiveHoldsPerIpHash": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "description": "Slot hoarding limit per rotating IP hash. PROPOSED_DEFAULT 5."
+    },
+    "embedHost": {
+      "type": "string",
+      "pattern": "^https://[a-z0-9.-]+$",
+      "description": "Widget origin, e.g. https://book.kiorex.com (NEEDS_HUMAN)."
+    },
+    "sdkCacheSeconds": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 31536000,
+      "description": "Cache lifetime of the immutable versioned sdk.js path. PROPOSED_DEFAULT 31536000."
+    }
+  },
+  "required": [
+    "maxOriginsPerOrg",
+    "allowLocalhostOrigins",
+    "sessionTokenTtlSeconds",
+    "maxActiveHoldsPerPhone",
+    "maxActiveHoldsPerIpHash",
+    "embedHost",
+    "sdkCacheSeconds"
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/AttributionAssigned.schema.json",
+  "title": "AttributionAssigned",
+  "description": "INTERNAL (Kiorex outbox only, not delivered to partners). The deterministic attribution function produced a decision for a booking. One per booking and policy version.",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "AttributionAssigned"
+    },
+    "aggregateType": {
+      "const": "BookingIntent"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "bookingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decisionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "enum": [
+            "PROVIDER_LED",
+            "MARKETPLACE",
+            "UNATTRIBUTED"
+          ],
+          "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+        },
+        "policyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "bookingId",
+        "decisionId",
+        "origin",
+        "reason",
+        "policyVersion"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

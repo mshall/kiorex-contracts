@@ -1,0 +1,18 @@
+{
+  "eventId": "01JF3ZEVTATTRIBUT",
+  "type": "AttributionAssigned",
+  "aggregateType": "BookingIntent",
+  "aggregateId": "bk_01JF3ZC000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "bookingId": "bk_01JF3ZC000",
+    "decisionId": "atd_01JF3ZC111",
+    "origin": "PROVIDER_LED",
+    "reason": "EXPLICIT_PROVIDER_CHANNEL",
+    "policyVersion": "agp_01JF3Z0000",
+    "market": "EG",
+    "decidedAt": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "BookingIntent",
+    "aggregateId": "bk_01JF3ZC000"
+  }
+}

@@ -631,6 +631,34 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** @description Attribution evidence produced by the Kiorex deterministic decision function. Covered by the request HMAC like the rest of the body; evidenceHash is the sha256 inputsHash of the stored decision so the Clinic can later fetch and compare the evidence. The Clinic stores it, never recomputes it, and may only use it to REMOVE a commission (PROVIDER_LED), never to add one. Absent = UNATTRIBUTED and today's rules apply unchanged. */
+        AcquisitionBlock: {
+            /** @enum {unknown} */
+            origin: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED";
+            decisionId: string;
+            /** @description Version id of the ATTRIBUTION_POLICY that was ACTIVE at decision time. */
+            policyVersion: string;
+            /** @description EXPLICIT_PROVIDER_CHANNEL, PRIOR_PROVIDER_TOUCH, PATIENT_REFERRAL, MARKETPLACE_TOUCH, NO_PROVIDER_EVIDENCE. Receivers must tolerate unknown codes. */
+            reason: string;
+            /** @description sha256 hex of the canonical decision inputs (see computeAttributionInputsHash in @kiorex/contracts). */
+            evidenceHash: string;
+            /** @description The winning touch, when there is one. Opaque ref: never a visitor key, IP, or patient identifier. */
+            touch?: {
+                /** @description Source kind: PROVIDER_LINK, PROVIDER_QR, WIDGET, ORGANIC_SEARCH, DIRECT, REFERRAL, CAMPAIGN, WHATSAPP, OFFLINE. */
+                kind: string;
+                ref: string;
+                /** Format: date-time */
+                at: string;
+            };
+        };
+        /** @description Malformed acquisition block. A well-formed block from an older or newer Kiorex is never an error; unknown reason codes are accepted. */
+        AcquisitionError: {
+            /** @enum {unknown} */
+            statusCode?: 400;
+            /** @enum {unknown} */
+            code: "ACQUISITION_BLOCK_INVALID" | "ACQUISITION_EVIDENCE_HASH_INVALID";
+            message?: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -999,6 +1027,11 @@ export interface operations {
                     channel?: "MARKETPLACE" | "CLINIC_LINK";
                     /** @description Slug of the clinic/doctor booking page (KX-09) */
                     bookingPageSlug?: string;
+                    /** @description Existing free-form display attribution ({source: 'kiorex' | 'kiorex_whatsapp', searchId, campaign, landingPage}); kept as is, never used for commission evidence. */
+                    attribution?: {
+                        [key: string]: unknown;
+                    };
+                    acquisition?: components["schemas"]["AcquisitionBlock"];
                 };
             };
         };
@@ -1010,12 +1043,14 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description BOOKING_PAGE_MISMATCH when the slug belongs to another clinic or doctor */
+            /** @description BOOKING_PAGE_MISMATCH when the slug belongs to another clinic or doctor; ACQUISITION_BLOCK_INVALID or ACQUISITION_EVIDENCE_HASH_INVALID when the optional acquisition block is malformed */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AcquisitionError"];
+                };
             };
             /** @description OUT_OF_COVERAGE after a zone change (release the hold, show in-zone alternatives); the address is carried from the hold */
             422: {

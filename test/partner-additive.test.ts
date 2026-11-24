@@ -6,7 +6,7 @@ const pharmacy = readJson("openapi/kiorly-pharmacy.v1.openapi.json");
 const lab = readJson("openapi/kiorly-lab.v1.openapi.json");
 
 describe("1.8.0 partner contracts are additive (Arabic names, OUT_FOR_DELIVERY)", () => {
-  it("version is at least 1.8.0 (minor bump)", () => { expect(CONTRACTS_VERSION).toMatch(/^1\.(8|9)\.\d+$/); });
+  it("version is at least 1.8.0 (minor bump)", () => { expect(CONTRACTS_VERSION).toMatch(/^1\.(8|9|10)\.\d+$/); });
 
   it("pharmacy CatalogueItem: nameAr/formAr/activeIngredient exist, are strings and are NOT required", () => {
     const s = pharmacy.components.schemas.CatalogueItem;

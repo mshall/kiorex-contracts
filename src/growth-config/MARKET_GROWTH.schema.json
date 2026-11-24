@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/MARKET_GROWTH.schema.json",
+  "title": "Growth config: MARKET_GROWTH",
+  "description": "Per-market growth configuration (ARCH section 15). A new market is configuration plus data, never a code fork. Every default is PROPOSED_DEFAULT until the founder ratifies it (ARCH section 6.3 / 16). Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "phoneCode": {
+      "type": "string",
+      "pattern": "^\\+[0-9]{1,4}$"
+    },
+    "locales": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "ar",
+          "en"
+        ]
+      }
+    },
+    "canonicalSegment": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$",
+      "description": "URL segment, lowercase cc, e.g. eg."
+    },
+    "bookingLinkBaseUrl": {
+      "type": "string",
+      "pattern": "^https://[a-z0-9.-]+$",
+      "description": "Provider link host, e.g. https://kiorly.link (NEEDS_HUMAN, NH-008)."
+    },
+    "qrEnabled": {
+      "type": "boolean",
+      "description": "Provider QR codes and posters on/off for this market. PROPOSED_DEFAULT True."
+    },
+    "marketingLicenceConfirmed": {
+      "type": "boolean",
+      "description": "Counsel confirmed the direct-marketing licence position for this market. PROPOSED_DEFAULT false; growth.marketing_messaging stays launch-locked regardless."
+    },
+    "whatsappPhoneNumberIdRef": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128,
+      "description": "secretRef or config name of the WhatsApp phone number id; never the value."
+    },
+    "integrations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "propertyNames": {
+        "pattern": "^[a-z0-9_]{2,32}$"
+      },
+      "description": "Integration kind -> on/off; feature switches themselves stay in the flag control plane."
+    },
+    "geographyListRef": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128,
+      "description": "Reference to the market-pack district list (NH-040/FD-14 open)."
+    },
+    "dataCell": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{2,32}$",
+      "description": "Data cell id, e.g. frankfurt; one cell today."
+    }
+  },
+  "required": [
+    "market",
+    "currency",
+    "phoneCode",
+    "locales",
+    "canonicalSegment",
+    "bookingLinkBaseUrl",
+    "qrEnabled",
+    "marketingLicenceConfirmed",
+    "integrations"
+  ]
+}

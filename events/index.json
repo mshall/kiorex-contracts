@@ -378,6 +378,46 @@
       "producer": "kiorly-clinic",
       "aggregateType": "DoctorOrder",
       "status": "v2-draft"
+    },
+    {
+      "type": "CommissionAdjusted",
+      "aliases": [],
+      "file": "CommissionAdjusted",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "v2-draft"
+    },
+    {
+      "type": "PatientConsentUpdated",
+      "aliases": [],
+      "file": "PatientConsentUpdated",
+      "producer": "kiorex",
+      "aggregateType": "PatientConsent",
+      "status": "v2-draft"
+    },
+    {
+      "type": "AttributionAssigned",
+      "aliases": [],
+      "file": "AttributionAssigned",
+      "producer": "kiorex",
+      "aggregateType": "BookingIntent",
+      "status": "v2-draft"
+    },
+    {
+      "type": "PatientAcquisitionRecorded",
+      "aliases": [],
+      "file": "PatientAcquisitionRecorded",
+      "producer": "kiorex",
+      "aggregateType": "PatientProfile",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ReferralLinkCreated",
+      "aliases": [],
+      "file": "ReferralLinkCreated",
+      "producer": "kiorly-clinic",
+      "aggregateType": "ProviderReferralLink",
+      "status": "v2-draft"
     }
   ]
 }

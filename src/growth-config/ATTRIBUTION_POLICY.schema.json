@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/ATTRIBUTION_POLICY.schema.json",
+  "title": "Growth config: ATTRIBUTION_POLICY",
+  "description": "Windows and precedence of the deterministic attribution function (ARCH section 6.3). Changes need effectiveFrom >= now + 7 days and a provider announcement. Every default is PROPOSED_DEFAULT until the founder ratifies it (ARCH section 6.3 / 16). Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "providerTouchWindowDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "Provider link, QR, desk, widget or provider-owned deep link counts for this many days. PROPOSED_DEFAULT 30."
+    },
+    "patientReferralWindowDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "Patient referral click to registration or booking. PROPOSED_DEFAULT 30."
+    },
+    "campaignClickWindowDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 90,
+      "description": "Paid or owned campaign click. PROPOSED_DEFAULT 7."
+    },
+    "campaignViewWindowHours": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 72,
+      "description": "View-through window; 0 = off. PROPOSED_DEFAULT 0."
+    },
+    "visitorKeyMaxDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 180,
+      "description": "Cap on the consent-gated visitor key lifetime. PROPOSED_DEFAULT 180."
+    },
+    "newPatientLookbackMonths": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "description": "Mirror of Market.featureDefaults.newPatient.lookbackMonths; informational here, the Clinic rule is authoritative. PROPOSED_DEFAULT 24."
+    },
+    "touchEvidenceRetentionMonths": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "description": "Raw touches linked to a decision are kept this long. PROPOSED_DEFAULT 25."
+    },
+    "unlinkedTouchRetentionMonths": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 36,
+      "description": "Touches not linked to any decision are kept this long. PROPOSED_DEFAULT 13."
+    },
+    "minDwellMsForProviderTouch": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 60000,
+      "description": "A provider touch counts only if the landing page was actually rendered this long. PROPOSED_DEFAULT 1000."
+    },
+    "ltTokenTtlMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "description": "Lifetime of the signed in-session link token. PROPOSED_DEFAULT 30."
+    },
+    "precedence": {
+      "enum": [
+        "PROVIDER_FIRST",
+        "LAST_NON_DIRECT",
+        "FIRST_TOUCH"
+      ],
+      "description": "Commission precedence. FIRST_TOUCH is reporting only and is rejected for commission use by the decision function. PROPOSED_DEFAULT PROVIDER_FIRST."
+    },
+    "allowOfflineEvidence": {
+      "type": "boolean",
+      "description": "An OFFLINE source recorded by staff before check-in may make a decision PROVIDER_LED. PROPOSED_DEFAULT False."
+    }
+  },
+  "required": [
+    "providerTouchWindowDays",
+    "patientReferralWindowDays",
+    "campaignClickWindowDays",
+    "campaignViewWindowHours",
+    "visitorKeyMaxDays",
+    "newPatientLookbackMonths",
+    "touchEvidenceRetentionMonths",
+    "unlinkedTouchRetentionMonths",
+    "minDwellMsForProviderTouch",
+    "ltTokenTtlMinutes",
+    "precedence",
+    "allowOfflineEvidence"
+  ]
+}

@@ -949,6 +949,232 @@ export const FLAG_CATALOGUE = [
     "launchLocked": false,
     "gate": null,
     "keyPattern": false
+  },
+  {
+    "key": "growth.provider_links",
+    "product": "kiorly-clinic",
+    "scopes": [
+      "global",
+      "market",
+      "org"
+    ],
+    "class": "Module",
+    "whenOff": "No new links, QR codes or posters can be created; existing links keep resolving and counting; bookings through them stay provider-led and never carry a Kiorex fee",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.attribution",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Commercial",
+    "whenOff": "Every new booking is recorded UNATTRIBUTED and no acquisition block is sent; the CLINIC_LINK rule keeps working; stored decisions stay readable",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023; safety is never a flag (ADR-025), this only gates the evidence engine, never booking itself"
+  },
+  {
+    "key": "growth.ssr_public_pages",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "Public routes serve the single-page shell with noindex; sitemaps are empty; existing URLs keep redirecting",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.seo_landing_pages",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "Specialty, city and district pages answer 404 with noindex; doctor and clinic pages are unaffected",
+    "dependsOn": [
+      "growth.ssr_public_pages"
+    ],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.widgets",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market",
+      "org"
+    ],
+    "class": "Module",
+    "whenOff": "Embed and SDK answer 403 FEATURE_DISABLED; the provider booking link page keeps working",
+    "dependsOn": [
+      "kiorex.marketplace"
+    ],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.deep_links",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "Links open the website instead of the app; deep-link files stay served; nothing is hidden",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.analytics_visitor",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "No visitor key or cookie is ever created; only the in-session link token and server-side operational facts are used",
+    "dependsOn": [],
+    "launchLocked": true,
+    "gate": "Counsel opinion on Egypt PDPL for analytics cookies and visitor keys + approved consent wording (NEEDS_HUMAN, work-packages section 7 items 1 and 2)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.marketing_messaging",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "No marketing message is sent on any channel; transactional, reminder, clinical and security messages are unaffected",
+    "dependsOn": [],
+    "launchLocked": true,
+    "gate": "Counsel opinion on direct electronic marketing consent and the reported marketing licence + approved wording (NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.campaigns",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "Campaign links and budgets are paused; nothing is deleted; attribution of past campaign touches is unchanged",
+    "dependsOn": [
+      "growth.attribution"
+    ],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.patient_referral",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "Referral links stop issuing and no new referral relationship starts; qualified rewards already issued stay valid",
+    "dependsOn": [
+      "growth.attribution"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel clearance of closed-loop referral rewards and consent wording (NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.rewards",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "No new reward credit is issued or applied; existing balances stay visible and expire per policy",
+    "dependsOn": [
+      "growth.patient_referral"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel opinion that closed-loop discount credit is outside stored-value licensing (NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "kiorex.whatsapp_ai_assistant",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "The deterministic WhatsApp booking machine answers; no AI orchestration turn runs",
+    "dependsOn": [
+      "kiorex.whatsapp_booking"
+    ],
+    "launchLocked": true,
+    "gate": "Meta approval + consent copy + clinical-safety review (NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.experiments",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "All visitors get the control experience; assignments are not written",
+    "dependsOn": [
+      "growth.analytics_visitor"
+    ],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.integrations.<kind>",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "That growth integration (ads spend pull, search console, store listing metrics) stops syncing; stored aggregates stay",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": true,
+    "note": "Pattern key: <kind> is a lower-case integration kind, e.g. growth.integrations.search_console. PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
   }
 ] as const satisfies readonly FlagCatalogueEntry[];
 
@@ -1008,7 +1234,20 @@ export const FLAG_KEYS = [
   "kiorex.home_visits",
   "kiorex.category.physiotherapy",
   "kiorex.category.nursing",
-  "kiorex.visit_tracking"
+  "kiorex.visit_tracking",
+  "growth.provider_links",
+  "growth.attribution",
+  "growth.ssr_public_pages",
+  "growth.seo_landing_pages",
+  "growth.widgets",
+  "growth.deep_links",
+  "growth.analytics_visitor",
+  "growth.marketing_messaging",
+  "growth.campaigns",
+  "growth.patient_referral",
+  "growth.rewards",
+  "kiorex.whatsapp_ai_assistant",
+  "growth.experiments"
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
 
@@ -1069,12 +1308,26 @@ export const FLAGS = {
   KIOREX_CATEGORY_PHYSIOTHERAPY: "kiorex.category.physiotherapy",
   KIOREX_CATEGORY_NURSING: "kiorex.category.nursing",
   KIOREX_VISIT_TRACKING: "kiorex.visit_tracking",
+  GROWTH_PROVIDER_LINKS: "growth.provider_links",
+  GROWTH_ATTRIBUTION: "growth.attribution",
+  GROWTH_SSR_PUBLIC_PAGES: "growth.ssr_public_pages",
+  GROWTH_SEO_LANDING_PAGES: "growth.seo_landing_pages",
+  GROWTH_WIDGETS: "growth.widgets",
+  GROWTH_DEEP_LINKS: "growth.deep_links",
+  GROWTH_ANALYTICS_VISITOR: "growth.analytics_visitor",
+  GROWTH_MARKETING_MESSAGING: "growth.marketing_messaging",
+  GROWTH_CAMPAIGNS: "growth.campaigns",
+  GROWTH_PATIENT_REFERRAL: "growth.patient_referral",
+  GROWTH_REWARDS: "growth.rewards",
+  KIOREX_WHATSAPP_AI_ASSISTANT: "kiorex.whatsapp_ai_assistant",
+  GROWTH_EXPERIMENTS: "growth.experiments",
 } as const;
 
 /** Pattern keys: clinic.specialty_templates.<code>, market.<country>.live. */
 export const FLAG_KEY_PATTERNS = [
   "clinic.specialty_templates.<code>",
-  "market.<country>.live"
+  "market.<country>.live",
+  "growth.integrations.<kind>"
 ] as const;
 
 export interface SafetyControl {

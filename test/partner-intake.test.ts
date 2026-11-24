@@ -10,7 +10,7 @@ const body = JSON.stringify({ nonce: "n".repeat(20), kind: "LAB", orgRef: "org_1
 
 describe("1.9.0 partner connection intake contract (additive)", () => {
   it("is a minor bump and the spec documents both endpoints, the headers and the uniform error codes", () => {
-    expect(CONTRACTS_VERSION).toBe("1.9.0");
+    expect(CONTRACTS_VERSION).toMatch(/^1\.(9|10)\.\d+$/);
     const post = spec.paths["/partners/v1/connection-requests"].post;
     expect(post.operationId).toBe("submitConnectionRequest");
     expect(Object.keys(post.responses)).toEqual(expect.arrayContaining(["200", "400", "401", "413", "429"]));

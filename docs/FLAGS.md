@@ -61,5 +61,19 @@ Snapshot of `flags/catalogue.json` (KX-08 section 09; default state **ON**). Rul
 | `kiorex.category.physiotherapy` | kiorex | Launch-locked | global, market |  | yes (GPR1) | Physio providers not shown |
 | `kiorex.category.nursing` | kiorex | Module | global, market | `kiorex.home_visits`, `nurse.edition` | no | Home nursing not shown |
 | `kiorex.visit_tracking` | kiorex | Module | global, market | `kiorex.home_visits` | no | Status timeline without on-the-way updates |
+| `growth.provider_links` | kiorly-clinic | Module | global, market, org |  | no | No new links, QR codes or posters can be created; existing links keep resolving and counting; bookings through them stay provider-led and never carry a Kiorex fee |
+| `growth.attribution` | kiorex | Commercial | global, market |  | no | Every new booking is recorded UNATTRIBUTED and no acquisition block is sent; the CLINIC_LINK rule keeps working; stored decisions stay readable |
+| `growth.ssr_public_pages` | kiorex | Module | global, market |  | no | Public routes serve the single-page shell with noindex; sitemaps are empty; existing URLs keep redirecting |
+| `growth.seo_landing_pages` | kiorex | Module | global, market | `growth.ssr_public_pages` | no | Specialty, city and district pages answer 404 with noindex; doctor and clinic pages are unaffected |
+| `growth.widgets` | kiorex | Module | global, market, org | `kiorex.marketplace` | no | Embed and SDK answer 403 FEATURE_DISABLED; the provider booking link page keeps working |
+| `growth.deep_links` | kiorex | Module | global, market |  | no | Links open the website instead of the app; deep-link files stay served; nothing is hidden |
+| `growth.analytics_visitor` | kiorex | Launch-locked | global, market |  | yes (Counsel opinion on Egypt PDPL for analytics cookies and visitor keys + approved consent wording (NEEDS_HUMAN, work-packages section 7 items 1 and 2)) | No visitor key or cookie is ever created; only the in-session link token and server-side operational facts are used |
+| `growth.marketing_messaging` | kiorex | Launch-locked | global, market |  | yes (Counsel opinion on direct electronic marketing consent and the reported marketing licence + approved wording (NEEDS_HUMAN)) | No marketing message is sent on any channel; transactional, reminder, clinical and security messages are unaffected |
+| `growth.campaigns` | kiorex | Module | global, market | `growth.attribution` | no | Campaign links and budgets are paused; nothing is deleted; attribution of past campaign touches is unchanged |
+| `growth.patient_referral` | kiorex | Launch-locked | global, market | `growth.attribution` | yes (Counsel clearance of closed-loop referral rewards and consent wording (NEEDS_HUMAN)) | Referral links stop issuing and no new referral relationship starts; qualified rewards already issued stay valid |
+| `growth.rewards` | kiorex | Launch-locked | global, market | `growth.patient_referral` | yes (Counsel opinion that closed-loop discount credit is outside stored-value licensing (NEEDS_HUMAN)) | No new reward credit is issued or applied; existing balances stay visible and expire per policy |
+| `kiorex.whatsapp_ai_assistant` | kiorex | Launch-locked | global, market | `kiorex.whatsapp_booking` | yes (Meta approval + consent copy + clinical-safety review (NEEDS_HUMAN)) | The deterministic WhatsApp booking machine answers; no AI orchestration turn runs |
+| `growth.experiments` | kiorex | Module | global, market | `growth.analytics_visitor` | no | All visitors get the control experience; assignments are not written |
+| `growth.integrations.<kind>` | kiorex | Integration | global, market |  | no | That growth integration (ads spend pull, search console, store listing metrics) stops syncing; stored aggregates stay |
 
 Back to the [README](../README.md) · [Docs index](INDEX.md)

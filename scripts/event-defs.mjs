@@ -20,6 +20,10 @@ const PROFESSION = { enum: ["PHYSICIAN", "DENTIST", "PHYSIOTHERAPIST", "NURSE"],
 const SERVICE_LOCATION = { enum: ["IN_CLINIC", "HOME"] };
 // Rev 2.3: addresses, coordinates and phone numbers never travel in home-visit/safety/care-plan events (KX-09 §04, KX-08 §07 geostamp retention, ADR-013).
 const NO_LOCATION = { visitAddress: false, address: false, line1: false, lat: false, lng: false, latitude: false, longitude: false, geostamp: false, phone: false };
+// 1.10.0 growth engine (additive). Commission-relevant origin of a booking (ARCH section 6.1); see src/growth.ts.
+const ACQ_ORIGIN = { enum: ["PROVIDER_LED", "MARKETPLACE", "UNATTRIBUTED"], description: "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply." };
+const ACQ_DECISION_REF = { type: "string", minLength: 1, description: "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0." };
+const ACQ_POLICY_VERSION = { type: "string", minLength: 1, maxLength: 64, description: "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0." };
 const AGG = {
   aggregateType: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
   aggregateId: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
@@ -40,6 +44,7 @@ const apptBase = (nextStatus, extra = {}, required = []) => ({
     endsAt: TS,
     isNewPatientAtBooking: { type: "boolean" },
     version: { type: "integer", minimum: 0 },
+    acquisitionOrigin: ACQ_ORIGIN,
     ...AGG,
     ...extra,
   },
@@ -71,6 +76,10 @@ const chargeProps = {
   currency: { type: "string", minLength: 3, maxLength: 3 },
   status: { enum: ["PENDING", "CONFIRMED", "DISPUTED", "REVERSED", "WAIVED", "BILLED"] },
   attendedAt: TS,
+  // 1.10.0 (additive): why the charge exists, from the append-only CommissionDecision (CommissionAttributed in the founder's naming).
+  decisionRef: ACQ_DECISION_REF,
+  origin: ACQ_ORIGIN,
+  policyVersion: ACQ_POLICY_VERSION,
 };
 
 /** Each def: type, aliases?, producer, aggregateType, status ('emitted'|'v2-draft'|'kiorly-extra'), description, data schema, example (data + aggregateId), kxNote? */
@@ -145,7 +154,8 @@ export const EVENTS = [
         listingId: ID, clinicId: ID, clinicianId: ID, status: LISTING_STATUS,
         completenessPercent: { type: "number", minimum: 0, maximum: 100 }, updatedAt: TS,
         provider: { type: "object", description: "Published provider profile (see provider-profile-schema in Kiorly)." },
-        clinic: { type: "object", description: "Published clinic profile." }, ...AGG,
+        clinic: { type: "object", description: "Published clinic profile." },
+        widgetOrigins: { type: "array", maxItems: 10, uniqueItems: true, items: { type: "string", pattern: "^https://[a-z0-9.-]+(:[0-9]{1,5})?$", maxLength: 255 }, description: "Exact https origins the organisation allows to embed the Kiorex booking widget (no wildcard, at most 10). Additive in 1.10.0; absent = none." }, ...AGG,
       },
       required: ["listingId", "clinicId", "clinicianId", "status", "completenessPercent", "updatedAt", "provider", "clinic"],
     },
@@ -574,6 +584,59 @@ export const EVENTS = [
       required: ["orderId", "fromClinicId", "patientRef", "prescriberId", "orderVersion", "signedAt", "expiresAt", "consentToken"],
     },
     example: { aggregateId: "ord_01JF3ZO001", data: { orderId: "ord_01JF3ZO001", fromClinicId: "clinic_01JF3Z7ZZZ", toClinicId: "clinic_01JF3ZNNNN", patientRef: "sub_01JF3Z0001", prescriberId: "clin_01JF3Z7AAA", orderVersion: 2, signedAt: "2027-03-05T11:00:00.000Z", expiresAt: "2027-03-19T11:00:00.000Z", consentToken: "ct_01JF3ZO111", secureLink: "https://app.kiorly.com/o/ord_abc123", aggregateType: "DoctorOrder", aggregateId: "ord_01JF3ZO001" } },
+  },
+
+  // ---- Growth engine (additive in 1.10.0; ARCH section 8). Cross-product: CommissionAdjusted, PatientConsentUpdated. Internal (same names on the internal outbox, never delivered to partners): AttributionAssigned, PatientAcquisitionRecorded, ReferralLinkCreated. ----
+  {
+    type: "CommissionAdjusted", producer: "kiorly-clinic", aggregateType: "Appointment", status: "v2-draft", group: "growth",
+    description: "A commission charge amount was waived or changed (for example a PROVIDER_LED_EVIDENCE dispute was approved). A full reversal stays COMMISSION_CHARGE_REVERSED. Carries the decision that explains it. No patient data.",
+    data: {
+      properties: {
+        chargeId: ID, appointmentId: ID,
+        previousAmount: { type: "string", pattern: "^-?\\d+(\\.\\d{1,2})?$", description: "Decimal string, 2 dp." },
+        adjustedAmount: { type: "string", pattern: "^-?\\d+(\\.\\d{1,2})?$", description: "Decimal string, 2 dp; 0.00 when waived." },
+        currency: { type: "string", minLength: 3, maxLength: 3 },
+        reason: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,63}$", description: "Machine reason, e.g. PROVIDER_LED_EVIDENCE, GOODWILL_WAIVER, POLICY_CORRECTION." },
+        decisionRef: ACQ_DECISION_REF, origin: ACQ_ORIGIN, policyVersion: ACQ_POLICY_VERSION, adjustedAt: TS, ...AGG,
+      },
+      required: ["chargeId", "appointmentId", "previousAmount", "adjustedAmount", "currency", "reason", "adjustedAt"],
+    },
+    example: { aggregateId: "apt_01JF3Z8Q0K", data: { chargeId: "chg_01JF3Z9AAA", appointmentId: "apt_01JF3Z8Q0K", previousAmount: "40.00", adjustedAmount: "0.00", currency: "EGP", reason: "PROVIDER_LED_EVIDENCE", decisionRef: "cdc_01JF3ZA000", origin: "PROVIDER_LED", policyVersion: "agp_01JF3Z0000", adjustedAt: "2027-03-12T10:00:00.000Z", aggregateType: "Appointment", aggregateId: "apt_01JF3Z8Q0K" } },
+  },
+  {
+    type: "PatientConsentUpdated", producer: "kiorex", aggregateType: "PatientConsent", status: "v2-draft", group: "growth",
+    description: "A patient or visitor granted or withdrew a consent purpose. The payload carries an opaque subject reference only: no name, phone, email or health data. Append-only history; the latest row wins; withdrawal is effective for the send gate within 60 seconds.",
+    data: {
+      properties: {
+        subRef: { type: "string", minLength: 1, description: "Opaque reference to the subject used internally; never the Passport sub of a partner-visible patient." },
+        purpose: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,48}$", description: "ANALYTICS_MEASUREMENT, MARKETING_WHATSAPP, MARKETING_SMS, MARKETING_EMAIL, MARKETING_PUSH or a purpose added later." },
+        channel: { type: "string", pattern: "^[A-Z][A-Z0-9_]{1,24}$", description: "Optional channel when the purpose is channel-specific." },
+        granted: { type: "boolean" },
+        textVersion: { type: "string", minLength: 1, maxLength: 64, description: "Id of the exact approved wording (AR and EN) shown to the person. Placeholder until counsel approves." },
+        source: { enum: ["web", "app", "whatsapp", "widget", "ops-import"] },
+        at: TS, ...AGG,
+      },
+      required: ["subRef", "purpose", "granted", "textVersion", "source", "at"],
+    },
+    example: { aggregateId: "cns_01JF3ZB000", data: { subRef: "sref_01JF3ZB111", purpose: "MARKETING_WHATSAPP", channel: "WHATSAPP", granted: false, textVersion: "TODO_NEEDS_HUMAN_v0", source: "app", at: "2027-03-12T10:00:00.000Z", aggregateType: "PatientConsent", aggregateId: "cns_01JF3ZB000" } },
+  },
+  {
+    type: "AttributionAssigned", producer: "kiorex", aggregateType: "BookingIntent", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Kiorex outbox only, not delivered to partners). The deterministic attribution function produced a decision for a booking. One per booking and policy version.",
+    data: { properties: { bookingId: ID, decisionId: ID, origin: ACQ_ORIGIN, reason: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,63}$" }, policyVersion: ACQ_POLICY_VERSION, market: { type: "string", pattern: "^[A-Z]{2}$" }, decidedAt: TS, ...AGG }, required: ["bookingId", "decisionId", "origin", "reason", "policyVersion"] },
+    example: { aggregateId: "bk_01JF3ZC000", data: { bookingId: "bk_01JF3ZC000", decisionId: "atd_01JF3ZC111", origin: "PROVIDER_LED", reason: "EXPLICIT_PROVIDER_CHANNEL", policyVersion: "agp_01JF3Z0000", market: "EG", decidedAt: "2027-03-04T09:12:44.000Z", aggregateType: "BookingIntent", aggregateId: "bk_01JF3ZC000" } },
+  },
+  {
+    type: "PatientAcquisitionRecorded", producer: "kiorex", aggregateType: "PatientProfile", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Kiorex outbox only). The first time a subject receives an acquisition origin (registration or first booking). Origin, source kind and market only: no identifiers beyond the aggregate.",
+    data: { properties: { origin: ACQ_ORIGIN, sourceKind: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,32}$" }, market: { type: "string", pattern: "^[A-Z]{2}$" }, recordedAt: TS, ...AGG }, required: ["origin", "sourceKind", "market"] },
+    example: { aggregateId: "pp_01JF3ZD000", data: { origin: "MARKETPLACE", sourceKind: "ORGANIC_SEARCH", market: "EG", recordedAt: "2027-03-04T09:12:44.000Z", aggregateType: "PatientProfile", aggregateId: "pp_01JF3ZD000" } },
+  },
+  {
+    type: "ReferralLinkCreated", producer: "kiorly-clinic", aggregateType: "ProviderReferralLink", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Clinic audit/outbox; mirrored to Kiorex only as an aggregate when the org is connected). A provider created a referral link or QR. Link code, scope and channel only: never patient data.",
+    data: { properties: { linkCode: { type: "string", pattern: "^[A-Za-z0-9]{6,16}$" }, ownerScope: { enum: ["ORG", "CLINIC", "BRANCH", "DOCTOR", "DESK"] }, channelKind: { enum: ["WEB_LINK", "QR_POSTER", "QR_DESK", "SOCIAL", "SMS", "WHATSAPP_SHARE", "EMAIL_SIG", "GOOGLE_PROFILE"] }, createdAt: TS, ...AGG }, required: ["linkCode", "ownerScope", "channelKind"] },
+    example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "k7Q2mX9a", ownerScope: "DOCTOR", channelKind: "QR_DESK", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
   },
 ];
 

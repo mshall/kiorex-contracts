@@ -51,5 +51,10 @@ Generated from `events/index.json` and `flags/catalogue.json` (documentation sna
 | `CARE_PLAN_ENDED` | kiorly-clinic | CarePlan | v2-draft |  | [CARE_PLAN_ENDED.schema.json](../events/CARE_PLAN_ENDED.schema.json) |
 | `ReferralIssued` | kiorly-clinic | Referral | v2-draft |  | [ReferralIssued.schema.json](../events/ReferralIssued.schema.json) |
 | `MedicationOrderShared` | kiorly-clinic | DoctorOrder | v2-draft |  | [MedicationOrderShared.schema.json](../events/MedicationOrderShared.schema.json) |
+| `CommissionAdjusted` | kiorly-clinic | Appointment | v2-draft |  | [CommissionAdjusted.schema.json](../events/CommissionAdjusted.schema.json) |
+| `PatientConsentUpdated` | kiorex | PatientConsent | v2-draft |  | [PatientConsentUpdated.schema.json](../events/PatientConsentUpdated.schema.json) |
+| `AttributionAssigned` | kiorex | BookingIntent | v2-draft |  | [AttributionAssigned.schema.json](../events/AttributionAssigned.schema.json) |
+| `PatientAcquisitionRecorded` | kiorex | PatientProfile | v2-draft |  | [PatientAcquisitionRecorded.schema.json](../events/PatientAcquisitionRecorded.schema.json) |
+| `ReferralLinkCreated` | kiorly-clinic | ProviderReferralLink | v2-draft |  | [ReferralLinkCreated.schema.json](../events/ReferralLinkCreated.schema.json) |
 
 Back to the [README](../README.md) · [Docs index](INDEX.md)

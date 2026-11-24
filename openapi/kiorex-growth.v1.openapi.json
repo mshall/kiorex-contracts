@@ -1,0 +1,732 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kiorex Growth API",
+    "version": "1.0.0",
+    "description": "Additive in contracts 1.10.0 (PROPOSED, ARCH sections 6 and 8). Public, first-party, consent-aware endpoints of the Kiorex growth module. Rules: no IP address, full user agent, full referrer URL, unknown query parameter, health data, search text, specialty-by-visitor join or provider id in the visitor stream is ever stored; rate limited per rotating ipHash (429 with Retry-After); OFF flag answers 403 FEATURE_DISABLED {key, scope}. The visitor key cookie `kxv` (host-only, Secure, SameSite=Lax, 180 days max) is set only when the request carries `X-KX-Consent: analytics`."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000/api/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "growth"
+    },
+    {
+      "name": "bootstrap"
+    }
+  ],
+  "paths": {
+    "/growth/v1/touch": {
+      "post": {
+        "operationId": "growthRecordTouch",
+        "tags": [
+          "growth"
+        ],
+        "summary": "Record a landing touch (first-party, consent-gated visitor identity)",
+        "description": "Always answers 202 quickly. Without `X-KX-Consent: analytics` nothing is persisted against a visitor key; a valid `lt` is still honoured for the booking in the same session. Unknown keys are dropped (not rejected) except inside `utm`, where an email-like or over-long value rejects the whole call.",
+        "parameters": [
+          {
+            "name": "X-KX-Consent",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "enum": [
+                "analytics"
+              ]
+            },
+            "description": "Present only after the person accepted analytics/attribution consent."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TouchRequest"
+              },
+              "examples": {
+                "providerLink": {
+                  "value": {
+                    "landingKind": "PROVIDER_LINK",
+                    "ref": "k7Q2mX9a",
+                    "dwellMs": 1800
+                  }
+                },
+                "search": {
+                  "value": {
+                    "landingKind": "SPECIALTY_CITY",
+                    "utm": {
+                      "source": "google",
+                      "medium": "organic"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TouchAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROWTH_INVALID_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.attribution, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "GROWTH_PHI_REJECTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "GROWTH_RATE_LIMITED",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/events": {
+      "post": {
+        "operationId": "growthRecordEvents",
+        "tags": [
+          "growth"
+        ],
+        "summary": "Record canonical funnel events (batch)",
+        "description": "Canonical names only. `careType` is allowed; specialty, provider ids, free text and any identifier are rejected. From SlotSelected on, events are server-side operational facts keyed to the booking and are not accepted from the client.",
+        "parameters": [
+          {
+            "name": "X-KX-Consent",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "enum": [
+                "analytics"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "accepted"
+                  ],
+                  "properties": {
+                    "accepted": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROWTH_INVALID_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "GROWTH_EVENT_NOT_ALLOWED or GROWTH_PHI_REJECTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "GROWTH_RATE_LIMITED",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/evidence/{bookingId}": {
+      "get": {
+        "operationId": "growthGetEvidence",
+        "tags": [
+          "growth"
+        ],
+        "summary": "Attribution evidence for one booking (ops session or signed partner)",
+        "description": "Facts, not a recomputation: the stored decision, its policy version and the ordered touch references. A partner may read only evidence for its own organisation's bookings. Never returns visitor keys, IP hashes or identifiers.",
+        "security": [
+          {
+            "opsSession": []
+          },
+          {
+            "partnerHmac": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Kiorex booking reference (kx_bk_...)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evidence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evidence"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorised",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "GROWTH_EVIDENCE_NOT_FOUND (also for another organisation's booking)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bootstrap": {
+      "get": {
+        "operationId": "getBootstrap",
+        "tags": [
+          "bootstrap"
+        ],
+        "summary": "Market-aware app and web bootstrap",
+        "description": "Public, cacheable for 60 seconds. With one live market the selector flag is false and the client never shows a country picker.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Bootstrap",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Bootstrap"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "opsSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Kiorex ops console session"
+      },
+      "partnerHmac": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Kiorly-Signature",
+        "description": "Kiorly request HMAC (signKiorlyRequest / verifyKiorlyRequest in @kiorex/contracts): X-Kiorly-Client-Key, -Timestamp, -Nonce, -Signature."
+      }
+    },
+    "schemas": {
+      "GrowthError": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "statusCode": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string",
+            "description": "One of GROWTH_ERROR_CODES, or FEATURE_DISABLED (then also key and scope)."
+          },
+          "message": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "global",
+              "market",
+              "org"
+            ]
+          }
+        }
+      },
+      "TouchRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "landingKind"
+        ],
+        "properties": {
+          "landingKind": {
+            "enum": [
+              "HOME",
+              "SPECIALTY_CITY",
+              "SPECIALTY_DISTRICT",
+              "CARE_TYPE_DISTRICT",
+              "HUB",
+              "DOCTOR",
+              "CLINIC",
+              "PROVIDER_LINK",
+              "WIDGET",
+              "REFERRAL",
+              "CAMPAIGN",
+              "WHATSAPP",
+              "APP_OPEN",
+              "OTHER"
+            ]
+          },
+          "utm": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.~:+/-]{1,64}$",
+                "description": "No spaces, no @ (an email-like value rejects the call), no query punctuation."
+              },
+              "medium": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.~:+/-]{1,64}$",
+                "description": "No spaces, no @ (an email-like value rejects the call), no query punctuation."
+              },
+              "campaign": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.~:+/-]{1,64}$",
+                "description": "No spaces, no @ (an email-like value rejects the call), no query punctuation."
+              },
+              "content": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.~:+/-]{1,64}$",
+                "description": "No spaces, no @ (an email-like value rejects the call), no query punctuation."
+              },
+              "term": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_.~:+/-]{1,64}$",
+                "description": "No spaces, no @ (an email-like value rejects the call), no query punctuation."
+              }
+            }
+          },
+          "clickId": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "value"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "GCLID",
+                  "FBCLID",
+                  "TTCLID",
+                  "MSCLKID",
+                  "WBRAID",
+                  "GBRAID"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "description": "Hashed on receipt; the raw value is never stored."
+          },
+          "ref": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{4,16}$",
+            "description": "Provider link code or patient referral code. Unknown codes are ignored."
+          },
+          "lt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Signed, short-lived link token issued by the provider's booking page (<= 30 minutes)."
+          },
+          "dwellMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 600000,
+            "description": "How long the landing page was actually rendered; a provider touch counts only above the policy minimum."
+          }
+        }
+      },
+      "TouchAccepted": {
+        "type": "object",
+        "required": [
+          "accepted",
+          "visitorKeySet"
+        ],
+        "properties": {
+          "accepted": {
+            "const": true
+          },
+          "visitorKeySet": {
+            "type": "boolean",
+            "description": "True only when consent was present and the kxv cookie was set or refreshed."
+          }
+        }
+      },
+      "EventsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "events"
+        ],
+        "properties": {
+          "events": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/GrowthEventInput"
+            }
+          }
+        }
+      },
+      "GrowthEventInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "enum": [
+              "PageViewed",
+              "SearchStarted",
+              "ResultsViewed",
+              "ProviderViewed",
+              "AppInstalled",
+              "WidgetLoaded",
+              "WidgetBookingStarted",
+              "WhatsAppConversationStarted",
+              "ConsentGranted"
+            ],
+            "description": "Client-reportable canonical names. SlotSelected, BookingInitiated, BookingConfirmed, BookingAttended, BookingCancelled and PatientRegistered are server-side operational facts and are rejected from clients (GROWTH_EVENT_NOT_ALLOWED)."
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "careType": {
+            "enum": [
+              "DOCTORS",
+              "PHYSIOTHERAPY",
+              "HOME_NURSING"
+            ]
+          },
+          "landingKind": {
+            "enum": [
+              "HOME",
+              "SPECIALTY_CITY",
+              "SPECIALTY_DISTRICT",
+              "CARE_TYPE_DISTRICT",
+              "HUB",
+              "DOCTOR",
+              "CLINIC",
+              "PROVIDER_LINK",
+              "WIDGET",
+              "REFERRAL",
+              "CAMPAIGN",
+              "WHATSAPP",
+              "APP_OPEN",
+              "OTHER"
+            ]
+          },
+          "props": {
+            "type": "object",
+            "maxProperties": 8,
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            },
+            "description": "Allow-listed keys only; the server rejects specialty, provider ids and PHI-like values."
+          }
+        }
+      },
+      "Evidence": {
+        "type": "object",
+        "required": [
+          "bookingId",
+          "decision"
+        ],
+        "properties": {
+          "bookingId": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "object",
+            "required": [
+              "id",
+              "origin",
+              "reason",
+              "policyVersion",
+              "inputsHash",
+              "createdAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "origin": {
+                "enum": [
+                  "PROVIDER_LED",
+                  "MARKETPLACE",
+                  "UNATTRIBUTED"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              },
+              "policyVersion": {
+                "type": "string"
+              },
+              "inputsHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "supersedesId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          },
+          "touches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "kind",
+                "occurredAt"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                },
+                "ref": {
+                  "type": "string"
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "dwellMs": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "winning": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Bootstrap": {
+        "type": "object",
+        "required": [
+          "defaultMarket",
+          "liveMarkets",
+          "markets",
+          "locales",
+          "showMarketSelector"
+        ],
+        "properties": {
+          "defaultMarket": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "liveMarkets": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$"
+            }
+          },
+          "markets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "code",
+                "currency",
+                "phoneCode"
+              ],
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "currency": {
+                  "type": "string"
+                },
+                "phoneCode": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "object",
+                  "properties": {
+                    "ar": {
+                      "type": "string"
+                    },
+                    "en": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "locales": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "ar",
+                "en"
+              ]
+            }
+          },
+          "showMarketSelector": {
+            "type": "boolean",
+            "description": "False unless more than one market is live (founder rule 23 Nov 2026)."
+          },
+          "minAppVersion": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

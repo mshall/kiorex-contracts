@@ -45,6 +45,10 @@ describe("flag catalogue (KX-08 §09)", () => {
       "lab.home_collection", "lab.kiorex_bookings", "market.<country>.live",
       // Rev 2.3 (KX-08 §10): 15 keys
       ...REV23_KEYS,
+      // 1.10.0 growth engine (ARCH section 16)
+      "growth.provider_links", "growth.attribution", "growth.ssr_public_pages", "growth.seo_landing_pages", "growth.widgets", "growth.deep_links",
+      "growth.analytics_visitor", "growth.marketing_messaging", "growth.campaigns", "growth.patient_referral", "growth.rewards", "kiorex.whatsapp_ai_assistant",
+      "growth.experiments", "growth.integrations.<kind>",
     ];
     expect(cat.flags.map((f: any) => f.key).sort()).toEqual(expected.sort());
   });
@@ -69,7 +73,9 @@ describe("flag catalogue (KX-08 §09)", () => {
       "clinic.home_visits", "clinic.specialty_templates.<code>", "clinic.whatsapp_ai_receptionist", "kiorex.ai_navigation",
       "kiorex.category.physiotherapy", "kiorex.home_visits", "kiorex.lab_bookings", "kiorex.pharmacy_orders", "kiorex.telemedicine",
       "market.<country>.live", "nurse.care_plans", "nurse.individual_kiorex_listing", "nurse.mar",
-    ]);
+      // 1.10.0 growth engine: counsel-gated
+      "growth.analytics_visitor", "growth.marketing_messaging", "growth.patient_referral", "growth.rewards", "kiorex.whatsapp_ai_assistant",
+    ].sort());
   });
 });
 

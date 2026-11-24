@@ -1,6 +1,6 @@
 {
   "name": "@kiorex/contracts",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Kiorex v2 integration contracts: OpenAPI specs, event JSON Schemas, feature-flag catalogue, HMAC helpers, flag evaluator (KX-09) and the shared notification layer (@kiorex/contracts/notify).",
   "license": "UNLICENSED",
   "private": false,
@@ -36,6 +36,7 @@
     "./events/*": "./events/*",
     "./flags/*": "./flags/*",
     "./consumer/*": "./consumer/*",
+    "./growth-config/*": "./src/growth-config/*",
     "./package.json": "./package.json"
   },
   "files": [
@@ -44,6 +45,8 @@
     "events",
     "flags",
     "consumer",
+    "src/growth-config",
+    "fixtures/growth-v1.10",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"
@@ -57,7 +60,7 @@
     "url": "git+https://github.com/mshall/kiorex-contracts.git"
   },
   "scripts": {
-    "generate": "node scripts/generate-events.mjs && node scripts/generate-flags.mjs && node scripts/generate-types.mjs",
+    "generate": "node scripts/generate-events.mjs && node scripts/generate-flags.mjs && node scripts/generate-growth.mjs && node scripts/generate-types.mjs",
     "build": "npm run generate && tsup",
     "lint": "tsc --noEmit",
     "test": "vitest run",

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/CONSENT_DEFAULTS.schema.json",
+  "title": "Growth config: CONSENT_DEFAULTS",
+  "description": "Consent, preference and communication defaults (ARCH section 9). Wording lives in the approved text versions, not here. Every default is PROPOSED_DEFAULT until the founder ratifies it (ARCH section 6.3 / 16). Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "regimeId": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]{2,32}$",
+      "description": "Consent regime id, e.g. pdpl-eg-v0 (counsel NEEDS_HUMAN)."
+    },
+    "quietHoursStart": {
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+      "description": "PROPOSED_DEFAULT 21:00."
+    },
+    "quietHoursEnd": {
+      "type": "string",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+      "description": "PROPOSED_DEFAULT 09:00."
+    },
+    "quietHoursTimezone": {
+      "type": "string",
+      "pattern": "^[A-Za-z_]+/[A-Za-z_]+$",
+      "description": "IANA zone, PROPOSED_DEFAULT Africa/Cairo."
+    },
+    "maxMarketingPerDay": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Frequency cap across channels (Phase 2 enforcement). PROPOSED_DEFAULT 1."
+    },
+    "maxMarketingPerWeek": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50,
+      "description": "Frequency cap across channels (Phase 2 enforcement). PROPOSED_DEFAULT 3."
+    },
+    "withdrawalPropagationSeconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3600,
+      "description": "Withdrawal must reach the send gate within this many seconds. PROPOSED_DEFAULT 60."
+    },
+    "bannerEqualWeight": {
+      "const": true,
+      "description": "Accept and Reject carry equal weight; no pre-ticked boxes. Not switchable."
+    },
+    "textVersionIds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "analytics": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "marketing": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "analytics",
+        "marketing"
+      ],
+      "description": "Ids of the approved wording; TODO_NEEDS_HUMAN_v0 until counsel approves."
+    }
+  },
+  "required": [
+    "regimeId",
+    "quietHoursStart",
+    "quietHoursEnd",
+    "quietHoursTimezone",
+    "maxMarketingPerDay",
+    "maxMarketingPerWeek",
+    "withdrawalPropagationSeconds",
+    "bannerEqualWeight",
+    "textVersionIds"
+  ]
+}

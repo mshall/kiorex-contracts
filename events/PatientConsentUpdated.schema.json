@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/PatientConsentUpdated.schema.json",
+  "title": "PatientConsentUpdated",
+  "description": "A patient or visitor granted or withdrew a consent purpose. The payload carries an opaque subject reference only: no name, phone, email or health data. Append-only history; the latest row wins; withdrawal is effective for the send gate within 60 seconds.",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "PatientConsentUpdated"
+    },
+    "aggregateType": {
+      "const": "PatientConsent"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "subRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque reference to the subject used internally; never the Passport sub of a partner-visible patient."
+        },
+        "purpose": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,48}$",
+          "description": "ANALYTICS_MEASUREMENT, MARKETING_WHATSAPP, MARKETING_SMS, MARKETING_EMAIL, MARKETING_PUSH or a purpose added later."
+        },
+        "channel": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{1,24}$",
+          "description": "Optional channel when the purpose is channel-specific."
+        },
+        "granted": {
+          "type": "boolean"
+        },
+        "textVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Id of the exact approved wording (AR and EN) shown to the person. Placeholder until counsel approves."
+        },
+        "source": {
+          "enum": [
+            "web",
+            "app",
+            "whatsapp",
+            "widget",
+            "ops-import"
+          ]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "subRef",
+        "purpose",
+        "granted",
+        "textVersion",
+        "source",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

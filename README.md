@@ -104,6 +104,7 @@ flowchart TD
 | `openapi/kiorex-webhooks.v1.openapi.json` | Kiorly to Kiorex receiver, PSP webhook shape, OIDC back-channel logout | :white_check_mark: 1.1.0 |
 | `openapi/kiorly-pharmacy.v1.openapi.json` | Kiorex to Pharmacy machine API | :construction: draft, reconciled with the running service |
 | `openapi/kiorex-partner-intake.v1.openapi.json` | Partner connection intake + status poll (enrolment code, issued intake key, rate limits) | :white_check_mark: 1.0.0 (contracts 1.9.0) |
+| `openapi/kiorex-growth.v1.openapi.json` | Growth engine public surface: touch, canonical events, evidence read, market bootstrap (consent-gated, PHI-free) | draft 1.0.0 (contracts 1.10.0) |
 | `openapi/kiorly-lab.v1.openapi.json` | Kiorex to Lab machine API (incl. nurse sample custody) | :construction: draft 0.3.0 |
 | `events/*.schema.json` + `examples/` | Envelope plus one schema per event | :white_check_mark: |
 | `flags/catalogue.json`, `flags/safety-never-flags.json` | KX-08 flag catalogue; ADR-025 never-a-flag list | :white_check_mark: |

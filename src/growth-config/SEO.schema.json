@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/SEO.schema.json",
+  "title": "Growth config: SEO",
+  "description": "Public site and landing page rules (ARCH sections 4 and 5). Every default is PROPOSED_DEFAULT until the founder ratifies it (ARCH section 6.3 / 16). Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "canonicalHost": {
+      "type": "string",
+      "pattern": "^https://[a-z0-9.-]+$",
+      "description": "Absolute canonical origin, e.g. https://kiorex.com (NEEDS_HUMAN per environment)."
+    },
+    "locales": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "ar",
+          "en"
+        ]
+      },
+      "description": "PROPOSED_DEFAULT [ar,en]."
+    },
+    "defaultLocale": {
+      "enum": [
+        "ar",
+        "en"
+      ],
+      "description": "PROPOSED_DEFAULT ar."
+    },
+    "minLiveProviders": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Thin-page guard: LIVE providers with slots needed before a generated page is indexable. PROPOSED_DEFAULT 3."
+    },
+    "minUniqueBlocks": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "description": "Thin-page guard: data-derived content blocks needed. PROPOSED_DEFAULT 3."
+    },
+    "maxSiblingSimilarityPercent": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Thin-page guard: maximum provider-list overlap with a sibling page. PROPOSED_DEFAULT 70."
+    },
+    "sitemapShardSize": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 50000,
+      "description": "URLs per sitemap file. PROPOSED_DEFAULT 10000."
+    },
+    "edgeCacheSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 86400,
+      "description": "s-maxage for public HTML. PROPOSED_DEFAULT 300."
+    },
+    "staleWhileRevalidateSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 604800,
+      "description": "stale-while-revalidate for public HTML. PROPOSED_DEFAULT 3600."
+    },
+    "delistedGoneAfterDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 365,
+      "description": "A DELISTED page answers 301 to the hub, then 410 after this many days when no hub exists. PROPOSED_DEFAULT 30."
+    },
+    "reviewMarkupEnabled": {
+      "type": "boolean",
+      "description": "Emit aggregateRating only from visible verified reviews. PROPOSED_DEFAULT True."
+    },
+    "districtPagesEnabled": {
+      "type": "boolean",
+      "description": "Generate district-level pages when they pass the guard. PROPOSED_DEFAULT True."
+    }
+  },
+  "required": [
+    "canonicalHost",
+    "locales",
+    "defaultLocale",
+    "minLiveProviders",
+    "minUniqueBlocks",
+    "maxSiblingSimilarityPercent",
+    "sitemapShardSize",
+    "edgeCacheSeconds",
+    "staleWhileRevalidateSeconds",
+    "delistedGoneAfterDays",
+    "reviewMarkupEnabled",
+    "districtPagesEnabled"
+  ]
+}

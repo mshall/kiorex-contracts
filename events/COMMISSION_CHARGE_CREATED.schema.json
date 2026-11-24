@@ -53,6 +53,25 @@
           "type": "string",
           "format": "date-time"
         },
+        "decisionRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+        },
+        "origin": {
+          "enum": [
+            "PROVIDER_LED",
+            "MARKETPLACE",
+            "UNATTRIBUTED"
+          ],
+          "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+        },
+        "policyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+        },
         "aggregateType": {
           "type": "string",
           "description": "Injected by the Kiorly outbox; mirrors the envelope field."

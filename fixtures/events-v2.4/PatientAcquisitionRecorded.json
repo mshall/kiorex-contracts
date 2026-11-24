@@ -1,0 +1,15 @@
+{
+  "eventId": "01JF3ZEVTPATIENTA",
+  "type": "PatientAcquisitionRecorded",
+  "aggregateType": "PatientProfile",
+  "aggregateId": "pp_01JF3ZD000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "origin": "MARKETPLACE",
+    "sourceKind": "ORGANIC_SEARCH",
+    "market": "EG",
+    "recordedAt": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "PatientProfile",
+    "aggregateId": "pp_01JF3ZD000"
+  }
+}

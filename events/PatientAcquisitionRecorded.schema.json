@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/PatientAcquisitionRecorded.schema.json",
+  "title": "PatientAcquisitionRecorded",
+  "description": "INTERNAL (Kiorex outbox only). The first time a subject receives an acquisition origin (registration or first booking). Origin, source kind and market only: no identifiers beyond the aggregate.",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "PatientAcquisitionRecorded"
+    },
+    "aggregateType": {
+      "const": "PatientProfile"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "enum": [
+            "PROVIDER_LED",
+            "MARKETPLACE",
+            "UNATTRIBUTED"
+          ],
+          "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+        },
+        "sourceKind": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,32}$"
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "origin",
+        "sourceKind",
+        "market"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}
