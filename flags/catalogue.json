@@ -1653,6 +1653,23 @@
       "gate": null,
       "note": "PROPOSED_DEFAULT (growth Phase 2, consolidated contracts 1.13.0): the Clinic mirror of growth.sponsored_promotions (until now clinic.provider_credit_v2 gated it)",
       "keyPattern": false
+    },
+    {
+      "key": "growth.loyalty",
+      "product": "kiorex",
+      "scopes": [
+        "global",
+        "market"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "No loyalty points accrue, convert or expire and no partnership code can be redeemed; points already earned stay visible to the patient and ops, lots already issued are honoured, nothing is deleted",
+      "dependsOn": [
+        "growth.rewards"
+      ],
+      "launchLocked": true,
+      "gate": "Counsel (loyalty scheme, consumer promotion and points expiry rules, NH 11 and 18) and finance (points liability); every amount, tier threshold and partner legal text is NEEDS_HUMAN",
+      "note": "PROPOSED_DEFAULT (growth Phase 4, work package P4-D; unreleased)",
+      "keyPattern": false
     }
   ]
 }

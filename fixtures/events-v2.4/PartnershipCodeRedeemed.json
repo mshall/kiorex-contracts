@@ -1,0 +1,19 @@
+{
+  "eventId": "01JF3ZEVTPARTNERS",
+  "type": "PartnershipCodeRedeemed",
+  "aggregateType": "PartnershipProgram",
+  "aggregateId": "ptp_01JF4DC000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "programRef": "ptp_01JF4DC000",
+    "redemptionRef": "pcr_01JF4DD000",
+    "lotRef": "rwl_01JF4DB001",
+    "market": "EG",
+    "kind": "CODE_DISCOUNT",
+    "amountMinor": 3000,
+    "currency": "EGP",
+    "at": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "PartnershipProgram",
+    "aggregateId": "ptp_01JF4DC000"
+  }
+}

@@ -75,6 +75,8 @@ export const GROWTH_CONFIG_KINDS = [
   "CAMPAIGN_POLICY", "REFERRAL_RULES", "REWARD_RULES", "LIFECYCLE_POLICY", "ASSISTANT_POLICY", "INTEGRATION", "SPONSORED_PROMOTION_POLICY",
   // 1.13.0 (additive, consolidated): Phase 3 kinds the Kiorex ops console already validates locally, plus Phase 4 corporate (GRW-P4-C)
   "FRAUD_RULES", "SEO_AUTOMATION", "LTV_POLICY", "MARKET_PROFILE", "ATTRIBUTION_MODELS", "EXPERIMENT_POLICY", "AUTOMATION_POLICY", "CORPORATE_POLICY",
+  // Phase 4 (1.13.0 branch, GRW-P4-D)
+  "LOYALTY_RULES",
 ] as const;
 export type GrowthConfigKind = (typeof GROWTH_CONFIG_KINDS)[number];
 /** Kinds with a JSON Schema in 1.10.0; the others are Phase 2 and 3 and ship their schema with their phase. */
@@ -310,3 +312,14 @@ export function staffPhoneMatchHash(phone: string, clientSecret: string): string
   const key = createHmac("sha256", clientSecret).update("kx-staff-phone-match-v1").digest();
   return createHmac("sha256", key).update(staffPhoneMatchDigits(phone)).digest("base64url");
 }
+// ── GRW-P4-D loyalty and partnership vocabulary (additive; unreleased). Points are a SEPARATE ledger: never cash, never a stored value; the only way out is a reward lot of kind LOYALTY in the patient reward ledger.
+export const LOYALTY_TIERS = ["NONE", "SILVER", "GOLD", "PLATINUM"] as const;
+/** CONVERT debits points when they become a reward lot; there is no top-up, transfer, gift or cash-out entry type. */
+export const LOYALTY_ENTRY_TYPES = ["ACCRUE", "EXPIRE", "REVERSE", "TIER_BONUS", "CONVERT"] as const;
+export const PARTNERSHIP_KINDS = ["CODE_DISCOUNT", "CO_PROMO", "CARD_OFFER"] as const;
+export const PARTNERSHIP_STATUSES = ["DRAFT", "ACTIVE", "PAUSED", "ENDED"] as const;
+export const PARTNERSHIP_FUNDING_MODES = ["PLATFORM_MARKETING", "PARTNER_FUNDED"] as const;
+export const LOYALTY_ERROR_CODES = [
+  "LOYALTY_NOT_AVAILABLE", "LOYALTY_INSUFFICIENT_POINTS", "LOYALTY_CONVERSION_OFF", "LOYALTY_CONVERSION_REFUSED", "PARTNERSHIP_CODE_INVALID", "PARTNERSHIP_CODE_EXHAUSTED",
+  "PARTNERSHIP_CODE_EXPIRED", "PARTNERSHIP_BUDGET_EXCEEDED", "PARTNERSHIP_ALREADY_REDEEMED", "PARTNERSHIP_NOT_ACTIVE", "PARTNERSHIP_SELF_APPROVAL", "PARTNERSHIP_TERMS_INCOMPLETE",
+] as const;

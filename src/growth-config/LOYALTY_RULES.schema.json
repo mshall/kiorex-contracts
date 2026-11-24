@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/LOYALTY_RULES.schema.json",
+  "title": "Growth config: LOYALTY_RULES",
+  "description": "Loyalty points rules (GRW-P4-D): points per COMPLETED booking, tiers from completed-booking counts in a rolling window, FIFO expiry, an annual cap and the conversion into a reward lot of kind LOYALTY. Money relevant: two-person rule and an announcement. EVERY amount and tier threshold defaults to 0 and 0 means switched off (a tier with minCompletedBookings 0 is never reached; conversion with pointsRequired 0 or valueMinor 0 is closed; an annual cap of 0 refuses accrual). Points are not money: there is no cash, top-up or transfer setting. Unknown keys rejected. Added in the unreleased set. PROPOSED_DEFAULT until ratified (counsel, NH 11 and 18, and finance).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": { "type": "boolean", "description": "Master switch of the rule set (the launch-locked flag growth.loyalty still decides whether anything runs)." },
+    "pointsPerCompletedBooking": { "type": "integer", "minimum": 0, "maximum": 10000, "description": "Points added when a booking reaches COMPLETED (never on a hold, a deposit or a confirmation). 0 = no accrual." },
+    "windowMonths": { "type": "integer", "minimum": 1, "maximum": 24, "description": "Rolling window over which completed bookings count towards a tier. PROPOSED_DEFAULT 12." },
+    "expiryMonths": { "type": "integer", "minimum": 1, "maximum": 36, "description": "Months a point lives; the oldest points are used and expire first (FIFO). PROPOSED_DEFAULT 12." },
+    "annualCapPoints": { "type": "integer", "minimum": 0, "maximum": 1000000, "description": "Most points one person can earn in a rolling 365 days (accrual and tier bonus). 0 refuses accrual until the founder sets one." },
+    "tiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SILVER": { "$ref": "#/$defs/tier" },
+        "GOLD": { "$ref": "#/$defs/tier" },
+        "PLATINUM": { "$ref": "#/$defs/tier" }
+      }
+    },
+    "conversion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pointsRequired": { "type": "integer", "minimum": 0, "maximum": 1000000, "description": "Points spent for one conversion block. 0 closes conversion." },
+        "valueMinor": { "type": "integer", "minimum": 0, "maximum": 2000000000, "description": "Minor units of the reward lot one block becomes. 0 closes conversion. It is a promotional coupon or credit lot of the existing reward ledger (REWARD_RULES caps still apply), never cash." },
+        "maxBlocksPerYear": { "type": "integer", "minimum": 0, "maximum": 100, "description": "Blocks one person can convert in a rolling 365 days. 0 closes conversion." }
+      }
+    }
+  },
+  "$defs": {
+    "tier": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minCompletedBookings": { "type": "integer", "minimum": 0, "maximum": 1000, "description": "Completed bookings in the window needed to reach the tier. 0 = the tier is not defined (nobody reaches it)." },
+        "bonusPoints": { "type": "integer", "minimum": 0, "maximum": 100000, "description": "Points granted once per rolling year when the tier is first reached." }
+      }
+    }
+  }
+}

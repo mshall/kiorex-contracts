@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/LoyaltyPointsAccrued.schema.json",
+  "title": "LoyaltyPointsAccrued",
+  "description": "INTERNAL. Loyalty points were added to a patient's separate points ledger for a COMPLETED booking (or a tier bonus). Opaque account reference and amounts only: no booking, provider, specialty or person. Points are not money (work package P4-D).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "LoyaltyPointsAccrued"
+    },
+    "aggregateType": {
+      "const": "LoyaltyAccount"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "accountRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "entryType": {
+          "enum": [
+            "ACCRUE",
+            "TIER_BONUS"
+          ]
+        },
+        "points": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tier": {
+          "enum": [
+            "NONE",
+            "SILVER",
+            "GOLD",
+            "PLATINUM"
+          ]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "accountRef",
+        "entryType",
+        "points",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

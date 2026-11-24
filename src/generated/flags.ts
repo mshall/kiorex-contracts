@@ -1671,6 +1671,23 @@ export const FLAG_CATALOGUE = [
     "gate": null,
     "keyPattern": false,
     "note": "PROPOSED_DEFAULT (growth Phase 2, consolidated contracts 1.13.0): the Clinic mirror of growth.sponsored_promotions (until now clinic.provider_credit_v2 gated it)"
+  },
+  {
+    "key": "growth.loyalty",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "No loyalty points accrue, convert or expire and no partnership code can be redeemed; points already earned stay visible to the patient and ops, lots already issued are honoured, nothing is deleted",
+    "dependsOn": [
+      "growth.rewards"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel (loyalty scheme, consumer promotion and points expiry rules, NH 11 and 18) and finance (points liability); every amount, tier threshold and partner legal text is NEEDS_HUMAN",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 4, work package P4-D; unreleased)"
   }
 ] as const satisfies readonly FlagCatalogueEntry[];
 
@@ -1774,7 +1791,8 @@ export const FLAG_KEYS = [
   "growth.ai_recommendations",
   "growth.seo_automation",
   "growth.market_onboarding",
-  "clinic.sponsored_promotions"
+  "clinic.sponsored_promotions",
+  "growth.loyalty"
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
 
@@ -1879,6 +1897,7 @@ export const FLAGS = {
   GROWTH_SEO_AUTOMATION: "growth.seo_automation",
   GROWTH_MARKET_ONBOARDING: "growth.market_onboarding",
   CLINIC_SPONSORED_PROMOTIONS: "clinic.sponsored_promotions",
+  GROWTH_LOYALTY: "growth.loyalty",
 } as const;
 
 /** Pattern keys: clinic.specialty_templates.<code>, market.<country>.live. */

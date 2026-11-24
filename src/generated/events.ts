@@ -9050,6 +9050,243 @@ export const EVENT_SCHEMAS = {
       "aggregateType",
       "data"
     ]
+  },
+  "LoyaltyPointsAccrued": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LoyaltyPointsAccrued.schema.json",
+    "title": "LoyaltyPointsAccrued",
+    "description": "INTERNAL. Loyalty points were added to a patient's separate points ledger for a COMPLETED booking (or a tier bonus). Opaque account reference and amounts only: no booking, provider, specialty or person. Points are not money (work package P4-D).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LoyaltyPointsAccrued"
+      },
+      "aggregateType": {
+        "const": "LoyaltyAccount"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "accountRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "entryType": {
+            "enum": [
+              "ACCRUE",
+              "TIER_BONUS"
+            ]
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "tier": {
+            "enum": [
+              "NONE",
+              "SILVER",
+              "GOLD",
+              "PLATINUM"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "accountRef",
+          "entryType",
+          "points",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LoyaltyPointsConverted": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LoyaltyPointsConverted.schema.json",
+    "title": "LoyaltyPointsConverted",
+    "description": "INTERNAL. Points were converted into a reward lot of kind LOYALTY in the existing patient reward ledger (one transaction). The lot reference and its value are the only link; there is no cash, top-up or transfer path (work package P4-D).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LoyaltyPointsConverted"
+      },
+      "aggregateType": {
+        "const": "LoyaltyAccount"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "accountRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "points": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "accountRef",
+          "points",
+          "lotRef",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "PartnershipCodeRedeemed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/PartnershipCodeRedeemed.schema.json",
+    "title": "PartnershipCodeRedeemed",
+    "description": "INTERNAL. A patient redeemed a partnership code; a reward lot was issued inside the program budget (enforced in the database). Opaque program, redemption and lot references only: never the person or the code (work package P4-D).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "PartnershipCodeRedeemed"
+      },
+      "aggregateType": {
+        "const": "PartnershipProgram"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "programRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "redemptionRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "kind": {
+            "enum": [
+              "CODE_DISCOUNT",
+              "CO_PROMO",
+              "CARD_OFFER"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "programRef",
+          "redemptionRef",
+          "lotRef",
+          "amountMinor",
+          "currency",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
   }
 } as const;
 
@@ -10945,6 +11182,60 @@ export const EVENT_EXAMPLES = {
       "aggregateType": "SeoVital",
       "aggregateId": "doctor|lcpMs|FIELD"
     }
+  },
+  "LoyaltyPointsAccrued": {
+    "eventId": "01JF3ZEVTLOYALTYP",
+    "type": "LoyaltyPointsAccrued",
+    "aggregateType": "LoyaltyAccount",
+    "aggregateId": "lac_01JF4DA000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "accountRef": "lac_01JF4DA000",
+      "market": "EG",
+      "entryType": "ACCRUE",
+      "points": 10,
+      "tier": "SILVER",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "LoyaltyAccount",
+      "aggregateId": "lac_01JF4DA000"
+    }
+  },
+  "LoyaltyPointsConverted": {
+    "eventId": "01JF3ZEVTLOYALTYP",
+    "type": "LoyaltyPointsConverted",
+    "aggregateType": "LoyaltyAccount",
+    "aggregateId": "lac_01JF4DA000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "accountRef": "lac_01JF4DA000",
+      "market": "EG",
+      "points": 100,
+      "lotRef": "rwl_01JF4DB000",
+      "amountMinor": 5000,
+      "currency": "EGP",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "LoyaltyAccount",
+      "aggregateId": "lac_01JF4DA000"
+    }
+  },
+  "PartnershipCodeRedeemed": {
+    "eventId": "01JF3ZEVTPARTNERS",
+    "type": "PartnershipCodeRedeemed",
+    "aggregateType": "PartnershipProgram",
+    "aggregateId": "ptp_01JF4DC000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "programRef": "ptp_01JF4DC000",
+      "redemptionRef": "pcr_01JF4DD000",
+      "lotRef": "rwl_01JF4DB001",
+      "market": "EG",
+      "kind": "CODE_DISCOUNT",
+      "amountMinor": 3000,
+      "currency": "EGP",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "PartnershipProgram",
+      "aggregateId": "ptp_01JF4DC000"
+    }
   }
 } as const;
 
@@ -11577,10 +11868,28 @@ export const EVENT_META = {
     "aggregateType": "SeoVital",
     "status": "v2-draft",
     "schemaFile": "SeoVitalBudgetBreached.schema.json"
+  },
+  "LoyaltyPointsAccrued": {
+    "producer": "kiorex",
+    "aggregateType": "LoyaltyAccount",
+    "status": "v2-draft",
+    "schemaFile": "LoyaltyPointsAccrued.schema.json"
+  },
+  "LoyaltyPointsConverted": {
+    "producer": "kiorex",
+    "aggregateType": "LoyaltyAccount",
+    "status": "v2-draft",
+    "schemaFile": "LoyaltyPointsConverted.schema.json"
+  },
+  "PartnershipCodeRedeemed": {
+    "producer": "kiorex",
+    "aggregateType": "PartnershipProgram",
+    "status": "v2-draft",
+    "schemaFile": "PartnershipCodeRedeemed.schema.json"
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred" | "ExperimentStarted" | "ExperimentStopped" | "ExperimentConcluded" | "ExperimentSrmDetected" | "ExperimentShipRequested" | "FraudCaseOpened" | "FraudCaseResolved" | "GrowthRecommendationProposed" | "GrowthRecommendationDecided" | "GrowthJourneyPublished" | "GrowthJourneyKilled" | "MarketOnboardingStateChanged" | "SeoQualityGateFailed" | "SeoVitalBudgetBreached";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred" | "ExperimentStarted" | "ExperimentStopped" | "ExperimentConcluded" | "ExperimentSrmDetected" | "ExperimentShipRequested" | "FraudCaseOpened" | "FraudCaseResolved" | "GrowthRecommendationProposed" | "GrowthRecommendationDecided" | "GrowthJourneyPublished" | "GrowthJourneyKilled" | "MarketOnboardingStateChanged" | "SeoQualityGateFailed" | "SeoVitalBudgetBreached" | "LoyaltyPointsAccrued" | "LoyaltyPointsConverted" | "PartnershipCodeRedeemed";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -11800,6 +12109,12 @@ export type SeoQualityGateFailedData = { "market": string; "pageKey": string; "l
 export type SeoQualityGateFailedEvent = EventEnvelope<"SeoQualityGateFailed", SeoQualityGateFailedData>;
 export type SeoVitalBudgetBreachedData = { "market": string; "templateKind": string; "metric": "lcpMs" | "inpMs" | "cls" | "tbtMs" | "perfScore"; "source": "LAB" | "FIELD"; "p75": number; "budget"?: number; "day": string; "targets"?: Array<string>; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type SeoVitalBudgetBreachedEvent = EventEnvelope<"SeoVitalBudgetBreached", SeoVitalBudgetBreachedData>;
+export type LoyaltyPointsAccruedData = { "accountRef": string; "market"?: string; "entryType": "ACCRUE" | "TIER_BONUS"; "points": number; "tier"?: "NONE" | "SILVER" | "GOLD" | "PLATINUM"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type LoyaltyPointsAccruedEvent = EventEnvelope<"LoyaltyPointsAccrued", LoyaltyPointsAccruedData>;
+export type LoyaltyPointsConvertedData = { "accountRef": string; "market"?: string; "points": number; "lotRef": string; "amountMinor": number; "currency": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type LoyaltyPointsConvertedEvent = EventEnvelope<"LoyaltyPointsConverted", LoyaltyPointsConvertedData>;
+export type PartnershipCodeRedeemedData = { "programRef": string; "redemptionRef": string; "lotRef": string; "market"?: string; "kind"?: "CODE_DISCOUNT" | "CO_PROMO" | "CARD_OFFER"; "amountMinor": number; "currency": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PartnershipCodeRedeemedEvent = EventEnvelope<"PartnershipCodeRedeemed", PartnershipCodeRedeemedData>;
 
 export interface EventMap {
   "APPOINTMENT_CONFIRMED": AppointmentConfirmedEvent;
@@ -11906,4 +12221,7 @@ export interface EventMap {
   "MarketOnboardingStateChanged": MarketOnboardingStateChangedEvent;
   "SeoQualityGateFailed": SeoQualityGateFailedEvent;
   "SeoVitalBudgetBreached": SeoVitalBudgetBreachedEvent;
+  "LoyaltyPointsAccrued": LoyaltyPointsAccruedEvent;
+  "LoyaltyPointsConverted": LoyaltyPointsConvertedEvent;
+  "PartnershipCodeRedeemed": PartnershipCodeRedeemedEvent;
 }

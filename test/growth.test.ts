@@ -274,7 +274,7 @@ describe("growth flags (ADR-023/024/025)", () => {
     if (f.launchLocked) expect(f.gate).toContain("NEEDS_HUMAN");
   });
   it("exactly the counsel-gated flags are launch-locked; the pattern key is a pattern", () => {
-    expect(cat.flags.filter((f: any) => f.key.startsWith("growth.") && f.launchLocked).map((f: any) => f.key).sort()).toEqual([...LOCKED.filter((k) => k.startsWith("growth.")), "growth.assistant_real_model", "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate", "growth.ai_recommendations"].sort()); // 1.12.0 adds locked keys
+    expect(cat.flags.filter((f: any) => f.key.startsWith("growth.") && f.launchLocked).map((f: any) => f.key).sort()).toEqual([...LOCKED.filter((k) => k.startsWith("growth.")), "growth.assistant_real_model", "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate", "growth.loyalty", "growth.ai_recommendations"].sort()); // 1.12.0 adds locked keys
     expect(by("growth.integrations.<kind>").keyPattern).toBe(true);
     expect(FLAGS.GROWTH_ATTRIBUTION).toBe("growth.attribution");
   });

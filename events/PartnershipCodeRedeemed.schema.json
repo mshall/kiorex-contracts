@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/PartnershipCodeRedeemed.schema.json",
+  "title": "PartnershipCodeRedeemed",
+  "description": "INTERNAL. A patient redeemed a partnership code; a reward lot was issued inside the program budget (enforced in the database). Opaque program, redemption and lot references only: never the person or the code (work package P4-D).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "PartnershipCodeRedeemed"
+    },
+    "aggregateType": {
+      "const": "PartnershipProgram"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "programRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "redemptionRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lotRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "kind": {
+          "enum": [
+            "CODE_DISCOUNT",
+            "CO_PROMO",
+            "CARD_OFFER"
+          ]
+        },
+        "amountMinor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "programRef",
+        "redemptionRef",
+        "lotRef",
+        "amountMinor",
+        "currency",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

@@ -160,4 +160,13 @@ describe("1.13.0 vocabulary, OpenAPI and vectors", () => {
     expect(v.cases[0].hash).toBe(v.cases[3].hash);
     expect(staffPhoneMatchHash("+201012345678", "another-secret")).not.toBe(v.cases[0].hash);
   });
+
+  it("the loyalty set (GRW-P4-D) is inside 1.13.0 and purely additive: new flag, kind and three Kiorex-internal events", () => {
+    expect(FLAG_CATALOGUE.find((x) => x.key === "growth.loyalty")?.launchLocked).toBe(true);
+    expect(GROWTH_CONFIG_KINDS).toContain("LOYALTY_RULES");
+    for (const t of ["LoyaltyPointsAccrued", "LoyaltyPointsConverted", "PartnershipCodeRedeemed"]) expect(isEventType(t), t).toBe(true);
+    for (const k of Object.keys(baseline.configs)) expect(k).not.toBe("LOYALTY_RULES.schema.json");
+    expect(Object.keys(baseline.events)).not.toContain("LoyaltyPointsAccrued.schema.json");
+    expect(baseline.flags).not.toContain("growth.loyalty");
+  });
 });

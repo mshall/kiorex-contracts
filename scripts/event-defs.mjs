@@ -876,6 +876,25 @@ export const EVENTS = [
     data: { properties: { market: MARKET, templateKind: { type: "string", maxLength: 40 }, metric: { enum: ["lcpMs", "inpMs", "cls", "tbtMs", "perfScore"] }, source: { enum: ["LAB", "FIELD"] }, p75: { type: "number" }, budget: { type: "number" }, day: { type: "string", pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }, targets: { type: "array", items: { type: "string", maxLength: 80 }, maxItems: 10 }, ...AGG }, required: ["market", "templateKind", "metric", "source", "p75", "day"] },
     example: { aggregateId: "doctor|lcpMs|FIELD", data: { market: "EG", templateKind: "doctor", metric: "lcpMs", source: "FIELD", p75: 3100, budget: 2500, day: "2027-03-04", targets: ["ops"], aggregateType: "SeoVital", aggregateId: "doctor|lcpMs|FIELD" } },
   },
+  // ── Phase 4 loyalty and partnerships (GRW-P4-D; additive, still unreleased: see CHANGELOG "Unreleased")
+  {
+    type: "LoyaltyPointsAccrued", producer: "kiorex", aggregateType: "LoyaltyAccount", status: "v2-draft", group: "growth",
+    description: "INTERNAL. Loyalty points were added to a patient's separate points ledger for a COMPLETED booking (or a tier bonus). Opaque account reference and amounts only: no booking, provider, specialty or person. Points are not money (work package P4-D).",
+    data: { properties: { accountRef: ID, market: MARKET, entryType: { enum: ["ACCRUE", "TIER_BONUS"] }, points: { type: "integer", minimum: 1 }, tier: { enum: ["NONE", "SILVER", "GOLD", "PLATINUM"] }, at: TS, ...AGG }, required: ["accountRef", "entryType", "points", "at"] },
+    example: { aggregateId: "lac_01JF4DA000", data: { accountRef: "lac_01JF4DA000", market: "EG", entryType: "ACCRUE", points: 10, tier: "SILVER", at: "2027-03-04T09:12:44.000Z", aggregateType: "LoyaltyAccount", aggregateId: "lac_01JF4DA000" } },
+  },
+  {
+    type: "LoyaltyPointsConverted", producer: "kiorex", aggregateType: "LoyaltyAccount", status: "v2-draft", group: "growth",
+    description: "INTERNAL. Points were converted into a reward lot of kind LOYALTY in the existing patient reward ledger (one transaction). The lot reference and its value are the only link; there is no cash, top-up or transfer path (work package P4-D).",
+    data: { properties: { accountRef: ID, market: MARKET, points: { type: "integer", minimum: 1 }, lotRef: ID, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, at: TS, ...AGG }, required: ["accountRef", "points", "lotRef", "amountMinor", "currency", "at"] },
+    example: { aggregateId: "lac_01JF4DA000", data: { accountRef: "lac_01JF4DA000", market: "EG", points: 100, lotRef: "rwl_01JF4DB000", amountMinor: 5000, currency: "EGP", at: "2027-03-04T09:12:44.000Z", aggregateType: "LoyaltyAccount", aggregateId: "lac_01JF4DA000" } },
+  },
+  {
+    type: "PartnershipCodeRedeemed", producer: "kiorex", aggregateType: "PartnershipProgram", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A patient redeemed a partnership code; a reward lot was issued inside the program budget (enforced in the database). Opaque program, redemption and lot references only: never the person or the code (work package P4-D).",
+    data: { properties: { programRef: ID, redemptionRef: ID, lotRef: ID, market: MARKET, kind: { enum: ["CODE_DISCOUNT", "CO_PROMO", "CARD_OFFER"] }, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, at: TS, ...AGG }, required: ["programRef", "redemptionRef", "lotRef", "amountMinor", "currency", "at"] },
+    example: { aggregateId: "ptp_01JF4DC000", data: { programRef: "ptp_01JF4DC000", redemptionRef: "pcr_01JF4DD000", lotRef: "rwl_01JF4DB001", market: "EG", kind: "CODE_DISCOUNT", amountMinor: 3000, currency: "EGP", at: "2027-03-04T09:12:44.000Z", aggregateType: "PartnershipProgram", aggregateId: "ptp_01JF4DC000" } },
+  },
 ];
 
 export const ENVELOPE = {

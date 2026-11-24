@@ -834,6 +834,30 @@
       "producer": "kiorex",
       "aggregateType": "SeoVital",
       "status": "v2-draft"
+    },
+    {
+      "type": "LoyaltyPointsAccrued",
+      "aliases": [],
+      "file": "LoyaltyPointsAccrued",
+      "producer": "kiorex",
+      "aggregateType": "LoyaltyAccount",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LoyaltyPointsConverted",
+      "aliases": [],
+      "file": "LoyaltyPointsConverted",
+      "producer": "kiorex",
+      "aggregateType": "LoyaltyAccount",
+      "status": "v2-draft"
+    },
+    {
+      "type": "PartnershipCodeRedeemed",
+      "aliases": [],
+      "file": "PartnershipCodeRedeemed",
+      "producer": "kiorex",
+      "aggregateType": "PartnershipProgram",
+      "status": "v2-draft"
     }
   ]
 }
