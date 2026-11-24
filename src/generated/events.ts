@@ -7223,9 +7223,18 @@ export const EVENT_SCHEMAS = {
             "pattern": "^[0-9a-f]{64}$"
           },
           "name": {
-            "type": "string",
-            "maxLength": 120,
-            "description": "Internal promotion name (1.13.0, optional)."
+            "type": "object",
+            "properties": {
+              "ar": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "en": {
+                "type": "string",
+                "maxLength": 120
+              }
+            },
+            "description": "Promotion name in both languages (1.13.0, optional)."
           },
           "budgetCapMinor": {
             "type": "integer",
@@ -7238,17 +7247,13 @@ export const EVENT_SCHEMAS = {
             "description": "Redemptions per patient (1.13.0, optional)."
           },
           "eligibility": {
-            "enum": [
-              "ALL",
-              "NEW_PATIENTS",
-              "RETURNING"
-            ],
-            "description": "1.13.0, optional."
+            "type": "object",
+            "description": "Non-clinical eligibility rules the Kiorex quote evaluates (1.13.0, optional)."
           },
           "fundingMode": {
             "enum": [
-              "PROVIDER_FUNDED",
-              "PROVIDER_CREDIT"
+              "WALLET_ONLY",
+              "WALLET_THEN_INVOICE"
             ],
             "description": "1.13.0, optional."
           },
@@ -11749,7 +11754,7 @@ export type ProviderCreditConsumedData = { "walletRef": string; "orgRef": string
 export type ProviderCreditConsumedEvent = EventEnvelope<"ProviderCreditConsumed", ProviderCreditConsumedData>;
 export type ProviderCreditExpiredData = { "walletRef": string; "orgRef": string; "category": string; "reason"?: string; "amountMinor": number; "currency": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ProviderCreditExpiredEvent = EventEnvelope<"ProviderCreditExpired", ProviderCreditExpiredData>;
-export type ProviderPromotionUpdatedData = { "promotionId": string; "version": number; "orgRef": string; "clinicId"?: string; "status": "DRAFT" | "SUBMITTED" | "IN_REVIEW" | "APPROVED" | "ACTIVE" | "PAUSED" | "EXHAUSTED" | "EXPIRED" | "REJECTED" | "ARCHIVED"; "discount"?: { "kind": "FIXED_MINOR" | "PERCENT_BP"; "value": number; "maxPerBookingMinor"?: number; [k: string]: unknown }; "scope"?: { "doctorIds"?: Array<string>; "appointmentTypeIds"?: Array<string>; "careTypes"?: Array<"IN_CLINIC" | "VIDEO" | "HOME_VISIT">; [k: string]: unknown }; "startsAt"?: string; "endsAt"?: string; "patientCopy"?: { "ar"?: string; "en"?: string; [k: string]: unknown }; "contentHash"?: string; "name"?: string; "budgetCapMinor"?: number; "perPatientLimit"?: number; "eligibility"?: "ALL" | "NEW_PATIENTS" | "RETURNING"; "fundingMode"?: "PROVIDER_FUNDED" | "PROVIDER_CREDIT"; "reviewKinds"?: Array<string>; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderPromotionUpdatedData = { "promotionId": string; "version": number; "orgRef": string; "clinicId"?: string; "status": "DRAFT" | "SUBMITTED" | "IN_REVIEW" | "APPROVED" | "ACTIVE" | "PAUSED" | "EXHAUSTED" | "EXPIRED" | "REJECTED" | "ARCHIVED"; "discount"?: { "kind": "FIXED_MINOR" | "PERCENT_BP"; "value": number; "maxPerBookingMinor"?: number; [k: string]: unknown }; "scope"?: { "doctorIds"?: Array<string>; "appointmentTypeIds"?: Array<string>; "careTypes"?: Array<"IN_CLINIC" | "VIDEO" | "HOME_VISIT">; [k: string]: unknown }; "startsAt"?: string; "endsAt"?: string; "patientCopy"?: { "ar"?: string; "en"?: string; [k: string]: unknown }; "contentHash"?: string; "name"?: { "ar"?: string; "en"?: string; [k: string]: unknown }; "budgetCapMinor"?: number; "perPatientLimit"?: number; "eligibility"?: Record<string, unknown>; "fundingMode"?: "WALLET_ONLY" | "WALLET_THEN_INVOICE"; "reviewKinds"?: Array<string>; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ProviderPromotionUpdatedEvent = EventEnvelope<"PROVIDER_PROMOTION_UPDATED", ProviderPromotionUpdatedData>;
 export type PromotionReviewDecidedData = { "promotionId": string; "version": number; "orgRef": string; "reviewKind": "CONTENT" | "SCOPE" | "HIGH_VALUE"; "decision": "APPROVED" | "REJECTED" | "NEEDS_CHANGES"; "note"?: string; "decidedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PromotionReviewDecidedEvent = EventEnvelope<"PromotionReviewDecided", PromotionReviewDecidedData>;

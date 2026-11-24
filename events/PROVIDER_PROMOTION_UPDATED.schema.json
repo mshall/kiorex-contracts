@@ -132,9 +132,18 @@
           "pattern": "^[0-9a-f]{64}$"
         },
         "name": {
-          "type": "string",
-          "maxLength": 120,
-          "description": "Internal promotion name (1.13.0, optional)."
+          "type": "object",
+          "properties": {
+            "ar": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "en": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          "description": "Promotion name in both languages (1.13.0, optional)."
         },
         "budgetCapMinor": {
           "type": "integer",
@@ -147,17 +156,13 @@
           "description": "Redemptions per patient (1.13.0, optional)."
         },
         "eligibility": {
-          "enum": [
-            "ALL",
-            "NEW_PATIENTS",
-            "RETURNING"
-          ],
-          "description": "1.13.0, optional."
+          "type": "object",
+          "description": "Non-clinical eligibility rules the Kiorex quote evaluates (1.13.0, optional)."
         },
         "fundingMode": {
           "enum": [
-            "PROVIDER_FUNDED",
-            "PROVIDER_CREDIT"
+            "WALLET_ONLY",
+            "WALLET_THEN_INVOICE"
           ],
           "description": "1.13.0, optional."
         },
