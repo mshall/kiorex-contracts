@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/LifecycleDecisionRecorded.schema.json",
+  "title": "LifecycleDecisionRecorded",
+  "description": "INTERNAL. Aggregate counters of lifecycle send decisions for one journey step and day: counts only, never a person, a phone number, a message body or any health data (1.12.0).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "LifecycleDecisionRecorded"
+    },
+    "aggregateType": {
+      "const": "LifecycleJourney"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "journeyKey": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{1,47}$"
+        },
+        "step": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "messageClass": {
+          "enum": [
+            "TRANSACTIONAL",
+            "SECURITY",
+            "CLINICAL",
+            "MARKETING"
+          ]
+        },
+        "day": {
+          "type": "string",
+          "format": "date"
+        },
+        "sent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "journeyKey",
+        "step",
+        "messageClass",
+        "day",
+        "sent",
+        "skipped"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

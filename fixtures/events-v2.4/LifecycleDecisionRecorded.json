@@ -1,0 +1,18 @@
+{
+  "eventId": "01JF3ZEVTLIFECYCL",
+  "type": "LifecycleDecisionRecorded",
+  "aggregateType": "LifecycleJourney",
+  "aggregateId": "ljn_01JF3ZJ000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "market": "EG",
+    "journeyKey": "welcome",
+    "step": 1,
+    "messageClass": "TRANSACTIONAL",
+    "day": "2027-03-04",
+    "sent": 120,
+    "skipped": 14,
+    "aggregateType": "LifecycleJourney",
+    "aggregateId": "ljn_01JF3ZJ000"
+  }
+}

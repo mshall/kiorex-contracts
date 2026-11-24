@@ -1,0 +1,18 @@
+{
+  "eventId": "01JF3ZEVTPROVIDER",
+  "type": "ProviderVerificationUpdateRequested",
+  "aggregateType": "ProviderVerificationUpdate",
+  "aggregateId": "pvu_01JF3ZM000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "requestRef": "pvu_01JF3ZM000",
+    "orgRef": "ten_01JF3Z0000",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "field": "LICENSE_NUMBER",
+    "evidenceCount": 2,
+    "requestedAt": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "ProviderVerificationUpdate",
+    "aggregateId": "pvu_01JF3ZM000"
+  }
+}

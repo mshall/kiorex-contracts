@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/ProductAcquisitionFact.schema.json",
+  "title": "ProductAcquisitionFact",
+  "description": "Kiorex tells a partner product (Pharmacy, Lab, Nurse) how an order or booking that Kiorex took on its public page was acquired (1.12.0; used by Phase 4 package P4-B). Mirror of the Clinic acquisition block: origin, reason, decision and policy references, evidence hash. It can only remove a fee, never add one; today pharmacy and lab take rates are 0. Never patient data.",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "ProductAcquisitionFact"
+    },
+    "aggregateType": {
+      "const": "ProductAcquisition"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "factId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "product": {
+          "enum": [
+            "PHARMACY",
+            "LAB",
+            "NURSE"
+          ]
+        },
+        "orgRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+        },
+        "orderRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The partner's own reference of the order or booking (opaque)."
+        },
+        "origin": {
+          "enum": [
+            "PROVIDER_LED",
+            "MARKETPLACE",
+            "UNATTRIBUTED"
+          ],
+          "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+        },
+        "decisionId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+        },
+        "policyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+        },
+        "evidenceHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "linkCode": {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+        },
+        "outcome": {
+          "enum": [
+            "ORDERED",
+            "COMPLETED",
+            "CANCELLED"
+          ]
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "factId",
+        "product",
+        "orgRef",
+        "orderRef",
+        "origin",
+        "reason",
+        "decisionId",
+        "policyVersion",
+        "evidenceHash",
+        "outcome",
+        "occurredAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

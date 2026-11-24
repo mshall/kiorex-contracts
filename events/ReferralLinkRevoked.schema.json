@@ -46,6 +46,15 @@
           "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
           "description": "Optional machine reason, e.g. PROVIDER_REQUEST, ABUSE, REPLACED."
         },
+        "product": {
+          "enum": [
+            "CLINIC",
+            "PHARMACY",
+            "LAB",
+            "NURSE"
+          ],
+          "description": "Product the link or fact belongs to. Absent means CLINIC (1.11.0 behaviour). Additive in 1.12.0."
+        },
         "aggregateType": {
           "type": "string",
           "description": "Injected by the Kiorly outbox; mirrors the envelope field."

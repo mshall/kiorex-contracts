@@ -1,0 +1,29 @@
+{
+  "_source": "Fixed vectors for contracts 1.12.0 (GRW-P2-X0). Platform and every consumer prove their copies of these helpers against this file.",
+  "rewardIdempotencyKey": [
+    { "type": "ISSUE", "id": "rfr_01JF3ZG111", "key": "rwd:issue:rfr_01JF3ZG111" },
+    { "type": "REDEEM", "id": "bk_01JF3ZC000", "key": "rwd:redeem:bk_01JF3ZC000" },
+    { "type": "RELEASE_HOLD", "id": "rwl_01JF3ZH000-1", "key": "rwd:release_hold:rwl_01JF3ZH000-1" },
+    { "type": "EXPIRE", "id": "rwl_01JF3ZH000", "key": "rwd:expire:rwl_01JF3ZH000" }
+  ],
+  "rewardIdempotencyKeyInvalid": [
+    { "type": "ISSUE", "id": "" },
+    { "type": "ISSUE", "id": "has space" },
+    { "type": "ISSUE", "id": "a/b" },
+    { "type": "NOPE", "id": "x" }
+  ],
+  "referralCode": {
+    "alphabet": "0123456789ABCDEFGHJKMNPQRSTVWXYZ",
+    "valid": ["7K2M9X4Q", "00000000", "ZZZZZZZZ", "0123456J"],
+    "invalid": ["7k2m9x4q", "7K2M9X4", "7K2M9X4QQ", "7K2M9X4I", "7K2M9X4L", "7K2M9X4O", "7K2M9X4U", "", "7K2M 9X4"]
+  },
+  "campaignTransitions": {
+    "DRAFT": ["PENDING_APPROVAL", "SCHEDULED", "ARCHIVED"],
+    "PENDING_APPROVAL": ["DRAFT", "SCHEDULED"],
+    "SCHEDULED": ["ACTIVE", "DRAFT", "ARCHIVED"],
+    "ACTIVE": ["PAUSED", "COMPLETED"],
+    "PAUSED": ["ACTIVE", "COMPLETED"],
+    "COMPLETED": ["ARCHIVED"],
+    "ARCHIVED": []
+  }
+}

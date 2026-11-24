@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Kiorex Webhook Receivers API",
-    "version": "1.1.0",
-    "description": "Inbound webhooks implemented by kiorex-platform: Kiorly outbox events (KX-09 \u00a702/\u00a704), PSP callbacks (Kiorex Pay, KX-09 \u00a706) and OIDC back-channel logout (KX-04 KA05). Kiorly's signing scheme is taken from clinics-management outbox-delivery.service.ts (the code wins over KX-09 prose)."
+    "version": "1.2.0",
+    "description": "Inbound webhooks implemented by kiorex-platform: Kiorly outbox events (KX-09 §02/§04), PSP callbacks (Kiorex Pay, KX-09 §06) and OIDC back-channel logout (KX-04 KA05). Kiorly's signing scheme is taken from clinics-management outbox-delivery.service.ts (the code wins over KX-09 prose). v1.2.0 (contracts 1.12.0, additive): delivery shapes of ProductAcquisitionFact (Kiorex to Pharmacy, Lab, Nurse partner products) and of the provider verification update loop (ProviderVerificationUpdateRequested from the Clinic, ProviderVerificationDecided from Kiorex)."
   },
   "servers": [
     {
@@ -18,7 +18,7 @@
           "kiorly"
         ],
         "summary": "Kiorly Clinic outbox event receiver",
-        "description": "Raw body must be verified before JSON parsing. Signature: `X-Kiorly-Signature: sha256=<hex>` where hex = HMAC-SHA256(secret, `${X-Kiorly-Timestamp}.${rawBody}`) (timestamp = unix SECONDS). Reject stale timestamps (>5 min). De-duplicate on eventId (X-Kiorly-Event-Id). Return 2xx for duplicates and for unknown event types (log and ignore); return 5xx/429 only for transient failure \u2014 Kiorly retries 5xx/429 with exponential backoff (5 s loop, DEAD after 8 attempts) and treats other 4xx as non-retryable. Dev secret: kx_dev_webhook_secret.",
+        "description": "Raw body must be verified before JSON parsing. Signature: `X-Kiorly-Signature: sha256=<hex>` where hex = HMAC-SHA256(secret, `${X-Kiorly-Timestamp}.${rawBody}`) (timestamp = unix SECONDS). Reject stale timestamps (>5 min). De-duplicate on eventId (X-Kiorly-Event-Id). Return 2xx for duplicates and for unknown event types (log and ignore); return 5xx/429 only for transient failure — Kiorly retries 5xx/429 with exponential backoff (5 s loop, DEAD after 8 attempts) and treats other 4xx as non-retryable. Dev secret: kx_dev_webhook_secret.",
         "security": [
           {
             "kiorlyWebhookHmac": []
@@ -712,6 +712,105 @@
           "amountMinor": 20000,
           "currency": "EGP",
           "occurredAt": "2027-03-04T09:10:00.000Z"
+        }
+      },
+      "ProductAcquisitionFactDelivery": {
+        "type": "object",
+        "required": [
+          "eventId",
+          "type",
+          "aggregateType",
+          "aggregateId",
+          "occurredAt",
+          "data"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "type": {
+            "const": "ProductAcquisitionFact"
+          },
+          "aggregateType": {
+            "type": "string"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "description": "Same payload as events/ProductAcquisitionFact.schema.json. Signed with the partner's webhook secret like every Kiorex-to-partner delivery; de-duplicate on eventId and factId. A partner that does not know the event ignores it (today pharmacy and lab take rates are 0, so there is no money effect)."
+          }
+        }
+      },
+      "ProviderVerificationDecidedDelivery": {
+        "type": "object",
+        "required": [
+          "eventId",
+          "type",
+          "aggregateType",
+          "aggregateId",
+          "occurredAt",
+          "data"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "type": {
+            "const": "ProviderVerificationDecided"
+          },
+          "aggregateType": {
+            "type": "string"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "description": "Same payload as events/ProviderVerificationDecided.schema.json. Delivered to the Clinic that asked."
+          }
+        }
+      },
+      "ProviderVerificationUpdateRequestedDelivery": {
+        "type": "object",
+        "required": [
+          "eventId",
+          "type",
+          "aggregateType",
+          "aggregateId",
+          "occurredAt",
+          "data"
+        ],
+        "properties": {
+          "eventId": {
+            "type": "string"
+          },
+          "type": {
+            "const": "ProviderVerificationUpdateRequested"
+          },
+          "aggregateType": {
+            "type": "string"
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object",
+            "description": "Same payload as events/ProviderVerificationUpdateRequested.schema.json. Arrives through the existing POST /webhooks/kiorly receiver; the new value itself is never in the event."
+          }
         }
       }
     }

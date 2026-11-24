@@ -1,6 +1,6 @@
 {
   "name": "@kiorex/contracts",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Kiorex v2 integration contracts: OpenAPI specs, event JSON Schemas, feature-flag catalogue, HMAC helpers, flag evaluator (KX-09) and the shared notification layer (@kiorex/contracts/notify).",
   "license": "UNLICENSED",
   "private": false,
@@ -47,6 +47,7 @@
     "consumer",
     "src/growth-config",
     "fixtures/growth-v1.10",
+    "fixtures/growth-v1.12",
     "README.md",
     "CHANGELOG.md",
     "LICENSE"

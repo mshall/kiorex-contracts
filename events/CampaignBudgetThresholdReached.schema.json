@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/CampaignBudgetThresholdReached.schema.json",
+  "title": "CampaignBudgetThresholdReached",
+  "description": "INTERNAL. Approved spend crossed a budget alert threshold (50, 80 or 100 percent of the total budget). Emitted once per threshold per campaign (1.12.0).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "CampaignBudgetThresholdReached"
+    },
+    "aggregateType": {
+      "const": "GrowthCampaign"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "campaignId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "thresholdBp": {
+          "enum": [
+            5000,
+            8000,
+            10000
+          ]
+        },
+        "utilisationBp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spentMinor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "budgetTotalMinor": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "campaignId",
+        "thresholdBp",
+        "utilisationBp",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

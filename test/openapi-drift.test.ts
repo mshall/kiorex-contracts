@@ -73,7 +73,7 @@ describe("Rev 2.3 additions to the marketplace OpenAPI (KX-09 §03 v2.3, contrac
   const schemas = spec.components.schemas;
 
   it("providers sync documents profession, edition, serviceLocations[], coverageDistricts[], verification.register, assignsClinician", () => {
-    expect(Object.keys(schemas.ProviderV23Fields.properties)).toEqual(["profession", "edition", "serviceLocations", "coverageDistricts", "verification", "assignsClinician"]);
+    expect(Object.keys(schemas.ProviderV23Fields.properties)).toEqual(["profession", "edition", "serviceLocations", "coverageDistricts", "verification", "assignsClinician", "modalities"]);
     expect(schemas.Profession.enum).toEqual(["PHYSICIAN", "DENTIST", "PHYSIOTHERAPIST", "NURSE"]);
     expect(schemas.Edition.enum).toEqual(["CLINIC", "NURSE"]);
     expect(schemas.ProviderV23Fields.required).toBeUndefined(); // additive: nothing new is required

@@ -1694,6 +1694,20 @@ export const EVENT_SCHEMAS = {
             "type": "string",
             "description": "hex HMAC-SHA256 over JSON.stringify(summary) with KIOREX_RECORD_SHARE_HMAC_SECRET."
           },
+          "followUp": {
+            "type": "object",
+            "description": "Optional follow-up hint (additive, 1.12.0), beside `summary` so the signature over `summary` is unchanged. The interval only; never a diagnosis.",
+            "properties": {
+              "intervalDays": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 730
+              }
+            },
+            "required": [
+              "intervalDays"
+            ]
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -1761,6 +1775,36 @@ export const EVENT_SCHEMAS = {
           "signedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "description": "Optional structured Rx lines (additive, 1.12.0); the signed PDF stays the legal document.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                "dose": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "frequency": {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "durationDays": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 3650
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
           },
           "pdf": {
             "type": "object",
@@ -4691,6 +4735,15 @@ export const EVENT_SCHEMAS = {
             ],
             "description": "Clinic the link belongs to, when scoped to one. Additive in 1.11.0."
           },
+          "product": {
+            "enum": [
+              "CLINIC",
+              "PHARMACY",
+              "LAB",
+              "NURSE"
+            ],
+            "description": "Product the link or fact belongs to. Absent means CLINIC (1.11.0 behaviour). Additive in 1.12.0."
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -4765,6 +4818,15 @@ export const EVENT_SCHEMAS = {
             "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
             "description": "Optional machine reason, e.g. PROVIDER_REQUEST, ABUSE, REPLACED."
           },
+          "product": {
+            "enum": [
+              "CLINIC",
+              "PHARMACY",
+              "LAB",
+              "NURSE"
+            ],
+            "description": "Product the link or fact belongs to. Absent means CLINIC (1.11.0 behaviour). Additive in 1.12.0."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -4778,6 +4840,1709 @@ export const EVENT_SCHEMAS = {
           "linkCode",
           "orgRef",
           "revokedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "CampaignCreated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CampaignCreated.schema.json",
+    "title": "CampaignCreated",
+    "description": "INTERNAL (Kiorex outbox only). An ops user created a campaign plan (never an ad-platform object). Ids, market, channel labels and budget figures only: no patient data (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CampaignCreated"
+      },
+      "aggregateType": {
+        "const": "GrowthCampaign"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{1,47}$"
+          },
+          "objective": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,31}$"
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]{2,31}$"
+            },
+            "maxItems": 12
+          },
+          "budgetTotalMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "campaignId",
+          "market",
+          "key",
+          "objective",
+          "budgetTotalMinor",
+          "currency"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "CampaignStatusChanged": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CampaignStatusChanged.schema.json",
+    "title": "CampaignStatusChanged",
+    "description": "INTERNAL. A campaign moved between states (DRAFT, PENDING_APPROVAL, SCHEDULED, ACTIVE, PAUSED, COMPLETED, ARCHIVED). One event per transition, idempotent on (campaignId, to, at). Reason code only, never free text about people (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CampaignStatusChanged"
+      },
+      "aggregateType": {
+        "const": "GrowthCampaign"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "from": {
+            "enum": [
+              "DRAFT",
+              "PENDING_APPROVAL",
+              "SCHEDULED",
+              "ACTIVE",
+              "PAUSED",
+              "COMPLETED",
+              "ARCHIVED"
+            ]
+          },
+          "to": {
+            "enum": [
+              "DRAFT",
+              "PENDING_APPROVAL",
+              "SCHEDULED",
+              "ACTIVE",
+              "PAUSED",
+              "COMPLETED",
+              "ARCHIVED"
+            ]
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "actorKind": {
+            "enum": [
+              "USER",
+              "SYSTEM"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "campaignId",
+          "from",
+          "to",
+          "reasonCode",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "CampaignBudgetThresholdReached": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CampaignBudgetThresholdReached.schema.json",
+    "title": "CampaignBudgetThresholdReached",
+    "description": "INTERNAL. Approved spend crossed a budget alert threshold (50, 80 or 100 percent of the total budget). Emitted once per threshold per campaign (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CampaignBudgetThresholdReached"
+      },
+      "aggregateType": {
+        "const": "GrowthCampaign"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "thresholdBp": {
+            "enum": [
+              5000,
+              8000,
+              10000
+            ]
+          },
+          "utilisationBp": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "spentMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "budgetTotalMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "campaignId",
+          "thresholdBp",
+          "utilisationBp",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "CampaignApprovalDecided": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CampaignApprovalDecided.schema.json",
+    "title": "CampaignApprovalDecided",
+    "description": "INTERNAL. A second ops user approved or rejected a campaign activation, budget increase or reactivation (maker-checker). The decider is never the requester (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CampaignApprovalDecided"
+      },
+      "aggregateType": {
+        "const": "GrowthCampaign"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "approvalId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "ACTIVATE",
+              "BUDGET_INCREASE",
+              "REACTIVATE"
+            ]
+          },
+          "decision": {
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "snapshotHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "campaignId",
+          "approvalId",
+          "kind",
+          "decision",
+          "decidedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ReferralCodeIssued": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ReferralCodeIssued.schema.json",
+    "title": "ReferralCodeIssued",
+    "description": "INTERNAL. A patient referral code was issued (8 Crockford base32 characters). Opaque references only: no name, phone or email (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ReferralCodeIssued"
+      },
+      "aggregateType": {
+        "const": "ReferralCode"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "codeRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "codeRef",
+          "code",
+          "issuedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ReferralRelationshipCreated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ReferralRelationshipCreated.schema.json",
+    "title": "ReferralRelationshipCreated",
+    "description": "INTERNAL. An invited person claimed a patient referral code and a relationship was recorded. Opaque references only (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ReferralRelationshipCreated"
+      },
+      "aggregateType": {
+        "const": "ReferralRelationship"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "relationshipRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "ruleVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "relationshipRef",
+          "createdAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ReferralQualified": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ReferralQualified.schema.json",
+    "title": "ReferralQualified",
+    "description": "INTERNAL. A referral met the qualification rules (attended, hold days passed, checks passed). Never changes an attribution decision or a commission (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ReferralQualified"
+      },
+      "aggregateType": {
+        "const": "ReferralRelationship"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "relationshipRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "ruleVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "qualifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "relationshipRef",
+          "qualifiedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ReferralRejected": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ReferralRejected.schema.json",
+    "title": "ReferralRejected",
+    "description": "INTERNAL. A referral failed a check or expired. Machine reason code only (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ReferralRejected"
+      },
+      "aggregateType": {
+        "const": "ReferralRelationship"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "relationshipRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "rejectedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "relationshipRef",
+          "reasonCode",
+          "rejectedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "RewardIssued": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/RewardIssued.schema.json",
+    "title": "RewardIssued",
+    "description": "INTERNAL. Reward ledger event RewardIssued (append-only ledger; rewards are funded by the platform marketing budget, never charged to providers, never change an attribution decision). Opaque lot reference, mode and amount only (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "RewardIssued"
+      },
+      "aggregateType": {
+        "const": "RewardLot"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "mode": {
+            "enum": [
+              "CREDIT",
+              "COUPON"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "pattern": "^rwd:[a-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,64}$",
+            "description": "Format rwd:<entry type lower case>:<opaque id>."
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "lotRef",
+          "mode",
+          "amountMinor",
+          "currency",
+          "reasonCode",
+          "idempotencyKey",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "RewardRedeemed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/RewardRedeemed.schema.json",
+    "title": "RewardRedeemed",
+    "description": "INTERNAL. Reward ledger event RewardRedeemed (append-only ledger; rewards are funded by the platform marketing budget, never charged to providers, never change an attribution decision). Opaque lot reference, mode and amount only (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "RewardRedeemed"
+      },
+      "aggregateType": {
+        "const": "RewardLot"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "mode": {
+            "enum": [
+              "CREDIT",
+              "COUPON"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "pattern": "^rwd:[a-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,64}$",
+            "description": "Format rwd:<entry type lower case>:<opaque id>."
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "lotRef",
+          "mode",
+          "amountMinor",
+          "currency",
+          "reasonCode",
+          "idempotencyKey",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "RewardReversed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/RewardReversed.schema.json",
+    "title": "RewardReversed",
+    "description": "INTERNAL. Reward ledger event RewardReversed (append-only ledger; rewards are funded by the platform marketing budget, never charged to providers, never change an attribution decision). Opaque lot reference, mode and amount only (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "RewardReversed"
+      },
+      "aggregateType": {
+        "const": "RewardLot"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "mode": {
+            "enum": [
+              "CREDIT",
+              "COUPON"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "pattern": "^rwd:[a-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,64}$",
+            "description": "Format rwd:<entry type lower case>:<opaque id>."
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "lotRef",
+          "mode",
+          "amountMinor",
+          "currency",
+          "reasonCode",
+          "idempotencyKey",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "RewardExpired": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/RewardExpired.schema.json",
+    "title": "RewardExpired",
+    "description": "INTERNAL. Reward ledger event RewardExpired (append-only ledger; rewards are funded by the platform marketing budget, never charged to providers, never change an attribution decision). Opaque lot reference, mode and amount only (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "RewardExpired"
+      },
+      "aggregateType": {
+        "const": "RewardLot"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "mode": {
+            "enum": [
+              "CREDIT",
+              "COUPON"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "pattern": "^rwd:[a-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,64}$",
+            "description": "Format rwd:<entry type lower case>:<opaque id>."
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "lotRef",
+          "mode",
+          "amountMinor",
+          "currency",
+          "reasonCode",
+          "idempotencyKey",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "RewardHeld": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/RewardHeld.schema.json",
+    "title": "RewardHeld",
+    "description": "INTERNAL. Reward ledger event RewardHeld (append-only ledger; rewards are funded by the platform marketing budget, never charged to providers, never change an attribution decision). Opaque lot reference, mode and amount only (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "RewardHeld"
+      },
+      "aggregateType": {
+        "const": "RewardLot"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "lotRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "mode": {
+            "enum": [
+              "CREDIT",
+              "COUPON"
+            ]
+          },
+          "amountMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "pattern": "^rwd:[a-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,64}$",
+            "description": "Format rwd:<entry type lower case>:<opaque id>."
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "lotRef",
+          "mode",
+          "amountMinor",
+          "currency",
+          "reasonCode",
+          "idempotencyKey",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "AssistantConversationEscalated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/AssistantConversationEscalated.schema.json",
+    "title": "AssistantConversationEscalated",
+    "description": "INTERNAL. The WhatsApp assistant handed a conversation to a human (emergency wording, repeated misunderstanding, patient request or budget breaker). Reason code only: no message text, no phone number (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "AssistantConversationEscalated"
+      },
+      "aggregateType": {
+        "const": "AssistantSession"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "sessionRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "reasonCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "slaDueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "sessionRef",
+          "reasonCode",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "AssistantBudgetBreakerTripped": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/AssistantBudgetBreakerTripped.schema.json",
+    "title": "AssistantBudgetBreakerTripped",
+    "description": "INTERNAL. The per-market daily cost or token cap of the assistant was reached; the router answers DETERMINISTIC until the next market-local midnight or a manual reset (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "AssistantBudgetBreakerTripped"
+      },
+      "aggregateType": {
+        "const": "AssistantUsageDaily"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "capKind": {
+            "enum": [
+              "TOKENS",
+              "COST"
+            ]
+          },
+          "usedMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "capMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "market",
+          "day",
+          "capKind",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "LifecycleDecisionRecorded": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/LifecycleDecisionRecorded.schema.json",
+    "title": "LifecycleDecisionRecorded",
+    "description": "INTERNAL. Aggregate counters of lifecycle send decisions for one journey step and day: counts only, never a person, a phone number, a message body or any health data (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "LifecycleDecisionRecorded"
+      },
+      "aggregateType": {
+        "const": "LifecycleJourney"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "journeyKey": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{1,47}$"
+          },
+          "step": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "messageClass": {
+            "enum": [
+              "TRANSACTIONAL",
+              "SECURITY",
+              "CLINICAL",
+              "MARKETING"
+            ]
+          },
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "sent": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "skipped": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "journeyKey",
+          "step",
+          "messageClass",
+          "day",
+          "sent",
+          "skipped"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "IntegrationRunFailed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/IntegrationRunFailed.schema.json",
+    "title": "IntegrationRunFailed",
+    "description": "INTERNAL. A read-only marketing integration pull failed (the circuit counts consecutive failures). Kind, mode and a machine error code only; never credentials or response bodies (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "IntegrationRunFailed"
+      },
+      "aggregateType": {
+        "const": "GrowthIntegrationRun"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{1,31}$"
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "mode": {
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "errorCode": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "consecutiveFailures": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "kind",
+          "mode",
+          "errorCode",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ProductAcquisitionFact": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ProductAcquisitionFact.schema.json",
+    "title": "ProductAcquisitionFact",
+    "description": "Kiorex tells a partner product (Pharmacy, Lab, Nurse) how an order or booking that Kiorex took on its public page was acquired (1.12.0; used by Phase 4 package P4-B). Mirror of the Clinic acquisition block: origin, reason, decision and policy references, evidence hash. It can only remove a fee, never add one; today pharmacy and lab take rates are 0. Never patient data.",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ProductAcquisitionFact"
+      },
+      "aggregateType": {
+        "const": "ProductAcquisition"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "factId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "product": {
+            "enum": [
+              "PHARMACY",
+              "LAB",
+              "NURSE"
+            ]
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "orderRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The partner's own reference of the order or booking (opaque)."
+          },
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "decisionId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+          },
+          "evidenceHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "linkCode": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+          },
+          "outcome": {
+            "enum": [
+              "ORDERED",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "factId",
+          "product",
+          "orgRef",
+          "orderRef",
+          "origin",
+          "reason",
+          "decisionId",
+          "policyVersion",
+          "evidenceHash",
+          "outcome",
+          "occurredAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ProviderVerificationUpdateRequested": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ProviderVerificationUpdateRequested.schema.json",
+    "title": "ProviderVerificationUpdateRequested",
+    "description": "A provider asked to change a verified listing field (licence number, specialty, address, display name, photo or a document). The Clinic sends the reference, the field and evidence file references; the new value itself travels in the signed request body of the marketplace call, never in the event (1.12.0).",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ProviderVerificationUpdateRequested"
+      },
+      "aggregateType": {
+        "const": "ProviderVerificationUpdate"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "requestRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
+            "enum": [
+              "LICENSE_NUMBER",
+              "SPECIALTY",
+              "ADDRESS",
+              "DISPLAY_NAME",
+              "PHOTO",
+              "DOCUMENT"
+            ]
+          },
+          "evidenceCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "requestRef",
+          "orgRef",
+          "clinicId",
+          "field",
+          "requestedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "ProviderVerificationDecided": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/ProviderVerificationDecided.schema.json",
+    "title": "ProviderVerificationDecided",
+    "description": "Kiorex ops decided a provider verification update request (approved, rejected or needs more information). Delivered to the Clinic so the provider sees the outcome; the decision note is short and never contains a person's data (1.12.0).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "ProviderVerificationDecided"
+      },
+      "aggregateType": {
+        "const": "ProviderVerificationUpdate"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "requestRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kiorexRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "decision": {
+            "enum": [
+              "APPROVED",
+              "REJECTED",
+              "NEEDS_INFO"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "requestRef",
+          "orgRef",
+          "clinicId",
+          "decision",
+          "decidedAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "WAITLIST_OFFER_CREATED": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/WAITLIST_OFFER_CREATED.schema.json",
+    "title": "WAITLIST_OFFER_CREATED",
+    "description": "Kiorly FS-03 created an offer for a Kiorex-sourced waitlist entry (1.12.0). Same payload as WAITLIST_OFFER, which stays the delivered event; this name is the explicit, symmetric counterpart of WAITLIST_OFFER_EXPIRED so Kiorly stays the single system of record.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "WAITLIST_OFFER_CREATED"
+      },
+      "aggregateType": {
+        "const": "WaitlistOffer"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "waitlistRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "clinicianId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "offerId",
+          "waitlistRef",
+          "clinicId",
+          "clinicianId",
+          "startsAt",
+          "expiresAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "WAITLIST_OFFER_EXPIRED": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/WAITLIST_OFFER_EXPIRED.schema.json",
+    "title": "WAITLIST_OFFER_EXPIRED",
+    "description": "A waitlist offer expired or was withdrawn without a booking (1.12.0).",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "WAITLIST_OFFER_EXPIRED"
+      },
+      "aggregateType": {
+        "const": "WaitlistOffer"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "offerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "waitlistRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "enum": [
+              "EXPIRED",
+              "WITHDRAWN",
+              "SLOT_TAKEN"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "offerId",
+          "waitlistRef",
+          "clinicId",
+          "reason",
+          "at"
         ]
       }
     },
@@ -5757,6 +7522,398 @@ export const EVENT_EXAMPLES = {
       "aggregateType": "ProviderReferralLink",
       "aggregateId": "prl_01JF3ZE000"
     }
+  },
+  "CampaignCreated": {
+    "eventId": "01JF3ZEVTCAMPAIGN",
+    "type": "CampaignCreated",
+    "aggregateType": "GrowthCampaign",
+    "aggregateId": "cmp_01JF3ZF000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "campaignId": "cmp_01JF3ZF000",
+      "market": "EG",
+      "key": "ramadan-checkup",
+      "objective": "AWARENESS",
+      "channels": [
+        "ORGANIC_SEARCH",
+        "EMAIL"
+      ],
+      "budgetTotalMinor": 5000000,
+      "currency": "EGP",
+      "createdAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthCampaign",
+      "aggregateId": "cmp_01JF3ZF000"
+    }
+  },
+  "CampaignStatusChanged": {
+    "eventId": "01JF3ZEVTCAMPAIGN",
+    "type": "CampaignStatusChanged",
+    "aggregateType": "GrowthCampaign",
+    "aggregateId": "cmp_01JF3ZF000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "campaignId": "cmp_01JF3ZF000",
+      "market": "EG",
+      "from": "ACTIVE",
+      "to": "PAUSED",
+      "reasonCode": "BUDGET",
+      "actorKind": "SYSTEM",
+      "at": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "GrowthCampaign",
+      "aggregateId": "cmp_01JF3ZF000"
+    }
+  },
+  "CampaignBudgetThresholdReached": {
+    "eventId": "01JF3ZEVTCAMPAIGN",
+    "type": "CampaignBudgetThresholdReached",
+    "aggregateType": "GrowthCampaign",
+    "aggregateId": "cmp_01JF3ZF000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "campaignId": "cmp_01JF3ZF000",
+      "market": "EG",
+      "thresholdBp": 8000,
+      "utilisationBp": 8120,
+      "spentMinor": 4060000,
+      "budgetTotalMinor": 5000000,
+      "at": "2027-03-12T10:00:00.000Z",
+      "aggregateType": "GrowthCampaign",
+      "aggregateId": "cmp_01JF3ZF000"
+    }
+  },
+  "CampaignApprovalDecided": {
+    "eventId": "01JF3ZEVTCAMPAIGN",
+    "type": "CampaignApprovalDecided",
+    "aggregateType": "GrowthCampaign",
+    "aggregateId": "cmp_01JF3ZF000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "campaignId": "cmp_01JF3ZF000",
+      "approvalId": "cma_01JF3ZF111",
+      "kind": "ACTIVATE",
+      "decision": "APPROVED",
+      "snapshotHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "decidedAt": "2027-03-05T09:00:00.000Z",
+      "aggregateType": "GrowthCampaign",
+      "aggregateId": "cmp_01JF3ZF000"
+    }
+  },
+  "ReferralCodeIssued": {
+    "eventId": "01JF3ZEVTREFERRAL",
+    "type": "ReferralCodeIssued",
+    "aggregateType": "ReferralCode",
+    "aggregateId": "rfc_01JF3ZG000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "codeRef": "rfc_01JF3ZG000",
+      "market": "EG",
+      "code": "7K2M9X4Q",
+      "issuedAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "ReferralCode",
+      "aggregateId": "rfc_01JF3ZG000"
+    }
+  },
+  "ReferralRelationshipCreated": {
+    "eventId": "01JF3ZEVTREFERRAL",
+    "type": "ReferralRelationshipCreated",
+    "aggregateType": "ReferralRelationship",
+    "aggregateId": "rfr_01JF3ZG111",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "relationshipRef": "rfr_01JF3ZG111",
+      "market": "EG",
+      "ruleVersion": "rrv_01JF3Z0000",
+      "createdAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "ReferralRelationship",
+      "aggregateId": "rfr_01JF3ZG111"
+    }
+  },
+  "ReferralQualified": {
+    "eventId": "01JF3ZEVTREFERRAL",
+    "type": "ReferralQualified",
+    "aggregateType": "ReferralRelationship",
+    "aggregateId": "rfr_01JF3ZG111",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "relationshipRef": "rfr_01JF3ZG111",
+      "market": "EG",
+      "ruleVersion": "rrv_01JF3Z0000",
+      "qualifiedAt": "2027-03-20T09:12:44.000Z",
+      "aggregateType": "ReferralRelationship",
+      "aggregateId": "rfr_01JF3ZG111"
+    }
+  },
+  "ReferralRejected": {
+    "eventId": "01JF3ZEVTREFERRAL",
+    "type": "ReferralRejected",
+    "aggregateType": "ReferralRelationship",
+    "aggregateId": "rfr_01JF3ZG111",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "relationshipRef": "rfr_01JF3ZG111",
+      "market": "EG",
+      "reasonCode": "SELF_REFERRAL",
+      "rejectedAt": "2027-03-05T09:12:44.000Z",
+      "aggregateType": "ReferralRelationship",
+      "aggregateId": "rfr_01JF3ZG111"
+    }
+  },
+  "RewardIssued": {
+    "eventId": "01JF3ZEVTREWARDIS",
+    "type": "RewardIssued",
+    "aggregateType": "RewardLot",
+    "aggregateId": "rwl_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "lotRef": "rwl_01JF3ZH000",
+      "market": "EG",
+      "mode": "COUPON",
+      "amountMinor": 5000,
+      "currency": "EGP",
+      "reasonCode": "REFERRER_QUALIFIED",
+      "idempotencyKey": "rwd:issued:rfr_01JF3ZG111",
+      "at": "2027-03-20T09:12:44.000Z",
+      "aggregateType": "RewardLot",
+      "aggregateId": "rwl_01JF3ZH000"
+    }
+  },
+  "RewardRedeemed": {
+    "eventId": "01JF3ZEVTREWARDRE",
+    "type": "RewardRedeemed",
+    "aggregateType": "RewardLot",
+    "aggregateId": "rwl_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "lotRef": "rwl_01JF3ZH000",
+      "market": "EG",
+      "mode": "COUPON",
+      "amountMinor": 5000,
+      "currency": "EGP",
+      "reasonCode": "REFERRER_QUALIFIED",
+      "idempotencyKey": "rwd:redeemed:rfr_01JF3ZG111",
+      "at": "2027-03-20T09:12:44.000Z",
+      "aggregateType": "RewardLot",
+      "aggregateId": "rwl_01JF3ZH000"
+    }
+  },
+  "RewardReversed": {
+    "eventId": "01JF3ZEVTREWARDRE",
+    "type": "RewardReversed",
+    "aggregateType": "RewardLot",
+    "aggregateId": "rwl_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "lotRef": "rwl_01JF3ZH000",
+      "market": "EG",
+      "mode": "COUPON",
+      "amountMinor": 5000,
+      "currency": "EGP",
+      "reasonCode": "REFERRER_QUALIFIED",
+      "idempotencyKey": "rwd:reversed:rfr_01JF3ZG111",
+      "at": "2027-03-20T09:12:44.000Z",
+      "aggregateType": "RewardLot",
+      "aggregateId": "rwl_01JF3ZH000"
+    }
+  },
+  "RewardExpired": {
+    "eventId": "01JF3ZEVTREWARDEX",
+    "type": "RewardExpired",
+    "aggregateType": "RewardLot",
+    "aggregateId": "rwl_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "lotRef": "rwl_01JF3ZH000",
+      "market": "EG",
+      "mode": "COUPON",
+      "amountMinor": 5000,
+      "currency": "EGP",
+      "reasonCode": "REFERRER_QUALIFIED",
+      "idempotencyKey": "rwd:expired:rfr_01JF3ZG111",
+      "at": "2027-03-20T09:12:44.000Z",
+      "aggregateType": "RewardLot",
+      "aggregateId": "rwl_01JF3ZH000"
+    }
+  },
+  "RewardHeld": {
+    "eventId": "01JF3ZEVTREWARDHE",
+    "type": "RewardHeld",
+    "aggregateType": "RewardLot",
+    "aggregateId": "rwl_01JF3ZH000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "lotRef": "rwl_01JF3ZH000",
+      "market": "EG",
+      "mode": "COUPON",
+      "amountMinor": 5000,
+      "currency": "EGP",
+      "reasonCode": "REFERRER_QUALIFIED",
+      "idempotencyKey": "rwd:held:rfr_01JF3ZG111",
+      "at": "2027-03-20T09:12:44.000Z",
+      "aggregateType": "RewardLot",
+      "aggregateId": "rwl_01JF3ZH000"
+    }
+  },
+  "AssistantConversationEscalated": {
+    "eventId": "01JF3ZEVTASSISTAN",
+    "type": "AssistantConversationEscalated",
+    "aggregateType": "AssistantSession",
+    "aggregateId": "ass_01JF3ZI000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "sessionRef": "ass_01JF3ZI000",
+      "market": "EG",
+      "reasonCode": "PATIENT_REQUEST",
+      "slaDueAt": "2027-03-04T09:42:44.000Z",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "AssistantSession",
+      "aggregateId": "ass_01JF3ZI000"
+    }
+  },
+  "AssistantBudgetBreakerTripped": {
+    "eventId": "01JF3ZEVTASSISTAN",
+    "type": "AssistantBudgetBreakerTripped",
+    "aggregateType": "AssistantUsageDaily",
+    "aggregateId": "asu_01JF3ZI111",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "market": "EG",
+      "day": "2027-03-04",
+      "capKind": "COST",
+      "usedMinor": 200000,
+      "capMinor": 200000,
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "AssistantUsageDaily",
+      "aggregateId": "asu_01JF3ZI111"
+    }
+  },
+  "LifecycleDecisionRecorded": {
+    "eventId": "01JF3ZEVTLIFECYCL",
+    "type": "LifecycleDecisionRecorded",
+    "aggregateType": "LifecycleJourney",
+    "aggregateId": "ljn_01JF3ZJ000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "market": "EG",
+      "journeyKey": "welcome",
+      "step": 1,
+      "messageClass": "TRANSACTIONAL",
+      "day": "2027-03-04",
+      "sent": 120,
+      "skipped": 14,
+      "aggregateType": "LifecycleJourney",
+      "aggregateId": "ljn_01JF3ZJ000"
+    }
+  },
+  "IntegrationRunFailed": {
+    "eventId": "01JF3ZEVTINTEGRAT",
+    "type": "IntegrationRunFailed",
+    "aggregateType": "GrowthIntegrationRun",
+    "aggregateId": "gir_01JF3ZK000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "kind": "googleads",
+      "market": "EG",
+      "mode": "mock",
+      "errorCode": "UPSTREAM_TIMEOUT",
+      "consecutiveFailures": 2,
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "GrowthIntegrationRun",
+      "aggregateId": "gir_01JF3ZK000"
+    }
+  },
+  "ProductAcquisitionFact": {
+    "eventId": "01JF3ZEVTPRODUCTA",
+    "type": "ProductAcquisitionFact",
+    "aggregateType": "ProductAcquisition",
+    "aggregateId": "paf_01JF3ZL000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "factId": "paf_01JF3ZL000",
+      "product": "PHARMACY",
+      "orgRef": "ten_01JF3Z0000",
+      "orderRef": "ord_01JF3ZL111",
+      "origin": "PROVIDER_LED",
+      "reason": "EXPLICIT_PROVIDER_CHANNEL",
+      "decisionId": "atd_01JF3ZC111",
+      "policyVersion": "agp_01JF3Z0000",
+      "evidenceHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "linkCode": "7K2M9X4Q",
+      "outcome": "ORDERED",
+      "occurredAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "ProductAcquisition",
+      "aggregateId": "paf_01JF3ZL000"
+    }
+  },
+  "ProviderVerificationUpdateRequested": {
+    "eventId": "01JF3ZEVTPROVIDER",
+    "type": "ProviderVerificationUpdateRequested",
+    "aggregateType": "ProviderVerificationUpdate",
+    "aggregateId": "pvu_01JF3ZM000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "requestRef": "pvu_01JF3ZM000",
+      "orgRef": "ten_01JF3Z0000",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "field": "LICENSE_NUMBER",
+      "evidenceCount": 2,
+      "requestedAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "ProviderVerificationUpdate",
+      "aggregateId": "pvu_01JF3ZM000"
+    }
+  },
+  "ProviderVerificationDecided": {
+    "eventId": "01JF3ZEVTPROVIDER",
+    "type": "ProviderVerificationDecided",
+    "aggregateType": "ProviderVerificationUpdate",
+    "aggregateId": "pvu_01JF3ZM000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "requestRef": "pvu_01JF3ZM000",
+      "kiorexRef": "kvr_01JF3ZM111",
+      "orgRef": "ten_01JF3Z0000",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "decision": "NEEDS_INFO",
+      "note": "Please upload a clearer licence scan.",
+      "decidedAt": "2027-03-05T09:12:44.000Z",
+      "aggregateType": "ProviderVerificationUpdate",
+      "aggregateId": "pvu_01JF3ZM000"
+    }
+  },
+  "WAITLIST_OFFER_CREATED": {
+    "eventId": "01JF3ZEVTWAITLIST",
+    "type": "WAITLIST_OFFER_CREATED",
+    "aggregateType": "WaitlistOffer",
+    "aggregateId": "wo_01JF3ZN000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "offerId": "wo_01JF3ZN000",
+      "waitlistRef": "kx_wl_01JF3ZN111",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "clinicianId": "cln_01JF3Z8000",
+      "startsAt": "2027-03-05T10:00:00.000Z",
+      "expiresAt": "2027-03-05T09:30:00.000Z",
+      "aggregateType": "WaitlistOffer",
+      "aggregateId": "wo_01JF3ZN000"
+    }
+  },
+  "WAITLIST_OFFER_EXPIRED": {
+    "eventId": "01JF3ZEVTWAITLIST",
+    "type": "WAITLIST_OFFER_EXPIRED",
+    "aggregateType": "WaitlistOffer",
+    "aggregateId": "wo_01JF3ZN000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "offerId": "wo_01JF3ZN000",
+      "waitlistRef": "kx_wl_01JF3ZN111",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "reason": "EXPIRED",
+      "at": "2027-03-05T09:31:00.000Z",
+      "aggregateType": "WaitlistOffer",
+      "aggregateId": "wo_01JF3ZN000"
+    }
   }
 } as const;
 
@@ -6083,10 +8240,142 @@ export const EVENT_META = {
     "aggregateType": "ProviderReferralLink",
     "status": "v2-draft",
     "schemaFile": "ReferralLinkRevoked.schema.json"
+  },
+  "CampaignCreated": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthCampaign",
+    "status": "v2-draft",
+    "schemaFile": "CampaignCreated.schema.json"
+  },
+  "CampaignStatusChanged": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthCampaign",
+    "status": "v2-draft",
+    "schemaFile": "CampaignStatusChanged.schema.json"
+  },
+  "CampaignBudgetThresholdReached": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthCampaign",
+    "status": "v2-draft",
+    "schemaFile": "CampaignBudgetThresholdReached.schema.json"
+  },
+  "CampaignApprovalDecided": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthCampaign",
+    "status": "v2-draft",
+    "schemaFile": "CampaignApprovalDecided.schema.json"
+  },
+  "ReferralCodeIssued": {
+    "producer": "kiorex",
+    "aggregateType": "ReferralCode",
+    "status": "v2-draft",
+    "schemaFile": "ReferralCodeIssued.schema.json"
+  },
+  "ReferralRelationshipCreated": {
+    "producer": "kiorex",
+    "aggregateType": "ReferralRelationship",
+    "status": "v2-draft",
+    "schemaFile": "ReferralRelationshipCreated.schema.json"
+  },
+  "ReferralQualified": {
+    "producer": "kiorex",
+    "aggregateType": "ReferralRelationship",
+    "status": "v2-draft",
+    "schemaFile": "ReferralQualified.schema.json"
+  },
+  "ReferralRejected": {
+    "producer": "kiorex",
+    "aggregateType": "ReferralRelationship",
+    "status": "v2-draft",
+    "schemaFile": "ReferralRejected.schema.json"
+  },
+  "RewardIssued": {
+    "producer": "kiorex",
+    "aggregateType": "RewardLot",
+    "status": "v2-draft",
+    "schemaFile": "RewardIssued.schema.json"
+  },
+  "RewardRedeemed": {
+    "producer": "kiorex",
+    "aggregateType": "RewardLot",
+    "status": "v2-draft",
+    "schemaFile": "RewardRedeemed.schema.json"
+  },
+  "RewardReversed": {
+    "producer": "kiorex",
+    "aggregateType": "RewardLot",
+    "status": "v2-draft",
+    "schemaFile": "RewardReversed.schema.json"
+  },
+  "RewardExpired": {
+    "producer": "kiorex",
+    "aggregateType": "RewardLot",
+    "status": "v2-draft",
+    "schemaFile": "RewardExpired.schema.json"
+  },
+  "RewardHeld": {
+    "producer": "kiorex",
+    "aggregateType": "RewardLot",
+    "status": "v2-draft",
+    "schemaFile": "RewardHeld.schema.json"
+  },
+  "AssistantConversationEscalated": {
+    "producer": "kiorex",
+    "aggregateType": "AssistantSession",
+    "status": "v2-draft",
+    "schemaFile": "AssistantConversationEscalated.schema.json"
+  },
+  "AssistantBudgetBreakerTripped": {
+    "producer": "kiorex",
+    "aggregateType": "AssistantUsageDaily",
+    "status": "v2-draft",
+    "schemaFile": "AssistantBudgetBreakerTripped.schema.json"
+  },
+  "LifecycleDecisionRecorded": {
+    "producer": "kiorex",
+    "aggregateType": "LifecycleJourney",
+    "status": "v2-draft",
+    "schemaFile": "LifecycleDecisionRecorded.schema.json"
+  },
+  "IntegrationRunFailed": {
+    "producer": "kiorex",
+    "aggregateType": "GrowthIntegrationRun",
+    "status": "v2-draft",
+    "schemaFile": "IntegrationRunFailed.schema.json"
+  },
+  "ProductAcquisitionFact": {
+    "producer": "kiorex",
+    "aggregateType": "ProductAcquisition",
+    "status": "v2-draft",
+    "schemaFile": "ProductAcquisitionFact.schema.json"
+  },
+  "ProviderVerificationUpdateRequested": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "ProviderVerificationUpdate",
+    "status": "v2-draft",
+    "schemaFile": "ProviderVerificationUpdateRequested.schema.json"
+  },
+  "ProviderVerificationDecided": {
+    "producer": "kiorex",
+    "aggregateType": "ProviderVerificationUpdate",
+    "status": "v2-draft",
+    "schemaFile": "ProviderVerificationDecided.schema.json"
+  },
+  "WAITLIST_OFFER_CREATED": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "WaitlistOffer",
+    "status": "v2-draft",
+    "schemaFile": "WAITLIST_OFFER_CREATED.schema.json"
+  },
+  "WAITLIST_OFFER_EXPIRED": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "WaitlistOffer",
+    "status": "v2-draft",
+    "schemaFile": "WAITLIST_OFFER_EXPIRED.schema.json"
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -6130,9 +8419,9 @@ export type ReviewReplyPostedData = { "kiorexReviewId": string; "clinicId": stri
 export type ReviewReplyPostedEvent = EventEnvelope<"REVIEW_REPLY_POSTED", ReviewReplyPostedData>;
 export type MarketplaceBookingConfirmTimeoutData = { "appointmentId": string; "clinicId": string; "externalReference"?: string | null; "platformIntegrationClientId"?: string | null; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type MarketplaceBookingConfirmTimeoutEvent = EventEnvelope<"MARKETPLACE_BOOKING_CONFIRM_TIMEOUT", MarketplaceBookingConfirmTimeoutData>;
-export type VisitSummarySharedData = { "patientId": string; "scope": "VISIT_SUMMARY"; "summary": { "encounterId": string; "clinicId": string; "signedAt": string; "soap": { "chiefComplaint"?: string | null; "subjective"?: string | null; "objective"?: string | null; "assessment"?: string | null; "plan"?: string | null; [k: string]: unknown }; [k: string]: unknown }; "signature": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type VisitSummarySharedData = { "patientId": string; "scope": "VISIT_SUMMARY"; "summary": { "encounterId": string; "clinicId": string; "signedAt": string; "soap": { "chiefComplaint"?: string | null; "subjective"?: string | null; "objective"?: string | null; "assessment"?: string | null; "plan"?: string | null; [k: string]: unknown }; [k: string]: unknown }; "signature": string; "followUp"?: { "intervalDays": number; [k: string]: unknown }; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type VisitSummarySharedEvent = EventEnvelope<"VISIT_SUMMARY_SHARED", VisitSummarySharedData>;
-export type PrescriptionSharedData = { "patientId": string; "scope": "PRESCRIPTIONS"; "encounterId": string; "clinicId": string; "signedAt": string; "pdf"?: { "url": string; "expiresAt": string; [k: string]: unknown }; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PrescriptionSharedData = { "patientId": string; "scope": "PRESCRIPTIONS"; "encounterId": string; "clinicId": string; "signedAt": string; "items"?: Array<{ "name": string; "dose"?: string; "frequency"?: string; "durationDays"?: number; [k: string]: unknown }>; "pdf"?: { "url": string; "expiresAt": string; [k: string]: unknown }; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PrescriptionSharedEvent = EventEnvelope<"PRESCRIPTION_SHARED", PrescriptionSharedData>;
 export type RecordShareRevokedData = { "patientId": string; "scope": "VISIT_SUMMARY" | "PRESCRIPTIONS" | "LAB_RESULTS" | "SHARE_WITH_OTHER_CLINICS"; "action": "DELETE_REQUESTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type RecordShareRevokedEvent = EventEnvelope<"RECORD_SHARE_REVOKED", RecordShareRevokedData>;
@@ -6200,10 +8489,54 @@ export type AttributionAssignedData = { "bookingId": string; "decisionId": strin
 export type AttributionAssignedEvent = EventEnvelope<"AttributionAssigned", AttributionAssignedData>;
 export type PatientAcquisitionRecordedData = { "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "sourceKind": string; "market": string; "recordedAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PatientAcquisitionRecordedEvent = EventEnvelope<"PatientAcquisitionRecorded", PatientAcquisitionRecordedData>;
-export type ReferralLinkCreatedData = { "linkCode": string; "ownerScope": "ORG" | "CLINIC" | "BRANCH" | "DOCTOR" | "DESK"; "channelKind": "WEB_LINK" | "QR_POSTER" | "QR_DESK" | "SOCIAL" | "SMS" | "WHATSAPP_SHARE" | "EMAIL_SIG" | "GOOGLE_PROFILE"; "orgRef"?: string; "clinicRef"?: string | null; "createdAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralLinkCreatedData = { "linkCode": string; "ownerScope": "ORG" | "CLINIC" | "BRANCH" | "DOCTOR" | "DESK"; "channelKind": "WEB_LINK" | "QR_POSTER" | "QR_DESK" | "SOCIAL" | "SMS" | "WHATSAPP_SHARE" | "EMAIL_SIG" | "GOOGLE_PROFILE"; "orgRef"?: string; "clinicRef"?: string | null; "product"?: "CLINIC" | "PHARMACY" | "LAB" | "NURSE"; "createdAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ReferralLinkCreatedEvent = EventEnvelope<"ReferralLinkCreated", ReferralLinkCreatedData>;
-export type ReferralLinkRevokedData = { "linkCode": string; "orgRef": string; "clinicRef"?: string | null; "revokedAt": string; "reason"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralLinkRevokedData = { "linkCode": string; "orgRef": string; "clinicRef"?: string | null; "revokedAt": string; "reason"?: string; "product"?: "CLINIC" | "PHARMACY" | "LAB" | "NURSE"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ReferralLinkRevokedEvent = EventEnvelope<"ReferralLinkRevoked", ReferralLinkRevokedData>;
+export type CampaignCreatedData = { "campaignId": string; "market": string; "key": string; "objective": string; "channels"?: Array<string>; "budgetTotalMinor": number; "currency": string; "createdAt"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CampaignCreatedEvent = EventEnvelope<"CampaignCreated", CampaignCreatedData>;
+export type CampaignStatusChangedData = { "campaignId": string; "market"?: string; "from": "DRAFT" | "PENDING_APPROVAL" | "SCHEDULED" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED"; "to": "DRAFT" | "PENDING_APPROVAL" | "SCHEDULED" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED"; "reasonCode": string; "actorKind"?: "USER" | "SYSTEM"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CampaignStatusChangedEvent = EventEnvelope<"CampaignStatusChanged", CampaignStatusChangedData>;
+export type CampaignBudgetThresholdReachedData = { "campaignId": string; "market"?: string; "thresholdBp": 5000 | 8000 | 10000; "utilisationBp": number; "spentMinor"?: number; "budgetTotalMinor"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CampaignBudgetThresholdReachedEvent = EventEnvelope<"CampaignBudgetThresholdReached", CampaignBudgetThresholdReachedData>;
+export type CampaignApprovalDecidedData = { "campaignId": string; "approvalId": string; "kind": "ACTIVATE" | "BUDGET_INCREASE" | "REACTIVATE"; "decision": "APPROVED" | "REJECTED"; "snapshotHash"?: string; "decidedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CampaignApprovalDecidedEvent = EventEnvelope<"CampaignApprovalDecided", CampaignApprovalDecidedData>;
+export type ReferralCodeIssuedData = { "codeRef": string; "market"?: string; "code": string; "issuedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralCodeIssuedEvent = EventEnvelope<"ReferralCodeIssued", ReferralCodeIssuedData>;
+export type ReferralRelationshipCreatedData = { "relationshipRef": string; "market"?: string; "ruleVersion"?: string; "createdAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralRelationshipCreatedEvent = EventEnvelope<"ReferralRelationshipCreated", ReferralRelationshipCreatedData>;
+export type ReferralQualifiedData = { "relationshipRef": string; "market"?: string; "ruleVersion"?: string; "qualifiedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralQualifiedEvent = EventEnvelope<"ReferralQualified", ReferralQualifiedData>;
+export type ReferralRejectedData = { "relationshipRef": string; "market"?: string; "reasonCode": string; "rejectedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ReferralRejectedEvent = EventEnvelope<"ReferralRejected", ReferralRejectedData>;
+export type RewardIssuedData = { "lotRef": string; "market"?: string; "mode": "CREDIT" | "COUPON"; "amountMinor": number; "currency": string; "reasonCode": string; "idempotencyKey": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type RewardIssuedEvent = EventEnvelope<"RewardIssued", RewardIssuedData>;
+export type RewardRedeemedData = { "lotRef": string; "market"?: string; "mode": "CREDIT" | "COUPON"; "amountMinor": number; "currency": string; "reasonCode": string; "idempotencyKey": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type RewardRedeemedEvent = EventEnvelope<"RewardRedeemed", RewardRedeemedData>;
+export type RewardReversedData = { "lotRef": string; "market"?: string; "mode": "CREDIT" | "COUPON"; "amountMinor": number; "currency": string; "reasonCode": string; "idempotencyKey": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type RewardReversedEvent = EventEnvelope<"RewardReversed", RewardReversedData>;
+export type RewardExpiredData = { "lotRef": string; "market"?: string; "mode": "CREDIT" | "COUPON"; "amountMinor": number; "currency": string; "reasonCode": string; "idempotencyKey": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type RewardExpiredEvent = EventEnvelope<"RewardExpired", RewardExpiredData>;
+export type RewardHeldData = { "lotRef": string; "market"?: string; "mode": "CREDIT" | "COUPON"; "amountMinor": number; "currency": string; "reasonCode": string; "idempotencyKey": string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type RewardHeldEvent = EventEnvelope<"RewardHeld", RewardHeldData>;
+export type AssistantConversationEscalatedData = { "sessionRef": string; "market"?: string; "reasonCode": string; "slaDueAt"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type AssistantConversationEscalatedEvent = EventEnvelope<"AssistantConversationEscalated", AssistantConversationEscalatedData>;
+export type AssistantBudgetBreakerTrippedData = { "market": string; "day": string; "capKind": "TOKENS" | "COST"; "usedMinor"?: number; "capMinor"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type AssistantBudgetBreakerTrippedEvent = EventEnvelope<"AssistantBudgetBreakerTripped", AssistantBudgetBreakerTrippedData>;
+export type LifecycleDecisionRecordedData = { "market"?: string; "journeyKey": string; "step": number; "messageClass": "TRANSACTIONAL" | "SECURITY" | "CLINICAL" | "MARKETING"; "day": string; "sent": number; "skipped": number; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type LifecycleDecisionRecordedEvent = EventEnvelope<"LifecycleDecisionRecorded", LifecycleDecisionRecordedData>;
+export type IntegrationRunFailedData = { "kind": string; "market"?: string; "mode": "mock" | "real"; "errorCode": string; "consecutiveFailures"?: number; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type IntegrationRunFailedEvent = EventEnvelope<"IntegrationRunFailed", IntegrationRunFailedData>;
+export type ProductAcquisitionFactData = { "factId": string; "product": "PHARMACY" | "LAB" | "NURSE"; "orgRef": string; "orderRef": string; "origin": "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "reason": string; "decisionId": string; "policyVersion": string; "evidenceHash": string; "linkCode"?: string; "outcome": "ORDERED" | "COMPLETED" | "CANCELLED"; "occurredAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProductAcquisitionFactEvent = EventEnvelope<"ProductAcquisitionFact", ProductAcquisitionFactData>;
+export type ProviderVerificationUpdateRequestedData = { "requestRef": string; "orgRef": string; "clinicId": string; "field": "LICENSE_NUMBER" | "SPECIALTY" | "ADDRESS" | "DISPLAY_NAME" | "PHOTO" | "DOCUMENT"; "evidenceCount"?: number; "requestedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderVerificationUpdateRequestedEvent = EventEnvelope<"ProviderVerificationUpdateRequested", ProviderVerificationUpdateRequestedData>;
+export type ProviderVerificationDecidedData = { "requestRef": string; "kiorexRef"?: string; "orgRef": string; "clinicId": string; "decision": "APPROVED" | "REJECTED" | "NEEDS_INFO"; "note"?: string; "decidedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type ProviderVerificationDecidedEvent = EventEnvelope<"ProviderVerificationDecided", ProviderVerificationDecidedData>;
+export type WaitlistOfferCreatedData = { "offerId": string; "waitlistRef": string; "clinicId": string; "clinicianId": string; "startsAt": string; "expiresAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type WaitlistOfferCreatedEvent = EventEnvelope<"WAITLIST_OFFER_CREATED", WaitlistOfferCreatedData>;
+export type WaitlistOfferExpiredData = { "offerId": string; "waitlistRef": string; "clinicId": string; "reason": "EXPIRED" | "WITHDRAWN" | "SLOT_TAKEN"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type WaitlistOfferExpiredEvent = EventEnvelope<"WAITLIST_OFFER_EXPIRED", WaitlistOfferExpiredData>;
 
 export interface EventMap {
   "APPOINTMENT_CONFIRMED": AppointmentConfirmedEvent;
@@ -6259,4 +8592,26 @@ export interface EventMap {
   "PatientAcquisitionRecorded": PatientAcquisitionRecordedEvent;
   "ReferralLinkCreated": ReferralLinkCreatedEvent;
   "ReferralLinkRevoked": ReferralLinkRevokedEvent;
+  "CampaignCreated": CampaignCreatedEvent;
+  "CampaignStatusChanged": CampaignStatusChangedEvent;
+  "CampaignBudgetThresholdReached": CampaignBudgetThresholdReachedEvent;
+  "CampaignApprovalDecided": CampaignApprovalDecidedEvent;
+  "ReferralCodeIssued": ReferralCodeIssuedEvent;
+  "ReferralRelationshipCreated": ReferralRelationshipCreatedEvent;
+  "ReferralQualified": ReferralQualifiedEvent;
+  "ReferralRejected": ReferralRejectedEvent;
+  "RewardIssued": RewardIssuedEvent;
+  "RewardRedeemed": RewardRedeemedEvent;
+  "RewardReversed": RewardReversedEvent;
+  "RewardExpired": RewardExpiredEvent;
+  "RewardHeld": RewardHeldEvent;
+  "AssistantConversationEscalated": AssistantConversationEscalatedEvent;
+  "AssistantBudgetBreakerTripped": AssistantBudgetBreakerTrippedEvent;
+  "LifecycleDecisionRecorded": LifecycleDecisionRecordedEvent;
+  "IntegrationRunFailed": IntegrationRunFailedEvent;
+  "ProductAcquisitionFact": ProductAcquisitionFactEvent;
+  "ProviderVerificationUpdateRequested": ProviderVerificationUpdateRequestedEvent;
+  "ProviderVerificationDecided": ProviderVerificationDecidedEvent;
+  "WAITLIST_OFFER_CREATED": WaitlistOfferCreatedEvent;
+  "WAITLIST_OFFER_EXPIRED": WaitlistOfferExpiredEvent;
 }

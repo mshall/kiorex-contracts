@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/ASSISTANT_POLICY.schema.json",
+  "title": "Growth config: ASSISTANT_POLICY",
+  "description": "WhatsApp booking assistant policy (GRW-P2-D): languages, tools per state, token and cost budgets, rate limits, retention, escalation SLA and model mode. A model never produces a fact that reaches the patient (AD-5). Messaging and cost relevant: two-person rule. Added in contracts 1.12.0. Every default is PROPOSED_DEFAULT until the founder ratifies it. Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "ar",
+          "en"
+        ]
+      }
+    },
+    "toolsByState": {
+      "type": "object",
+      "maxProperties": 20,
+      "propertyNames": {
+        "pattern": "^[A-Z][A-Z0-9_]{1,31}$"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "maxItems": 12,
+        "uniqueItems": true,
+        "items": {
+          "enum": [
+            "search_providers",
+            "get_slots",
+            "get_next_available",
+            "hold_slot",
+            "prepare_confirmation",
+            "confirm_booking",
+            "cancel_booking",
+            "reschedule_booking",
+            "join_waitlist",
+            "handoff_to_human"
+          ]
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tokensPerTurn": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 100000
+        },
+        "tokensPerConversation": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 1000000,
+          "description": "PROPOSED_DEFAULT 8000."
+        },
+        "turnsPerConversation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500,
+          "description": "PROPOSED_DEFAULT 40."
+        },
+        "tokensPerSubjectDay": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 10000000,
+          "description": "PROPOSED_DEFAULT 30000."
+        },
+        "costPerMarketDayMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000000
+        }
+      },
+      "required": [
+        "tokensPerTurn",
+        "tokensPerConversation",
+        "turnsPerConversation",
+        "tokensPerSubjectDay",
+        "costPerMarketDayMinor"
+      ]
+    },
+    "rateLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "messagesPerNumberPerHour": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "description": "PROPOSED_DEFAULT 30."
+        },
+        "globalConcurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "messagesPerNumberPerHour",
+        "globalConcurrency"
+      ]
+    },
+    "retentionDays": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 365,
+      "description": "Redacted turn text retention. PROPOSED_DEFAULT 30."
+    },
+    "escalationSlaMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1440,
+      "description": "PROPOSED_DEFAULT 30."
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "mock",
+            "real"
+          ],
+          "description": "real is honoured only while the launch-locked flag growth.assistant_real_model is effective."
+        },
+        "providerLabel": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_.-]{0,47}$"
+        },
+        "baseUrlRef": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9][a-z0-9/_.-]{0,127}$",
+          "description": "NAME of a secret in the secrets store, never the value."
+        },
+        "apiKeyRef": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9][a-z0-9/_.-]{0,127}$",
+          "description": "NAME of a secret in the secrets store, never the value."
+        }
+      },
+      "required": [
+        "mode",
+        "providerLabel"
+      ]
+    }
+  },
+  "required": [
+    "languages",
+    "toolsByState",
+    "budgets",
+    "rateLimits",
+    "retentionDays",
+    "escalationSlaMinutes",
+    "model"
+  ]
+}

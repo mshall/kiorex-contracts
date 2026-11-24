@@ -59,6 +59,15 @@
           ],
           "description": "Clinic the link belongs to, when scoped to one. Additive in 1.11.0."
         },
+        "product": {
+          "enum": [
+            "CLINIC",
+            "PHARMACY",
+            "LAB",
+            "NURSE"
+          ],
+          "description": "Product the link or fact belongs to. Absent means CLINIC (1.11.0 behaviour). Additive in 1.12.0."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time"

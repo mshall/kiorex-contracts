@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/WAITLIST_OFFER_EXPIRED.schema.json",
+  "title": "WAITLIST_OFFER_EXPIRED",
+  "description": "A waitlist offer expired or was withdrawn without a booking (1.12.0).",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "WAITLIST_OFFER_EXPIRED"
+    },
+    "aggregateType": {
+      "const": "WaitlistOffer"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "offerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "waitlistRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "enum": [
+            "EXPIRED",
+            "WITHDRAWN",
+            "SLOT_TAKEN"
+          ]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "offerId",
+        "waitlistRef",
+        "clinicId",
+        "reason",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

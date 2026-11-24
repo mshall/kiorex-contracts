@@ -25,6 +25,11 @@ const ACQ_ORIGIN = { enum: ["PROVIDER_LED", "MARKETPLACE", "UNATTRIBUTED"], desc
 const ACQ_DECISION_REF = { type: "string", minLength: 1, description: "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0." };
 const LINK_ORG_REF = { type: "string", minLength: 1, description: "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked." };
 const ACQ_POLICY_VERSION = { type: "string", minLength: 1, maxLength: 64, description: "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0." };
+// 1.12.0 (additive). Product discriminator for the partner link registry and acquisition facts (Phase 4). Absent = CLINIC.
+const PRODUCT = { enum: ["CLINIC", "PHARMACY", "LAB", "NURSE"], description: "Product the link or fact belongs to. Absent means CLINIC (1.11.0 behaviour). Additive in 1.12.0." };
+const REASON_CODE = { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,63}$" };
+const MARKET = { type: "string", pattern: "^[A-Z]{2}$" };
+const CAMPAIGN_STATUS = { enum: ["DRAFT", "PENDING_APPROVAL", "SCHEDULED", "ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"] };
 const AGG = {
   aggregateType: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
   aggregateId: { type: "string", description: "Injected by the Kiorly outbox; mirrors the envelope field." },
@@ -206,7 +211,8 @@ export const EVENTS = [
       properties: {
         patientId: ID, scope: { const: "VISIT_SUMMARY" },
         summary: { type: "object", properties: { encounterId: ID, clinicId: ID, signedAt: TS, soap: { type: "object", properties: { chiefComplaint: NSTR, subjective: NSTR, objective: NSTR, assessment: NSTR, plan: NSTR } } }, required: ["encounterId", "clinicId", "signedAt", "soap"] },
-        signature: { type: "string", description: "hex HMAC-SHA256 over JSON.stringify(summary) with KIOREX_RECORD_SHARE_HMAC_SECRET." }, ...AGG,
+        signature: { type: "string", description: "hex HMAC-SHA256 over JSON.stringify(summary) with KIOREX_RECORD_SHARE_HMAC_SECRET." },
+        followUp: { type: "object", description: "Optional follow-up hint (additive, 1.12.0), beside `summary` so the signature over `summary` is unchanged. The interval only; never a diagnosis.", properties: { intervalDays: { type: "integer", minimum: 1, maximum: 730 } }, required: ["intervalDays"] }, ...AGG,
       },
       required: ["patientId", "scope", "summary", "signature"],
     },
@@ -215,7 +221,7 @@ export const EVENTS = [
   {
     type: "PRESCRIPTION_SHARED", producer: "kiorly-clinic", aggregateType: "Encounter", aggregateTypeAlt: ["Record"], status: "kiorly-extra",
     description: "Prescription of a signed encounter shared with the patient app after consent. Not in KX-09 §04.",
-    data: { properties: { patientId: ID, scope: { const: "PRESCRIPTIONS" }, encounterId: ID, clinicId: ID, signedAt: TS, pdf: { type: "object", description: "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.", properties: { url: { type: "string", format: "uri" }, expiresAt: TS }, required: ["url", "expiresAt"] }, ...AGG }, required: ["patientId", "scope", "encounterId", "clinicId", "signedAt"] },
+    data: { properties: { patientId: ID, scope: { const: "PRESCRIPTIONS" }, encounterId: ID, clinicId: ID, signedAt: TS, items: { type: "array", maxItems: 50, description: "Optional structured Rx lines (additive, 1.12.0); the signed PDF stays the legal document.", items: { type: "object", properties: { name: { type: "string", maxLength: 200 }, dose: { type: "string", maxLength: 100 }, frequency: { type: "string", maxLength: 100 }, durationDays: { type: "integer", minimum: 1, maximum: 3650 } }, required: ["name"] } }, pdf: { type: "object", description: "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.", properties: { url: { type: "string", format: "uri" }, expiresAt: TS }, required: ["url", "expiresAt"] }, ...AGG }, required: ["patientId", "scope", "encounterId", "clinicId", "signedAt"] },
     example: { aggregateId: "enc_01JF3ZB000", data: { patientId: "pat_01JF3Z0000", scope: "PRESCRIPTIONS", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", signedAt: "2027-03-05T11:10:00.000Z", pdf: { url: "https://app.kiorly.com/api/v1/public/rx/verify/abc123/pdf", expiresAt: "2027-03-19T11:10:00.000Z" }, aggregateType: "Encounter", aggregateId: "enc_01JF3ZB000" } },
   },
   {
@@ -636,14 +642,123 @@ export const EVENTS = [
   {
     type: "ReferralLinkCreated", producer: "kiorly-clinic", aggregateType: "ProviderReferralLink", status: "v2-draft", group: "growth",
     description: "A provider created a referral link or QR. Since 1.11.0 the Clinic delivers it to Kiorex through its outbox with the organisation reference (`orgRef`), so the link registry knows a code before its first signed token. Link code, scope, channel and organisation reference only: never patient data.",
-    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2." }, ownerScope: { enum: ["ORG", "CLINIC", "BRANCH", "DOCTOR", "DESK"] }, channelKind: { enum: ["WEB_LINK", "QR_POSTER", "QR_DESK", "SOCIAL", "SMS", "WHATSAPP_SHARE", "EMAIL_SIG", "GOOGLE_PROFILE"] }, orgRef: LINK_ORG_REF, clinicRef: { type: ["string", "null"], description: "Clinic the link belongs to, when scoped to one. Additive in 1.11.0." }, createdAt: TS, ...AGG }, required: ["linkCode", "ownerScope", "channelKind"] },
+    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (no I, L, O, U); ARCH section 4.2." }, ownerScope: { enum: ["ORG", "CLINIC", "BRANCH", "DOCTOR", "DESK"] }, channelKind: { enum: ["WEB_LINK", "QR_POSTER", "QR_DESK", "SOCIAL", "SMS", "WHATSAPP_SHARE", "EMAIL_SIG", "GOOGLE_PROFILE"] }, orgRef: LINK_ORG_REF, clinicRef: { type: ["string", "null"], description: "Clinic the link belongs to, when scoped to one. Additive in 1.11.0." }, product: PRODUCT, createdAt: TS, ...AGG }, required: ["linkCode", "ownerScope", "channelKind"] },
     example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "7K2M9X4Q", ownerScope: "DOCTOR", channelKind: "QR_DESK", orgRef: "ten_01JF3Z0000", clinicRef: "clinic_01JF3Z7ZZZ", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
   },
   {
     type: "ReferralLinkRevoked", producer: "kiorly-clinic", aggregateType: "ProviderReferralLink", status: "v2-draft", group: "growth",
     description: "A provider revoked a referral link or QR (1.11.0, additive). Delivered to Kiorex through the Clinic outbox so the link registry stops treating the code as provider-led for NEW bookings; a still-valid signed `lt` of this code no longer decides PROVIDER_LED. Revocation can only remove a fee, never add one. Link code and organisation reference only: never patient data.",
-    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (ARCH section 4.2)." }, orgRef: LINK_ORG_REF, clinicRef: { type: ["string", "null"] }, revokedAt: TS, reason: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,63}$", description: "Optional machine reason, e.g. PROVIDER_REQUEST, ABUSE, REPLACED." }, ...AGG }, required: ["linkCode", "orgRef", "revokedAt"] },
+    data: { properties: { linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$", description: "8 Crockford base32 characters (ARCH section 4.2)." }, orgRef: LINK_ORG_REF, clinicRef: { type: ["string", "null"] }, revokedAt: TS, reason: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,63}$", description: "Optional machine reason, e.g. PROVIDER_REQUEST, ABUSE, REPLACED." }, product: PRODUCT, ...AGG }, required: ["linkCode", "orgRef", "revokedAt"] },
     example: { aggregateId: "prl_01JF3ZE000", data: { linkCode: "7K2M9X4Q", orgRef: "ten_01JF3Z0000", clinicRef: "clinic_01JF3Z7ZZZ", revokedAt: "2027-03-20T08:00:00.000Z", reason: "PROVIDER_REQUEST", aggregateType: "ProviderReferralLink", aggregateId: "prl_01JF3ZE000" } },
+  },
+  // ===================== 1.12.0 (additive): growth Phase 2 =====================
+  {
+    type: "CampaignCreated", producer: "kiorex", aggregateType: "GrowthCampaign", status: "v2-draft", group: "growth",
+    description: "INTERNAL (Kiorex outbox only). An ops user created a campaign plan (never an ad-platform object). Ids, market, channel labels and budget figures only: no patient data (1.12.0).",
+    data: { properties: { campaignId: ID, market: MARKET, key: { type: "string", pattern: "^[a-z0-9][a-z0-9-]{1,47}$" }, objective: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,31}$" }, channels: { type: "array", items: { type: "string", pattern: "^[A-Z][A-Z0-9_]{2,31}$" }, maxItems: 12 }, budgetTotalMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, createdAt: TS, ...AGG }, required: ["campaignId", "market", "key", "objective", "budgetTotalMinor", "currency"] },
+    example: { aggregateId: "cmp_01JF3ZF000", data: { campaignId: "cmp_01JF3ZF000", market: "EG", key: "ramadan-checkup", objective: "AWARENESS", channels: ["ORGANIC_SEARCH", "EMAIL"], budgetTotalMinor: 5000000, currency: "EGP", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "GrowthCampaign", aggregateId: "cmp_01JF3ZF000" } },
+  },
+  {
+    type: "CampaignStatusChanged", producer: "kiorex", aggregateType: "GrowthCampaign", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A campaign moved between states (DRAFT, PENDING_APPROVAL, SCHEDULED, ACTIVE, PAUSED, COMPLETED, ARCHIVED). One event per transition, idempotent on (campaignId, to, at). Reason code only, never free text about people (1.12.0).",
+    data: { properties: { campaignId: ID, market: MARKET, from: CAMPAIGN_STATUS, to: CAMPAIGN_STATUS, reasonCode: REASON_CODE, actorKind: { enum: ["USER", "SYSTEM"] }, at: TS, ...AGG }, required: ["campaignId", "from", "to", "reasonCode", "at"] },
+    example: { aggregateId: "cmp_01JF3ZF000", data: { campaignId: "cmp_01JF3ZF000", market: "EG", from: "ACTIVE", to: "PAUSED", reasonCode: "BUDGET", actorKind: "SYSTEM", at: "2027-03-12T10:00:00.000Z", aggregateType: "GrowthCampaign", aggregateId: "cmp_01JF3ZF000" } },
+  },
+  {
+    type: "CampaignBudgetThresholdReached", producer: "kiorex", aggregateType: "GrowthCampaign", status: "v2-draft", group: "growth",
+    description: "INTERNAL. Approved spend crossed a budget alert threshold (50, 80 or 100 percent of the total budget). Emitted once per threshold per campaign (1.12.0).",
+    data: { properties: { campaignId: ID, market: MARKET, thresholdBp: { enum: [5000, 8000, 10000] }, utilisationBp: { type: "integer", minimum: 0 }, spentMinor: { type: "integer", minimum: 0 }, budgetTotalMinor: { type: "integer", minimum: 1 }, at: TS, ...AGG }, required: ["campaignId", "thresholdBp", "utilisationBp", "at"] },
+    example: { aggregateId: "cmp_01JF3ZF000", data: { campaignId: "cmp_01JF3ZF000", market: "EG", thresholdBp: 8000, utilisationBp: 8120, spentMinor: 4060000, budgetTotalMinor: 5000000, at: "2027-03-12T10:00:00.000Z", aggregateType: "GrowthCampaign", aggregateId: "cmp_01JF3ZF000" } },
+  },
+  {
+    type: "CampaignApprovalDecided", producer: "kiorex", aggregateType: "GrowthCampaign", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A second ops user approved or rejected a campaign activation, budget increase or reactivation (maker-checker). The decider is never the requester (1.12.0).",
+    data: { properties: { campaignId: ID, approvalId: ID, kind: { enum: ["ACTIVATE", "BUDGET_INCREASE", "REACTIVATE"] }, decision: { enum: ["APPROVED", "REJECTED"] }, snapshotHash: { type: "string", pattern: "^[0-9a-f]{64}$" }, decidedAt: TS, ...AGG }, required: ["campaignId", "approvalId", "kind", "decision", "decidedAt"] },
+    example: { aggregateId: "cmp_01JF3ZF000", data: { campaignId: "cmp_01JF3ZF000", approvalId: "cma_01JF3ZF111", kind: "ACTIVATE", decision: "APPROVED", snapshotHash: "a".repeat(64), decidedAt: "2027-03-05T09:00:00.000Z", aggregateType: "GrowthCampaign", aggregateId: "cmp_01JF3ZF000" } },
+  },
+  {
+    type: "ReferralCodeIssued", producer: "kiorex", aggregateType: "ReferralCode", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A patient referral code was issued (8 Crockford base32 characters). Opaque references only: no name, phone or email (1.12.0).",
+    data: { properties: { codeRef: ID, market: MARKET, code: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$" }, issuedAt: TS, ...AGG }, required: ["codeRef", "code", "issuedAt"] },
+    example: { aggregateId: "rfc_01JF3ZG000", data: { codeRef: "rfc_01JF3ZG000", market: "EG", code: "7K2M9X4Q", issuedAt: "2027-03-04T09:12:44.000Z", aggregateType: "ReferralCode", aggregateId: "rfc_01JF3ZG000" } },
+  },
+  {
+    type: "ReferralRelationshipCreated", producer: "kiorex", aggregateType: "ReferralRelationship", status: "v2-draft", group: "growth",
+    description: "INTERNAL. An invited person claimed a patient referral code and a relationship was recorded. Opaque references only (1.12.0).",
+    data: { properties: { relationshipRef: ID, market: MARKET, ruleVersion: { type: "string", minLength: 1, maxLength: 64 }, createdAt: TS, ...AGG }, required: ["relationshipRef", "createdAt"] },
+    example: { aggregateId: "rfr_01JF3ZG111", data: { relationshipRef: "rfr_01JF3ZG111", market: "EG", ruleVersion: "rrv_01JF3Z0000", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "ReferralRelationship", aggregateId: "rfr_01JF3ZG111" } },
+  },
+  {
+    type: "ReferralQualified", producer: "kiorex", aggregateType: "ReferralRelationship", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A referral met the qualification rules (attended, hold days passed, checks passed). Never changes an attribution decision or a commission (1.12.0).",
+    data: { properties: { relationshipRef: ID, market: MARKET, ruleVersion: { type: "string", minLength: 1, maxLength: 64 }, qualifiedAt: TS, ...AGG }, required: ["relationshipRef", "qualifiedAt"] },
+    example: { aggregateId: "rfr_01JF3ZG111", data: { relationshipRef: "rfr_01JF3ZG111", market: "EG", ruleVersion: "rrv_01JF3Z0000", qualifiedAt: "2027-03-20T09:12:44.000Z", aggregateType: "ReferralRelationship", aggregateId: "rfr_01JF3ZG111" } },
+  },
+  {
+    type: "ReferralRejected", producer: "kiorex", aggregateType: "ReferralRelationship", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A referral failed a check or expired. Machine reason code only (1.12.0).",
+    data: { properties: { relationshipRef: ID, market: MARKET, reasonCode: REASON_CODE, rejectedAt: TS, ...AGG }, required: ["relationshipRef", "reasonCode", "rejectedAt"] },
+    example: { aggregateId: "rfr_01JF3ZG111", data: { relationshipRef: "rfr_01JF3ZG111", market: "EG", reasonCode: "SELF_REFERRAL", rejectedAt: "2027-03-05T09:12:44.000Z", aggregateType: "ReferralRelationship", aggregateId: "rfr_01JF3ZG111" } },
+  },
+  ...["RewardIssued", "RewardRedeemed", "RewardReversed", "RewardExpired", "RewardHeld"].map((t) => ({
+    type: t, producer: "kiorex", aggregateType: "RewardLot", status: "v2-draft", group: "growth",
+    description: `INTERNAL. Reward ledger event ${t} (append-only ledger; rewards are funded by the platform marketing budget, never charged to providers, never change an attribution decision). Opaque lot reference, mode and amount only (1.12.0).`,
+    data: { properties: { lotRef: ID, market: MARKET, mode: { enum: ["CREDIT", "COUPON"] }, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, reasonCode: REASON_CODE, idempotencyKey: { type: "string", pattern: "^rwd:[a-z0-9_-]{1,40}:[A-Za-z0-9_-]{1,64}$", description: "Format rwd:<entry type lower case>:<opaque id>." }, at: TS, ...AGG }, required: ["lotRef", "mode", "amountMinor", "currency", "reasonCode", "idempotencyKey", "at"] },
+    example: { aggregateId: "rwl_01JF3ZH000", data: { lotRef: "rwl_01JF3ZH000", market: "EG", mode: "COUPON", amountMinor: 5000, currency: "EGP", reasonCode: "REFERRER_QUALIFIED", idempotencyKey: `rwd:${t.slice(6).toLowerCase()}:rfr_01JF3ZG111`, at: "2027-03-20T09:12:44.000Z", aggregateType: "RewardLot", aggregateId: "rwl_01JF3ZH000" } },
+  })),
+  {
+    type: "AssistantConversationEscalated", producer: "kiorex", aggregateType: "AssistantSession", status: "v2-draft", group: "growth",
+    description: "INTERNAL. The WhatsApp assistant handed a conversation to a human (emergency wording, repeated misunderstanding, patient request or budget breaker). Reason code only: no message text, no phone number (1.12.0).",
+    data: { properties: { sessionRef: ID, market: MARKET, reasonCode: REASON_CODE, slaDueAt: TS, at: TS, ...AGG }, required: ["sessionRef", "reasonCode", "at"] },
+    example: { aggregateId: "ass_01JF3ZI000", data: { sessionRef: "ass_01JF3ZI000", market: "EG", reasonCode: "PATIENT_REQUEST", slaDueAt: "2027-03-04T09:42:44.000Z", at: "2027-03-04T09:12:44.000Z", aggregateType: "AssistantSession", aggregateId: "ass_01JF3ZI000" } },
+  },
+  {
+    type: "AssistantBudgetBreakerTripped", producer: "kiorex", aggregateType: "AssistantUsageDaily", status: "v2-draft", group: "growth",
+    description: "INTERNAL. The per-market daily cost or token cap of the assistant was reached; the router answers DETERMINISTIC until the next market-local midnight or a manual reset (1.12.0).",
+    data: { properties: { market: MARKET, day: { type: "string", format: "date" }, capKind: { enum: ["TOKENS", "COST"] }, usedMinor: { type: "integer", minimum: 0 }, capMinor: { type: "integer", minimum: 0 }, at: TS, ...AGG }, required: ["market", "day", "capKind", "at"] },
+    example: { aggregateId: "asu_01JF3ZI111", data: { market: "EG", day: "2027-03-04", capKind: "COST", usedMinor: 200000, capMinor: 200000, at: "2027-03-04T09:12:44.000Z", aggregateType: "AssistantUsageDaily", aggregateId: "asu_01JF3ZI111" } },
+  },
+  {
+    type: "LifecycleDecisionRecorded", producer: "kiorex", aggregateType: "LifecycleJourney", status: "v2-draft", group: "growth",
+    description: "INTERNAL. Aggregate counters of lifecycle send decisions for one journey step and day: counts only, never a person, a phone number, a message body or any health data (1.12.0).",
+    data: { properties: { market: MARKET, journeyKey: { type: "string", pattern: "^[a-z0-9][a-z0-9_-]{1,47}$" }, step: { type: "integer", minimum: 0 }, messageClass: { enum: ["TRANSACTIONAL", "SECURITY", "CLINICAL", "MARKETING"] }, day: { type: "string", format: "date" }, sent: { type: "integer", minimum: 0 }, skipped: { type: "integer", minimum: 0 }, ...AGG }, required: ["journeyKey", "step", "messageClass", "day", "sent", "skipped"] },
+    example: { aggregateId: "ljn_01JF3ZJ000", data: { market: "EG", journeyKey: "welcome", step: 1, messageClass: "TRANSACTIONAL", day: "2027-03-04", sent: 120, skipped: 14, aggregateType: "LifecycleJourney", aggregateId: "ljn_01JF3ZJ000" } },
+  },
+  {
+    type: "IntegrationRunFailed", producer: "kiorex", aggregateType: "GrowthIntegrationRun", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A read-only marketing integration pull failed (the circuit counts consecutive failures). Kind, mode and a machine error code only; never credentials or response bodies (1.12.0).",
+    data: { properties: { kind: { type: "string", pattern: "^[a-z][a-z0-9_]{1,31}$" }, market: MARKET, mode: { enum: ["mock", "real"] }, errorCode: REASON_CODE, consecutiveFailures: { type: "integer", minimum: 1 }, at: TS, ...AGG }, required: ["kind", "mode", "errorCode", "at"] },
+    example: { aggregateId: "gir_01JF3ZK000", data: { kind: "googleads", market: "EG", mode: "mock", errorCode: "UPSTREAM_TIMEOUT", consecutiveFailures: 2, at: "2027-03-04T09:12:44.000Z", aggregateType: "GrowthIntegrationRun", aggregateId: "gir_01JF3ZK000" } },
+  },
+  {
+    type: "ProductAcquisitionFact", producer: "kiorex", aggregateType: "ProductAcquisition", status: "v2-draft", group: "growth",
+    description: "Kiorex tells a partner product (Pharmacy, Lab, Nurse) how an order or booking that Kiorex took on its public page was acquired (1.12.0; used by Phase 4 package P4-B). Mirror of the Clinic acquisition block: origin, reason, decision and policy references, evidence hash. It can only remove a fee, never add one; today pharmacy and lab take rates are 0. Never patient data.",
+    data: { properties: { factId: ID, product: { enum: ["PHARMACY", "LAB", "NURSE"] }, orgRef: LINK_ORG_REF, orderRef: { type: "string", minLength: 1, description: "The partner's own reference of the order or booking (opaque)." }, origin: ACQ_ORIGIN, reason: REASON_CODE, decisionId: ACQ_DECISION_REF, policyVersion: ACQ_POLICY_VERSION, evidenceHash: { type: "string", pattern: "^[0-9a-f]{64}$" }, linkCode: { type: "string", pattern: "^[0-9A-HJKMNP-TV-Z]{8}$" }, outcome: { enum: ["ORDERED", "COMPLETED", "CANCELLED"] }, occurredAt: TS, ...AGG }, required: ["factId", "product", "orgRef", "orderRef", "origin", "reason", "decisionId", "policyVersion", "evidenceHash", "outcome", "occurredAt"] },
+    example: { aggregateId: "paf_01JF3ZL000", data: { factId: "paf_01JF3ZL000", product: "PHARMACY", orgRef: "ten_01JF3Z0000", orderRef: "ord_01JF3ZL111", origin: "PROVIDER_LED", reason: "EXPLICIT_PROVIDER_CHANNEL", decisionId: "atd_01JF3ZC111", policyVersion: "agp_01JF3Z0000", evidenceHash: "b".repeat(64), linkCode: "7K2M9X4Q", outcome: "ORDERED", occurredAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProductAcquisition", aggregateId: "paf_01JF3ZL000" } },
+  },
+  {
+    type: "ProviderVerificationUpdateRequested", producer: "kiorly-clinic", aggregateType: "ProviderVerificationUpdate", status: "v2-draft", group: "growth",
+    description: "A provider asked to change a verified listing field (licence number, specialty, address, display name, photo or a document). The Clinic sends the reference, the field and evidence file references; the new value itself travels in the signed request body of the marketplace call, never in the event (1.12.0).",
+    data: { properties: { requestRef: ID, orgRef: LINK_ORG_REF, clinicId: ID, field: { enum: ["LICENSE_NUMBER", "SPECIALTY", "ADDRESS", "DISPLAY_NAME", "PHOTO", "DOCUMENT"] }, evidenceCount: { type: "integer", minimum: 0, maximum: 10 }, requestedAt: TS, ...AGG }, required: ["requestRef", "orgRef", "clinicId", "field", "requestedAt"] },
+    example: { aggregateId: "pvu_01JF3ZM000", data: { requestRef: "pvu_01JF3ZM000", orgRef: "ten_01JF3Z0000", clinicId: "clinic_01JF3Z7ZZZ", field: "LICENSE_NUMBER", evidenceCount: 2, requestedAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderVerificationUpdate", aggregateId: "pvu_01JF3ZM000" } },
+  },
+  {
+    type: "ProviderVerificationDecided", producer: "kiorex", aggregateType: "ProviderVerificationUpdate", status: "v2-draft", group: "growth",
+    description: "Kiorex ops decided a provider verification update request (approved, rejected or needs more information). Delivered to the Clinic so the provider sees the outcome; the decision note is short and never contains a person's data (1.12.0).",
+    data: { properties: { requestRef: ID, kiorexRef: ID, orgRef: LINK_ORG_REF, clinicId: ID, decision: { enum: ["APPROVED", "REJECTED", "NEEDS_INFO"] }, note: { type: "string", maxLength: 300 }, decidedAt: TS, ...AGG }, required: ["requestRef", "orgRef", "clinicId", "decision", "decidedAt"] },
+    example: { aggregateId: "pvu_01JF3ZM000", data: { requestRef: "pvu_01JF3ZM000", kiorexRef: "kvr_01JF3ZM111", orgRef: "ten_01JF3Z0000", clinicId: "clinic_01JF3Z7ZZZ", decision: "NEEDS_INFO", note: "Please upload a clearer licence scan.", decidedAt: "2027-03-05T09:12:44.000Z", aggregateType: "ProviderVerificationUpdate", aggregateId: "pvu_01JF3ZM000" } },
+  },
+  {
+    type: "WAITLIST_OFFER_CREATED", producer: "kiorly-clinic", aggregateType: "WaitlistOffer", status: "v2-draft", group: "growth",
+    description: "Kiorly FS-03 created an offer for a Kiorex-sourced waitlist entry (1.12.0). Same payload as WAITLIST_OFFER, which stays the delivered event; this name is the explicit, symmetric counterpart of WAITLIST_OFFER_EXPIRED so Kiorly stays the single system of record.",
+    data: { properties: { offerId: ID, waitlistRef: ID, clinicId: ID, clinicianId: ID, startsAt: TS, expiresAt: TS, ...AGG }, required: ["offerId", "waitlistRef", "clinicId", "clinicianId", "startsAt", "expiresAt"] },
+    example: { aggregateId: "wo_01JF3ZN000", data: { offerId: "wo_01JF3ZN000", waitlistRef: "kx_wl_01JF3ZN111", clinicId: "clinic_01JF3Z7ZZZ", clinicianId: "cln_01JF3Z8000", startsAt: "2027-03-05T10:00:00.000Z", expiresAt: "2027-03-05T09:30:00.000Z", aggregateType: "WaitlistOffer", aggregateId: "wo_01JF3ZN000" } },
+  },
+  {
+    type: "WAITLIST_OFFER_EXPIRED", producer: "kiorly-clinic", aggregateType: "WaitlistOffer", status: "v2-draft", group: "growth",
+    description: "A waitlist offer expired or was withdrawn without a booking (1.12.0).",
+    data: { properties: { offerId: ID, waitlistRef: ID, clinicId: ID, reason: { enum: ["EXPIRED", "WITHDRAWN", "SLOT_TAKEN"] }, at: TS, ...AGG }, required: ["offerId", "waitlistRef", "clinicId", "reason", "at"] },
+    example: { aggregateId: "wo_01JF3ZN000", data: { offerId: "wo_01JF3ZN000", waitlistRef: "kx_wl_01JF3ZN111", clinicId: "clinic_01JF3Z7ZZZ", reason: "EXPIRED", at: "2027-03-05T09:31:00.000Z", aggregateType: "WaitlistOffer", aggregateId: "wo_01JF3ZN000" } },
   },
 ];
 

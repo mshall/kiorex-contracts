@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/WAITLIST_OFFER_CREATED.schema.json",
+  "title": "WAITLIST_OFFER_CREATED",
+  "description": "Kiorly FS-03 created an offer for a Kiorex-sourced waitlist entry (1.12.0). Same payload as WAITLIST_OFFER, which stays the delivered event; this name is the explicit, symmetric counterpart of WAITLIST_OFFER_EXPIRED so Kiorly stays the single system of record.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "WAITLIST_OFFER_CREATED"
+    },
+    "aggregateType": {
+      "const": "WaitlistOffer"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "offerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "waitlistRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicianId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startsAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "offerId",
+        "waitlistRef",
+        "clinicId",
+        "clinicianId",
+        "startsAt",
+        "expiresAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

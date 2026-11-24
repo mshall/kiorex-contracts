@@ -520,6 +520,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/pay/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Kiorly registers a deposit pay link with Kiorex Pay (product-key HMAC, kiorly-clinic only)
+         * @description Documented in 1.6.0 (it has been implemented in Kiorex since PAY-03). Idempotent on `token`. Kiorex later calls POST /deposit-links/{token}/paid when the patient pays.
+         */
+        post: operations["payRegisterLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export interface webhooks {
     kiorexOutboxEvent: {
@@ -587,6 +607,8 @@ export interface components {
             verification?: components["schemas"]["ProviderVerification"];
             /** @description Agencies only: the agency assigns a clinician after booking (HOME_VISIT_ASSIGNED event). */
             assignsClinician?: boolean;
+            /** @description Care modalities the listing offers (additive, 1.6.0). VIDEO means the provider offers telemedicine; absent = IN_CLINIC (and HOME_VISIT per serviceLocations). */
+            modalities?: ("IN_CLINIC" | "VIDEO" | "HOME_VISIT")[];
         };
         /** @description Paged provider profiles. Existing fields are unchanged; only the v2.3 additions are described here and the item schema tolerates additional properties. */
         ProviderList: {
@@ -1094,10 +1116,10 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description CLINIC_LINK when booked from the clinic's own booking page (KX-09); never commissioned
+                     * @description CLINIC_LINK when booked from the clinic's own booking page (KX-09); never commissioned. KIOREX_WHATSAPP (1.6.0): booked in the Kiorex WhatsApp assistant; commissioned like MARKETPLACE unless PROVIDER_LED evidence applies. A Clinic that does not accept it answers 400 and Kiorex falls back to MARKETPLACE with attribution.source=kiorex_whatsapp.
                      * @enum {string}
                      */
-                    channel?: "MARKETPLACE" | "CLINIC_LINK";
+                    channel?: "MARKETPLACE" | "CLINIC_LINK" | "KIOREX_WHATSAPP";
                     /** @description Slug of the clinic/doctor booking page (KX-09) */
                     bookingPageSlug?: string;
                     /** @description Existing free-form display attribution ({source: 'kiorex' | 'kiorex_whatsapp', searchId, campaign, landingPage}); kept as is, never used for commission evidence. */
@@ -1776,6 +1798,41 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ReferralLinkPage"];
                 };
+            };
+        };
+    };
+    payRegisterLink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: string;
+                    clinicId: string;
+                    amountMinor: number;
+                    currency?: string;
+                    externalRef?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Link registered (token, clinicId, amountMinor, currency, status OPEN|PAID|EXPIRED, expiresAt) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description PRODUCT_NOT_ALLOWED: only Kiorly Clinic may register pay links */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

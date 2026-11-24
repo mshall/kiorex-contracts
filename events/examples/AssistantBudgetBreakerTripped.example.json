@@ -1,0 +1,17 @@
+{
+  "eventId": "01JF3ZEVTASSISTAN",
+  "type": "AssistantBudgetBreakerTripped",
+  "aggregateType": "AssistantUsageDaily",
+  "aggregateId": "asu_01JF3ZI111",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "market": "EG",
+    "day": "2027-03-04",
+    "capKind": "COST",
+    "usedMinor": 200000,
+    "capMinor": 200000,
+    "at": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "AssistantUsageDaily",
+    "aggregateId": "asu_01JF3ZI111"
+  }
+}

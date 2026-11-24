@@ -1,0 +1,15 @@
+{
+  "eventId": "01JF3ZEVTREFERRAL",
+  "type": "ReferralQualified",
+  "aggregateType": "ReferralRelationship",
+  "aggregateId": "rfr_01JF3ZG111",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "relationshipRef": "rfr_01JF3ZG111",
+    "market": "EG",
+    "ruleVersion": "rrv_01JF3Z0000",
+    "qualifiedAt": "2027-03-20T09:12:44.000Z",
+    "aggregateType": "ReferralRelationship",
+    "aggregateId": "rfr_01JF3ZG111"
+  }
+}

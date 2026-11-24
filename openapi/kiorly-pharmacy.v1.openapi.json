@@ -3,7 +3,7 @@
   "x-status": "draft",
   "info": {
     "title": "Kiorly Pharmacy Marketplace API (draft)",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Kiorex -> Kiorly Pharmacy machine API (kiorly-pharmacy apps/api src/modules/marketplace), reconciled in 1.4.0 against the running services (NH-PH-024, NH-023). Auth: Kiorly HMAC request scheme with a per-pharmacy integration client key (the key IS the tenant address, no X-Kiorex-Org-Id). Pharmacy -> Kiorex events (OrderReady, DispenseCompleted, OrderRejected) are signed with the webhook scheme plus X-Kiorly-Client-Key and posted to Kiorex /api/v1/webhooks/pharmacy. Money: Kiorex Pay captures first; OrderRejected triggers a full refund; partial dispense parks in PARTIAL_REVIEW. No tax-authority reporting. 1.8.0 (additive): optional Arabic names (nameAr, formAr) on CatalogueItem and Quote items; OrderResult.status may be OUT_FOR_DELIVERY for DELIVERY orders; new outbound event OrderOutForDelivery; DispenseCompleted gains optional per-line fulfilment (lines, deliveryMade)."
   },
   "servers": [
@@ -1075,6 +1075,9 @@
                 "type": "string"
               }
             }
+          },
+          "acquisition": {
+            "$ref": "#/components/schemas/ProductAcquisitionBlock"
           }
         },
         "required": [
@@ -1164,6 +1167,54 @@
         "properties": {
           "reason": {
             "type": "string"
+          }
+        }
+      },
+      "ProductAcquisitionBlock": {
+        "type": "object",
+        "description": "Optional acquisition block Kiorex adds to an order or booking it took on its public page (1.12.0; used from package P4-B2). Mirror of the Clinic block: origin, reason, decision and policy references, evidence hash. Can only remove a fee, never add one. A partner that does not know it ignores it. Never patient data.",
+        "required": [
+          "origin",
+          "decisionId",
+          "policyVersion",
+          "reason",
+          "evidenceHash"
+        ],
+        "properties": {
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ]
+          },
+          "decisionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "evidenceHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "linkCode": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+          },
+          "product": {
+            "enum": [
+              "PHARMACY",
+              "LAB",
+              "NURSE"
+            ]
           }
         }
       }

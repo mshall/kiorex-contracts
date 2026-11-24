@@ -630,6 +630,14 @@
       "minimum": 50,
       "maximum": 100,
       "description": "A district or city-hub page whose provider set overlaps its parent by more than this percent is noindex,follow (doorway rule). PROPOSED_DEFAULT 100. Additive in 1.11.0."
+    },
+    "delistedStatus": {
+      "enum": [
+        "404",
+        "410",
+        "301_CLINIC"
+      ],
+      "description": "Added in 1.12.0 (optional). Response for a delisted provider profile. Absent means 404 (today). PROPOSED_DEFAULT 404."
     }
   },
   "required": [

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/ReferralCodeIssued.schema.json",
+  "title": "ReferralCodeIssued",
+  "description": "INTERNAL. A patient referral code was issued (8 Crockford base32 characters). Opaque references only: no name, phone or email (1.12.0).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "ReferralCodeIssued"
+    },
+    "aggregateType": {
+      "const": "ReferralCode"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "codeRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "codeRef",
+        "code",
+        "issuedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

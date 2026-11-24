@@ -197,6 +197,61 @@
         "mar_check",
         "doctor_order"
       ]
+    },
+    {
+      "id": "assistant_emergency_short_circuit",
+      "label": "Assistant emergency short-circuit (emergency wording ends the model turn and hands over to the emergency message and a human)",
+      "products": [
+        "kiorex"
+      ],
+      "forbiddenKeyTokens": [
+        "emergency_short_circuit",
+        "assistant_emergency"
+      ]
+    },
+    {
+      "id": "assistant_phi_guard",
+      "label": "PHI guard on model input and output",
+      "products": [
+        "kiorex"
+      ],
+      "forbiddenKeyTokens": [
+        "phi_guard",
+        "model_input_guard"
+      ]
+    },
+    {
+      "id": "marketing_consent_check",
+      "label": "Consent and opt-out check before every marketing send",
+      "products": [
+        "kiorex"
+      ],
+      "forbiddenKeyTokens": [
+        "marketing_consent_check",
+        "consent_check"
+      ]
+    },
+    {
+      "id": "k_anonymity_floor",
+      "label": "k-anonymity floor on every patient-derived aggregate",
+      "products": [
+        "kiorex"
+      ],
+      "forbiddenKeyTokens": [
+        "k_anonymity",
+        "k_anon_floor"
+      ]
+    },
+    {
+      "id": "ad_safety_assertion",
+      "label": "assertAdSafe: no PHI, health targeting or patient identifier in any ad payload",
+      "products": [
+        "kiorex"
+      ],
+      "forbiddenKeyTokens": [
+        "assert_ad_safe",
+        "ad_safety"
+      ]
     }
   ]
 }

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/AssistantBudgetBreakerTripped.schema.json",
+  "title": "AssistantBudgetBreakerTripped",
+  "description": "INTERNAL. The per-market daily cost or token cap of the assistant was reached; the router answers DETERMINISTIC until the next market-local midnight or a manual reset (1.12.0).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "AssistantBudgetBreakerTripped"
+    },
+    "aggregateType": {
+      "const": "AssistantUsageDaily"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "day": {
+          "type": "string",
+          "format": "date"
+        },
+        "capKind": {
+          "enum": [
+            "TOKENS",
+            "COST"
+          ]
+        },
+        "usedMinor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "capMinor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "market",
+        "day",
+        "capKind",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

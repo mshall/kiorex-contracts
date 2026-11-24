@@ -49,6 +49,9 @@ describe("flag catalogue (KX-08 §09)", () => {
       "growth.provider_links", "growth.attribution", "growth.ssr_public_pages", "growth.seo_landing_pages", "growth.widgets", "growth.deep_links",
       "growth.analytics_visitor", "growth.marketing_messaging", "growth.campaigns", "growth.patient_referral", "growth.rewards", "kiorex.whatsapp_ai_assistant",
       "growth.experiments", "growth.integrations.<kind>",
+      // 1.12.0 growth Phase 2 (additive)
+      "growth.campaign_approval_required", "growth.provider_marketing_v2", "growth.assistant_real_model", "growth.lifecycle_journeys", "growth.referral_fraud_enforce",
+      ...["googleads", "searchconsole", "ga4", "playconsole", "appstoreconnect", "metaads", "tiktok", "whatsappcloud", "fcmapns", "crux"].map((k) => `growth.integrations.${k}`),
     ];
     expect(cat.flags.map((f: any) => f.key).sort()).toEqual(expected.sort());
   });
@@ -75,6 +78,8 @@ describe("flag catalogue (KX-08 §09)", () => {
       "market.<country>.live", "nurse.care_plans", "nurse.individual_kiorex_listing", "nurse.mar",
       // 1.10.0 growth engine: counsel-gated
       "growth.analytics_visitor", "growth.marketing_messaging", "growth.patient_referral", "growth.rewards", "kiorex.whatsapp_ai_assistant",
+      // 1.12.0: the real assistant model needs the safety-review gate (ADR-024)
+      "growth.assistant_real_model",
     ].sort());
   });
 });
@@ -126,8 +131,9 @@ describe("Rev 2.3 flags: classes, scopes, dependencies and launch gates (KX-08 �
 describe("ADR-025: safety controls are never flags", () => {
   it("lists the 12 fixed controls from KX-08 §09 plus the 4 added in Rev 2.3", () => {
     expect(safety.adr).toBe("ADR-025");
-    expect(safety.items).toHaveLength(16);
-    expect(safety.items.slice(12).map((i: any) => i.id)).toEqual(["scope_of_practice_enforcement", "profession_verification", "home_visit_safety", "mar_safety_checks"]);
+    expect(safety.items).toHaveLength(21); // 16 + 5 added in 1.12.0 (assistant emergency short-circuit, PHI guard, marketing consent check, k-anonymity floor, assertAdSafe)
+    expect(safety.items.slice(12, 16).map((i: any) => i.id)).toEqual(["scope_of_practice_enforcement", "profession_verification", "home_visit_safety", "mar_safety_checks"]);
+    expect(safety.items.slice(16).map((i: any) => i.id)).toEqual(["assistant_emergency_short_circuit", "assistant_phi_guard", "marketing_consent_check", "k_anonymity_floor", "ad_safety_assertion"]);
   });
 
   it("no catalogue key (or whenOff text claiming to disable a safety control) matches a safety control", () => {

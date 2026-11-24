@@ -93,6 +93,20 @@
           "type": "string",
           "description": "hex HMAC-SHA256 over JSON.stringify(summary) with KIOREX_RECORD_SHARE_HMAC_SECRET."
         },
+        "followUp": {
+          "type": "object",
+          "description": "Optional follow-up hint (additive, 1.12.0), beside `summary` so the signature over `summary` is unchanged. The interval only; never a diagnosis.",
+          "properties": {
+            "intervalDays": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 730
+            }
+          },
+          "required": [
+            "intervalDays"
+          ]
+        },
         "aggregateType": {
           "type": "string",
           "description": "Injected by the Kiorly outbox; mirrors the envelope field."

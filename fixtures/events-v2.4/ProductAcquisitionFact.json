@@ -1,0 +1,23 @@
+{
+  "eventId": "01JF3ZEVTPRODUCTA",
+  "type": "ProductAcquisitionFact",
+  "aggregateType": "ProductAcquisition",
+  "aggregateId": "paf_01JF3ZL000",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "factId": "paf_01JF3ZL000",
+    "product": "PHARMACY",
+    "orgRef": "ten_01JF3Z0000",
+    "orderRef": "ord_01JF3ZL111",
+    "origin": "PROVIDER_LED",
+    "reason": "EXPLICIT_PROVIDER_CHANNEL",
+    "decisionId": "atd_01JF3ZC111",
+    "policyVersion": "agp_01JF3Z0000",
+    "evidenceHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "linkCode": "7K2M9X4Q",
+    "outcome": "ORDERED",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "aggregateType": "ProductAcquisition",
+    "aggregateId": "paf_01JF3ZL000"
+  }
+}

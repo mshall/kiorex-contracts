@@ -77,6 +77,13 @@
     "allowOfflineEvidence": {
       "type": "boolean",
       "description": "An OFFLINE source recorded by staff before check-in may make a decision PROVIDER_LED. PROPOSED_DEFAULT False."
+    },
+    "ltBinding": {
+      "enum": [
+        "NONE",
+        "SESSION_HASH"
+      ],
+      "description": "Added in 1.12.0 (optional). SESSION_HASH binds the link-touch token to a hash of the first-seen session and refuses it elsewhere. Absent means NONE (behaviour unchanged). PROPOSED_DEFAULT NONE."
     }
   },
   "required": [

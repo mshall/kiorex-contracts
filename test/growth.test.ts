@@ -20,9 +20,9 @@ const cat = readJson("flags/catalogue.json");
 
 describe("1.10.0 growth contract is an additive minor", () => {
   it("version (the 1.11.0 minor only adds to it, see test/link-registry-1.11.test.ts)", () => {
-    expect(CONTRACTS_VERSION).toBe("1.11.0");
-    expect(readJson("package.json").version).toBe("1.11.0");
-    expect(market.info.version).toBe("1.5.0");
+    expect(CONTRACTS_VERSION).toMatch(/^1\.(11|12)\.\d+$/);
+    expect(readJson("package.json").version).toMatch(/^1\.(11|12)\.\d+$/);
+    expect(market.info.version).toMatch(/^1\.[56]\.\d+$/);
   });
 
   it("no 1.9.0 event schema lost a required field, a property or changed a property's schema (diff against the 1.9.0 snapshot)", () => {
@@ -74,7 +74,7 @@ describe("acquisition block (ARCH section 6.7)", () => {
     const props = post.requestBody.content["application/json"].schema.properties;
     expect(props.acquisition).toEqual({ $ref: "#/components/schemas/AcquisitionBlock" });
     expect(post.requestBody.content["application/json"].schema.required ?? []).not.toContain("acquisition");
-    expect(props.channel.enum).toEqual(["MARKETPLACE", "CLINIC_LINK"]); // unchanged
+    expect(props.channel.enum.slice(0, 2)).toEqual(["MARKETPLACE", "CLINIC_LINK"]); // 1.12.0 only appends KIOREX_WHATSAPP
     expect(market.components.schemas.AcquisitionError.properties.code.enum).toEqual(["ACQUISITION_BLOCK_INVALID", "ACQUISITION_EVIDENCE_HASH_INVALID"]);
     expect(market.components.schemas.AcquisitionBlock.required).toEqual(["origin", "decisionId", "policyVersion", "reason", "evidenceHash"]);
   });
@@ -191,7 +191,7 @@ describe("growth names and codes", () => {
     expect(new Set(GROWTH_ERROR_CODES).size).toBe(GROWTH_ERROR_CODES.length);
   });
   it("kiorex-growth OpenAPI: public touch, events and bootstrap, unique operationIds, OFF contract documented", () => {
-    expect(Object.keys(growth.paths).sort()).toEqual(["/bootstrap", "/growth/v1/events", "/growth/v1/evidence/{bookingId}", "/growth/v1/touch"]);
+    expect(Object.keys(growth.paths)).toEqual(expect.arrayContaining(["/bootstrap", "/growth/v1/events", "/growth/v1/evidence/{bookingId}", "/growth/v1/touch"])); // 1.12.0 (growth 1.1.0) only adds paths: see test/growth-1.12.test.ts
     const ids = Object.values<any>(growth.paths).flatMap((p) => Object.values<any>(p).map((o) => o.operationId));
     expect(new Set(ids).size).toBe(ids.length);
     expect(growth.paths["/growth/v1/touch"].post.responses["202"]).toBeTruthy();
@@ -227,8 +227,8 @@ describe("growth config schemas (ARCH section 16)", () => {
     MARKET_GROWTH: { market: "EG", currency: "EGP", phoneCode: "+20", locales: ["ar", "en"], canonicalSegment: "eg", bookingLinkBaseUrl: "https://kiorly.link", qrEnabled: true, marketingLicenceConfirmed: false, integrations: { search_console: false }, whatsappPhoneNumberIdRef: null, dataCell: "frankfurt" },
   };
   it("five kinds ship a schema; the ten kinds of ARCH section 16 are all named", () => {
-    expect([...GROWTH_CONFIG_KINDS_WITH_SCHEMA].sort()).toEqual(["ATTRIBUTION_POLICY", "CONSENT_DEFAULTS", "MARKET_GROWTH", "SEO", "WIDGET_POLICY"]);
-    expect(GROWTH_CONFIG_KINDS).toHaveLength(10);
+    expect([...GROWTH_CONFIG_KINDS_WITH_SCHEMA].sort()).toEqual(expect.arrayContaining(["ATTRIBUTION_POLICY", "CONSENT_DEFAULTS", "MARKET_GROWTH", "SEO", "WIDGET_POLICY"])); // 1.12.0 adds six more
+    expect(GROWTH_CONFIG_KINDS.length).toBeGreaterThanOrEqual(10);
     for (const k of Object.keys(GROWTH_CONFIG_SCHEMAS)) expect(GROWTH_CONFIG_KINDS).toContain(k);
     for (const k of Object.keys(GROWTH_CONFIG_SCHEMAS)) expect(readJson(`src/growth-config/${k}.schema.json`)).toEqual((GROWTH_CONFIG_SCHEMAS as any)[k]);
   });
@@ -274,7 +274,7 @@ describe("growth flags (ADR-023/024/025)", () => {
     if (f.launchLocked) expect(f.gate).toContain("NEEDS_HUMAN");
   });
   it("exactly the counsel-gated flags are launch-locked; the pattern key is a pattern", () => {
-    expect(cat.flags.filter((f: any) => f.key.startsWith("growth.") && f.launchLocked).map((f: any) => f.key).sort()).toEqual(LOCKED.filter((k) => k.startsWith("growth.")).sort());
+    expect(cat.flags.filter((f: any) => f.key.startsWith("growth.") && f.launchLocked).map((f: any) => f.key).sort()).toEqual([...LOCKED.filter((k) => k.startsWith("growth.")), "growth.assistant_real_model"].sort()); // 1.12.0 adds one locked key
     expect(by("growth.integrations.<kind>").keyPattern).toBe(true);
     expect(FLAGS.GROWTH_ATTRIBUTION).toBe("growth.attribution");
   });

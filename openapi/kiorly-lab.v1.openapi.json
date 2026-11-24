@@ -3,7 +3,7 @@
   "x-status": "draft",
   "info": {
     "title": "Kiorly Lab Integration API (draft)",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists. 1.4.0: catalogue, quote and slots endpoints for the Kiorex marketplace (additive); the client key binds the tenant (no org header); outbox events go to Kiorex /api/v1/webhooks/lab signed with the webhook scheme + X-Kiorly-Client-Key. 0.3.0 (contracts 1.6.0): ratified Nurse-edition additions (KNLAB01/KLORD05): third client source KIORLY_NURSE (Kiorly Nurse is an edition of Kiorly Clinic, ADR-031; Kiorex holds the registration and relays), optional `nurseCollection`, `identifiersChecked` and `collection.districtId` on the inbound order, and the custody read `GET /integration/v1/orders/{sourceRef}/custody`. 0.4.0 / 1.8.0 (additive): optional Arabic test names and preparation text (nameAr, preparationAr, sampleTypeAr) on GET /tests and POST /tests/quote."
   },
   "servers": [
@@ -1091,6 +1091,9 @@
           },
           "nurseCollection": {
             "$ref": "#/components/schemas/NurseCollection"
+          },
+          "acquisition": {
+            "$ref": "#/components/schemas/ProductAcquisitionBlock"
           }
         },
         "description": "Strict inbound order (unknown fields are rejected). `nurseCollection` is accepted only from a KIORLY_NURSE client (and is required from it); `identifiersChecked` (>= 2 kinds, never values) is required with it."
@@ -1496,6 +1499,54 @@
                 }
               }
             }
+          }
+        }
+      },
+      "ProductAcquisitionBlock": {
+        "type": "object",
+        "description": "Optional acquisition block Kiorex adds to an order or booking it took on its public page (1.12.0; used from package P4-B2). Mirror of the Clinic block: origin, reason, decision and policy references, evidence hash. Can only remove a fee, never add one. A partner that does not know it ignores it. Never patient data.",
+        "required": [
+          "origin",
+          "decisionId",
+          "policyVersion",
+          "reason",
+          "evidenceHash"
+        ],
+        "properties": {
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ]
+          },
+          "decisionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          },
+          "evidenceHash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "linkCode": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+          },
+          "product": {
+            "enum": [
+              "PHARMACY",
+              "LAB",
+              "NURSE"
+            ]
           }
         }
       }

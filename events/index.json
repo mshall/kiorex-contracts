@@ -426,6 +426,182 @@
       "producer": "kiorly-clinic",
       "aggregateType": "ProviderReferralLink",
       "status": "v2-draft"
+    },
+    {
+      "type": "CampaignCreated",
+      "aliases": [],
+      "file": "CampaignCreated",
+      "producer": "kiorex",
+      "aggregateType": "GrowthCampaign",
+      "status": "v2-draft"
+    },
+    {
+      "type": "CampaignStatusChanged",
+      "aliases": [],
+      "file": "CampaignStatusChanged",
+      "producer": "kiorex",
+      "aggregateType": "GrowthCampaign",
+      "status": "v2-draft"
+    },
+    {
+      "type": "CampaignBudgetThresholdReached",
+      "aliases": [],
+      "file": "CampaignBudgetThresholdReached",
+      "producer": "kiorex",
+      "aggregateType": "GrowthCampaign",
+      "status": "v2-draft"
+    },
+    {
+      "type": "CampaignApprovalDecided",
+      "aliases": [],
+      "file": "CampaignApprovalDecided",
+      "producer": "kiorex",
+      "aggregateType": "GrowthCampaign",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ReferralCodeIssued",
+      "aliases": [],
+      "file": "ReferralCodeIssued",
+      "producer": "kiorex",
+      "aggregateType": "ReferralCode",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ReferralRelationshipCreated",
+      "aliases": [],
+      "file": "ReferralRelationshipCreated",
+      "producer": "kiorex",
+      "aggregateType": "ReferralRelationship",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ReferralQualified",
+      "aliases": [],
+      "file": "ReferralQualified",
+      "producer": "kiorex",
+      "aggregateType": "ReferralRelationship",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ReferralRejected",
+      "aliases": [],
+      "file": "ReferralRejected",
+      "producer": "kiorex",
+      "aggregateType": "ReferralRelationship",
+      "status": "v2-draft"
+    },
+    {
+      "type": "RewardIssued",
+      "aliases": [],
+      "file": "RewardIssued",
+      "producer": "kiorex",
+      "aggregateType": "RewardLot",
+      "status": "v2-draft"
+    },
+    {
+      "type": "RewardRedeemed",
+      "aliases": [],
+      "file": "RewardRedeemed",
+      "producer": "kiorex",
+      "aggregateType": "RewardLot",
+      "status": "v2-draft"
+    },
+    {
+      "type": "RewardReversed",
+      "aliases": [],
+      "file": "RewardReversed",
+      "producer": "kiorex",
+      "aggregateType": "RewardLot",
+      "status": "v2-draft"
+    },
+    {
+      "type": "RewardExpired",
+      "aliases": [],
+      "file": "RewardExpired",
+      "producer": "kiorex",
+      "aggregateType": "RewardLot",
+      "status": "v2-draft"
+    },
+    {
+      "type": "RewardHeld",
+      "aliases": [],
+      "file": "RewardHeld",
+      "producer": "kiorex",
+      "aggregateType": "RewardLot",
+      "status": "v2-draft"
+    },
+    {
+      "type": "AssistantConversationEscalated",
+      "aliases": [],
+      "file": "AssistantConversationEscalated",
+      "producer": "kiorex",
+      "aggregateType": "AssistantSession",
+      "status": "v2-draft"
+    },
+    {
+      "type": "AssistantBudgetBreakerTripped",
+      "aliases": [],
+      "file": "AssistantBudgetBreakerTripped",
+      "producer": "kiorex",
+      "aggregateType": "AssistantUsageDaily",
+      "status": "v2-draft"
+    },
+    {
+      "type": "LifecycleDecisionRecorded",
+      "aliases": [],
+      "file": "LifecycleDecisionRecorded",
+      "producer": "kiorex",
+      "aggregateType": "LifecycleJourney",
+      "status": "v2-draft"
+    },
+    {
+      "type": "IntegrationRunFailed",
+      "aliases": [],
+      "file": "IntegrationRunFailed",
+      "producer": "kiorex",
+      "aggregateType": "GrowthIntegrationRun",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ProductAcquisitionFact",
+      "aliases": [],
+      "file": "ProductAcquisitionFact",
+      "producer": "kiorex",
+      "aggregateType": "ProductAcquisition",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ProviderVerificationUpdateRequested",
+      "aliases": [],
+      "file": "ProviderVerificationUpdateRequested",
+      "producer": "kiorly-clinic",
+      "aggregateType": "ProviderVerificationUpdate",
+      "status": "v2-draft"
+    },
+    {
+      "type": "ProviderVerificationDecided",
+      "aliases": [],
+      "file": "ProviderVerificationDecided",
+      "producer": "kiorex",
+      "aggregateType": "ProviderVerificationUpdate",
+      "status": "v2-draft"
+    },
+    {
+      "type": "WAITLIST_OFFER_CREATED",
+      "aliases": [],
+      "file": "WAITLIST_OFFER_CREATED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "WaitlistOffer",
+      "status": "v2-draft"
+    },
+    {
+      "type": "WAITLIST_OFFER_EXPIRED",
+      "aliases": [],
+      "file": "WAITLIST_OFFER_EXPIRED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "WaitlistOffer",
+      "status": "v2-draft"
     }
   ]
 }

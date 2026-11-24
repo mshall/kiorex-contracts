@@ -80,6 +80,141 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/growth/v1/campaign/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resolve a campaign UTM to its landing target
+         * @description Public. Given `utm_campaign` (the value `<market lower case>-<campaign key>`), returns where to send the visitor and an opaque campaign token the client passes back as `utm.campaign` on POST /growth/v1/touch. Only ACTIVE campaigns resolve; anything else (unknown, scheduled, paused, completed, archived) answers 404 `CAMPAIGN_NOT_FOUND`. The answer never contains a budget, a spend figure, a channel list or an eligibility rule.
+         */
+        get: operations["growthResolveCampaign"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/referral/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My referral code, status and counts
+         * @description Authenticated patient. Returns the person's own code (issued on first call), invite link and counts. 403 FEATURE_DISABLED while growth.patient_referral is not effective.
+         */
+        get: operations["growthReferralMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/referral/invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create a shareable invite */
+        post: operations["growthReferralCreateInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/referral/rewards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My rewards (coupons or credit) and their status */
+        get: operations["growthReferralRewards"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/referral/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Claim a referral code as the invited person
+         * @description Idempotent per invited person: one relationship per person and market. A self-referral, an existing patient or a suspended code is rejected with a machine reason; the reason never reveals who owns the code.
+         */
+        post: operations["growthReferralClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/assistant/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify a secure booking link sent by the WhatsApp assistant
+         * @description Single-use, short-lived link for people whose phone number is not verified (they get search plus a secure link, not booking in chat). Returns where to continue; never the conversation.
+         */
+        post: operations["growthAssistantLinkVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/growth/v1/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** My message-class and channel preferences */
+        get: operations["growthGetPreferences"];
+        /**
+         * Change my message-class and channel preferences
+         * @description Marketing consent changes are append-only history and take effect at the send gate within 60 seconds. TRANSACTIONAL, SECURITY and CLINICAL messages cannot be switched off here.
+         */
+        put: operations["growthPutPreferences"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -186,6 +321,85 @@ export interface components {
             /** @description False unless more than one market is live (founder rule 23 Nov 2026). */
             showMarketSelector: boolean;
             minAppVersion?: string | null;
+        };
+        CampaignResolveResult: {
+            landing: {
+                /** @description Site-relative path on the public host, e.g. /ar/eg/doctors?utm_campaign=... */
+                path: string;
+                /** @enum {unknown} */
+                locale?: "ar" | "en";
+                landingPageId?: string | null;
+            };
+            /** @description Opaque. Pass as `utm.campaign` on POST /growth/v1/touch. */
+            campaignToken: string;
+        };
+        ReferralMe: {
+            code: string;
+            /** @enum {unknown} */
+            status: "ACTIVE" | "SUSPENDED";
+            /** Format: uri */
+            inviteUrl?: string;
+            counts: {
+                invited?: number;
+                signedUp?: number;
+                qualified?: number;
+            };
+        };
+        ReferralInviteRequest: {
+            /** @enum {unknown} */
+            channel?: "LINK" | "WHATSAPP_SHARE" | "SMS" | "COPY";
+            /** @enum {unknown} */
+            locale?: "ar" | "en";
+        };
+        ReferralInvite: {
+            /** Format: uri */
+            inviteUrl: string;
+            code: string;
+            shareText?: string;
+        };
+        ReferralRewardList: {
+            items: {
+                id: string;
+                /** @enum {unknown} */
+                kind: "REFERRER" | "REFEREE" | "REPEAT" | "PROMO" | "CORPORATE" | "LOYALTY";
+                /** @enum {unknown} */
+                mode: "CREDIT" | "COUPON";
+                amountMinor: number;
+                currency: string;
+                /** @enum {unknown} */
+                status: "ACTIVE" | "HELD" | "EXHAUSTED" | "EXPIRED" | "REVERSED";
+                /** Format: date-time */
+                expiresAt: string;
+            }[];
+            nextCursor?: string | null;
+        };
+        ReferralClaimRequest: {
+            code: string;
+        };
+        ReferralClaimResult: {
+            /** @enum {unknown} */
+            status: "INVITED" | "SIGNED_UP" | "BOOKED" | "QUALIFIED" | "REJECTED" | "EXPIRED";
+            reason?: string;
+        };
+        AssistantLinkRequest: {
+            token: string;
+        };
+        AssistantLinkResult: {
+            continuePath: string;
+            /** Format: date-time */
+            expiresAt?: string;
+        };
+        GrowthPreferences: {
+            marketing?: {
+                WHATSAPP?: boolean;
+                SMS?: boolean;
+                EMAIL?: boolean;
+                PUSH?: boolean;
+            };
+            /** @description REMINDERS consent (class TRANSACTIONAL). */
+            reminders?: boolean;
+            /** @enum {unknown} */
+            language?: "ar" | "en";
         };
     };
     responses: never;
@@ -382,6 +596,401 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Bootstrap"];
+                };
+            };
+        };
+    };
+    growthResolveCampaign: {
+        parameters: {
+            query: {
+                utm_campaign: string;
+                locale?: "ar" | "en";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CampaignResolveResult"];
+                };
+            };
+            /** @description GROWTH_INVALID_REQUEST */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.campaigns, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description CAMPAIGN_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description GROWTH_RATE_LIMITED */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthReferralMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralMe"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.patient_referral, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthReferralCreateInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferralInviteRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralInvite"];
+                };
+            };
+            /** @description GROWTH_INVALID_REQUEST */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.patient_referral, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description GROWTH_RATE_LIMITED */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthReferralRewards: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralRewardList"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.rewards, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthReferralClaim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferralClaimRequest"];
+            };
+        };
+        responses: {
+            /** @description Claimed or already claimed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReferralClaimResult"];
+                };
+            };
+            /** @description GROWTH_INVALID_REQUEST */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: growth.patient_referral, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description Rejected with a reason code */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description GROWTH_RATE_LIMITED */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthAssistantLinkVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssistantLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssistantLinkResult"];
+                };
+            };
+            /** @description ASSISTANT_LINK_INVALID */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description FEATURE_DISABLED {key: kiorex.whatsapp_ai_assistant, scope} */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description ASSISTANT_LINK_EXPIRED or ASSISTANT_LINK_USED */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description GROWTH_RATE_LIMITED */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthGetPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthPreferences"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+        };
+    };
+    growthPutPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrowthPreferences"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthPreferences"];
+                };
+            };
+            /** @description GROWTH_INVALID_REQUEST */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrowthError"];
                 };
             };
         };

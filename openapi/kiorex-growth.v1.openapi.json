@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Kiorex Growth API",
-    "version": "1.0.0",
-    "description": "Additive in contracts 1.10.0 (PROPOSED, ARCH sections 6 and 8). Public, first-party, consent-aware endpoints of the Kiorex growth module. Rules: no IP address, full user agent, full referrer URL, unknown query parameter, health data, search text, specialty-by-visitor join or provider id in the visitor stream is ever stored; rate limited per rotating ipHash (429 with Retry-After); OFF flag answers 403 FEATURE_DISABLED {key, scope}. The visitor key cookie `kxv` (host-only, Secure, SameSite=Lax, 180 days max) is set only when the request carries `X-KX-Consent: analytics`."
+    "version": "1.1.0",
+    "description": "Additive in contracts 1.10.0 (PROPOSED, ARCH sections 6 and 8). Public, first-party, consent-aware endpoints of the Kiorex growth module. Rules: no IP address, full user agent, full referrer URL, unknown query parameter, health data, search text, specialty-by-visitor join or provider id in the visitor stream is ever stored; rate limited per rotating ipHash (429 with Retry-After); OFF flag answers 403 FEATURE_DISABLED {key, scope}. The visitor key cookie `kxv` (host-only, Secure, SameSite=Lax, 180 days max) is set only when the request carries `X-KX-Consent: analytics`. v1.1.0 (contracts 1.12.0, additive): public campaign UTM resolve (GET /growth/v1/campaign/resolve: landing target and a campaign token only, never a budget), patient referral endpoints (me, invites, rewards, claim), assistant secure booking link verification, and message-class preference additions. Referral and reward endpoints are launch-locked behind growth.patient_referral and growth.rewards; the assistant link behind kiorex.whatsapp_ai_assistant. Nothing here carries health data."
   },
   "servers": [
     {
@@ -314,6 +314,510 @@
           }
         }
       }
+    },
+    "/growth/v1/campaign/resolve": {
+      "get": {
+        "operationId": "growthResolveCampaign",
+        "tags": [
+          "growth"
+        ],
+        "summary": "Resolve a campaign UTM to its landing target",
+        "description": "Public. Given `utm_campaign` (the value `<market lower case>-<campaign key>`), returns where to send the visitor and an opaque campaign token the client passes back as `utm.campaign` on POST /growth/v1/touch. Only ACTIVE campaigns resolve; anything else (unknown, scheduled, paused, completed, archived) answers 404 `CAMPAIGN_NOT_FOUND`. The answer never contains a budget, a spend figure, a channel list or an eligibility rule.",
+        "parameters": [
+          {
+            "name": "utm_campaign",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$",
+              "maxLength": 64
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ar",
+                "en"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CampaignResolveResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROWTH_INVALID_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.campaigns, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CAMPAIGN_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "GROWTH_RATE_LIMITED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/referral/me": {
+      "get": {
+        "operationId": "growthReferralMe",
+        "tags": [
+          "growth-referral"
+        ],
+        "summary": "My referral code, status and counts",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "description": "Authenticated patient. Returns the person's own code (issued on first call), invite link and counts. 403 FEATURE_DISABLED while growth.patient_referral is not effective.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferralMe"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.patient_referral, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/referral/invites": {
+      "post": {
+        "operationId": "growthReferralCreateInvite",
+        "tags": [
+          "growth-referral"
+        ],
+        "summary": "Create a shareable invite",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferralInviteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferralInvite"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROWTH_INVALID_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.patient_referral, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "GROWTH_RATE_LIMITED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/referral/rewards": {
+      "get": {
+        "operationId": "growthReferralRewards",
+        "tags": [
+          "growth-referral"
+        ],
+        "summary": "My rewards (coupons or credit) and their status",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferralRewardList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.rewards, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/referral/claim": {
+      "post": {
+        "operationId": "growthReferralClaim",
+        "tags": [
+          "growth-referral"
+        ],
+        "summary": "Claim a referral code as the invited person",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "description": "Idempotent per invited person: one relationship per person and market. A self-referral, an existing patient or a suspended code is rejected with a machine reason; the reason never reveals who owns the code.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferralClaimRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Claimed or already claimed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferralClaimResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROWTH_INVALID_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: growth.patient_referral, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected with a reason code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "GROWTH_RATE_LIMITED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/assistant/link": {
+      "post": {
+        "operationId": "growthAssistantLinkVerify",
+        "tags": [
+          "growth-assistant"
+        ],
+        "summary": "Verify a secure booking link sent by the WhatsApp assistant",
+        "description": "Single-use, short-lived link for people whose phone number is not verified (they get search plus a secure link, not booking in chat). Returns where to continue; never the conversation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantLinkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantLinkResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ASSISTANT_LINK_INVALID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "FEATURE_DISABLED {key: kiorex.whatsapp_ai_assistant, scope}",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "ASSISTANT_LINK_EXPIRED or ASSISTANT_LINK_USED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "GROWTH_RATE_LIMITED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/growth/v1/preferences": {
+      "get": {
+        "operationId": "growthGetPreferences",
+        "tags": [
+          "growth-preferences"
+        ],
+        "summary": "My message-class and channel preferences",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthPreferences"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "growthPutPreferences",
+        "tags": [
+          "growth-preferences"
+        ],
+        "summary": "Change my message-class and channel preferences",
+        "description": "Marketing consent changes are append-only history and take effect at the send gate within 60 seconds. TRANSACTIONAL, SECURITY and CLINICAL messages cannot be switched off here.",
+        "security": [
+          {
+            "patientSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrowthPreferences"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthPreferences"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROWTH_INVALID_REQUEST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrowthError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -328,6 +832,11 @@
         "in": "header",
         "name": "X-Kiorly-Signature",
         "description": "Kiorly request HMAC (signKiorlyRequest / verifyKiorlyRequest in @kiorex/contracts): X-Kiorly-Client-Key, -Timestamp, -Nonce, -Signature."
+      },
+      "patientSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Kiorex Passport patient session (the `sub` is taken from the session, never from the body)."
       }
     },
     "schemas": {
@@ -723,6 +1232,296 @@
             "type": [
               "string",
               "null"
+            ]
+          }
+        }
+      },
+      "CampaignResolveResult": {
+        "type": "object",
+        "required": [
+          "landing",
+          "campaignToken"
+        ],
+        "properties": {
+          "landing": {
+            "type": "object",
+            "required": [
+              "path"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "Site-relative path on the public host, e.g. /ar/eg/doctors?utm_campaign=..."
+              },
+              "locale": {
+                "enum": [
+                  "ar",
+                  "en"
+                ]
+              },
+              "landingPageId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "campaignToken": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "Opaque. Pass as `utm.campaign` on POST /growth/v1/touch."
+          }
+        }
+      },
+      "ReferralMe": {
+        "type": "object",
+        "required": [
+          "code",
+          "status",
+          "counts"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "SUSPENDED"
+            ]
+          },
+          "inviteUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "invited": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "signedUp": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "qualified": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      },
+      "ReferralInviteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "enum": [
+              "LINK",
+              "WHATSAPP_SHARE",
+              "SMS",
+              "COPY"
+            ]
+          },
+          "locale": {
+            "enum": [
+              "ar",
+              "en"
+            ]
+          }
+        }
+      },
+      "ReferralInvite": {
+        "type": "object",
+        "required": [
+          "inviteUrl",
+          "code"
+        ],
+        "properties": {
+          "inviteUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+          },
+          "shareText": {
+            "type": "string",
+            "maxLength": 500
+          }
+        }
+      },
+      "ReferralRewardList": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "kind",
+                "mode",
+                "amountMinor",
+                "currency",
+                "status",
+                "expiresAt"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "REFERRER",
+                    "REFEREE",
+                    "REPEAT",
+                    "PROMO",
+                    "CORPORATE",
+                    "LOYALTY"
+                  ]
+                },
+                "mode": {
+                  "enum": [
+                    "CREDIT",
+                    "COUPON"
+                  ]
+                },
+                "amountMinor": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                },
+                "status": {
+                  "enum": [
+                    "ACTIVE",
+                    "HELD",
+                    "EXHAUSTED",
+                    "EXPIRED",
+                    "REVERSED"
+                  ]
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ReferralClaimRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9A-HJKMNP-TV-Z]{8}$"
+          }
+        }
+      },
+      "ReferralClaimResult": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "INVITED",
+              "SIGNED_UP",
+              "BOOKED",
+              "QUALIFIED",
+              "REJECTED",
+              "EXPIRED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          }
+        }
+      },
+      "AssistantLinkRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 16,
+            "maxLength": 200
+          }
+        }
+      },
+      "AssistantLinkResult": {
+        "type": "object",
+        "required": [
+          "continuePath"
+        ],
+        "properties": {
+          "continuePath": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GrowthPreferences": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "marketing": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "WHATSAPP": {
+                "type": "boolean"
+              },
+              "SMS": {
+                "type": "boolean"
+              },
+              "EMAIL": {
+                "type": "boolean"
+              },
+              "PUSH": {
+                "type": "boolean"
+              }
+            }
+          },
+          "reminders": {
+            "type": "boolean",
+            "description": "REMINDERS consent (class TRANSACTIONAL)."
+          },
+          "language": {
+            "enum": [
+              "ar",
+              "en"
             ]
           }
         }

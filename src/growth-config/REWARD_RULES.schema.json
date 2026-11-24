@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/REWARD_RULES.schema.json",
+  "title": "Growth config: REWARD_RULES",
+  "description": "Reward issuance rules (GRW-P2-B2): COUPON or CREDIT mode, amounts per role, expiry, caps and redemption limits. Rewards are funded by the platform marketing budget, never charged to providers and never change an attribution decision (AD-3). Money relevant: two-person rule and an announcement. Added in contracts 1.12.0. Every default is PROPOSED_DEFAULT until the founder ratifies it. Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "mode": {
+      "enum": [
+        "COUPON",
+        "CREDIT"
+      ],
+      "description": "PROPOSED_DEFAULT COUPON (lower regulatory exposure). CREDIT needs counsel clearance."
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "amounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "referrerMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000,
+          "description": "PROPOSED_DEFAULT 0 until pricing sets a deposit or fee (AD-4)."
+        },
+        "refereeMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "repeatMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "promoMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        }
+      },
+      "required": [
+        "referrerMinor",
+        "refereeMinor",
+        "repeatMinor",
+        "promoMinor"
+      ]
+    },
+    "expiryMonths": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "description": "PROPOSED_DEFAULT 12."
+    },
+    "perUserAnnualCapMinor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000000
+    },
+    "perCampaignCapMinor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000000
+    },
+    "ruleBudgetCeilingMinor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000000,
+      "description": "Total this rule version may issue."
+    },
+    "redemption": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxPercentOfDeposit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "description": "PROPOSED_DEFAULT 100."
+        },
+        "minPayableMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000,
+          "description": "Smallest amount the patient must still pay."
+        },
+        "postToPayLedger": {
+          "type": "boolean",
+          "description": "Post redemptions to the pay ledger. PROPOSED_DEFAULT false."
+        }
+      },
+      "required": [
+        "maxPercentOfDeposit",
+        "minPayableMinor",
+        "postToPayLedger"
+      ]
+    }
+  },
+  "required": [
+    "mode",
+    "currency",
+    "amounts",
+    "expiryMonths",
+    "perUserAnnualCapMinor",
+    "perCampaignCapMinor",
+    "ruleBudgetCeilingMinor",
+    "redemption"
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/CAMPAIGN_POLICY.schema.json",
+  "title": "Growth config: CAMPAIGN_POLICY",
+  "description": "Campaign management rules (GRW-P2-A): approval threshold, ceilings, alert thresholds, allowed and sensitive channels, UTM naming and creative asset rules. Campaigns are plans: nothing here lets Kiorex create or spend on an external ad platform. Money relevant: two-person rule. Added in contracts 1.12.0. Every default is PROPOSED_DEFAULT until the founder ratifies it. Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "approvalAboveMinor": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000000000,
+      "description": "A campaign whose total budget is above this (minor units) needs a second approver to activate. PROPOSED_DEFAULT 2000000 (EGP 20,000)."
+    },
+    "budgetIncreaseApprovalPercent": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "description": "A budget increase above this percent of the approved budget needs a BUDGET_INCREASE approval. PROPOSED_DEFAULT 20."
+    },
+    "monthlyCeilingMinor": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000000000,
+      "description": "Per-market monthly ceiling over all ACTIVE and SCHEDULED campaigns (planned budget). PROPOSED_DEFAULT 50000000."
+    },
+    "dailyDefaultCapMinor": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000000000,
+      "description": "Daily cap suggested for a new campaign. PROPOSED_DEFAULT 1000000."
+    },
+    "budgetAlertThresholdsBp": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          5000,
+          8000,
+          10000
+        ]
+      },
+      "description": "Utilisation alerts in basis points of the total budget. 10000 auto-pauses (PAUSED BUDGET). PROPOSED_DEFAULT [5000, 8000, 10000]."
+    },
+    "allowedChannels": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "ORGANIC_SEARCH",
+          "EMAIL",
+          "SMS",
+          "WHATSAPP",
+          "PUSH",
+          "IN_APP",
+          "PARTNER",
+          "PAID_SEARCH",
+          "PAID_SOCIAL",
+          "PAID_VIDEO",
+          "OFFLINE",
+          "REFERRAL"
+        ]
+      },
+      "description": "Channels a campaign may list. Paid channels are plan labels only."
+    },
+    "sensitiveChannels": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "ORGANIC_SEARCH",
+          "EMAIL",
+          "SMS",
+          "WHATSAPP",
+          "PUSH",
+          "IN_APP",
+          "PARTNER",
+          "PAID_SEARCH",
+          "PAID_SOCIAL",
+          "PAID_VIDEO",
+          "OFFLINE",
+          "REFERRAL"
+        ]
+      },
+      "description": "A campaign listing any of these always needs a second approver. PROPOSED_DEFAULT [WHATSAPP, SMS]."
+    },
+    "utmNaming": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxTokenLength": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 64,
+          "description": "Longest utm token. PROPOSED_DEFAULT 40."
+        },
+        "campaignPrefixMarket": {
+          "type": "boolean",
+          "description": "utm_campaign is <market lower case>-<key>. PROPOSED_DEFAULT true."
+        }
+      },
+      "required": [
+        "maxTokenLength",
+        "campaignPrefixMarket"
+      ]
+    },
+    "creativeRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxCreatives": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "description": "Per campaign. PROPOSED_DEFAULT 30."
+        },
+        "allowedHttpsHosts": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+          },
+          "description": "https creative references must be on one of these hosts (exact match)."
+        },
+        "assetKeyPrefix": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9/_-]{0,63}/$",
+          "description": "Object-store prefix for uploaded creatives. PROPOSED_DEFAULT growth/creatives/."
+        }
+      },
+      "required": [
+        "maxCreatives",
+        "allowedHttpsHosts",
+        "assetKeyPrefix"
+      ]
+    },
+    "autoExpiryGraceHours": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 168,
+      "description": "Grace after endsAt before the job completes an ACTIVE campaign. PROPOSED_DEFAULT 0."
+    },
+    "requireReasonOnPause": {
+      "type": "boolean",
+      "description": "A manual pause needs a reason code. PROPOSED_DEFAULT true."
+    }
+  },
+  "required": [
+    "approvalAboveMinor",
+    "budgetIncreaseApprovalPercent",
+    "monthlyCeilingMinor",
+    "dailyDefaultCapMinor",
+    "budgetAlertThresholdsBp",
+    "allowedChannels",
+    "sensitiveChannels",
+    "utmNaming",
+    "creativeRules",
+    "autoExpiryGraceHours",
+    "requireReasonOnPause"
+  ]
+}

@@ -1175,6 +1175,237 @@ export const FLAG_CATALOGUE = [
     "gate": null,
     "keyPattern": true,
     "note": "Pattern key: <kind> is a lower-case integration kind, e.g. growth.integrations.search_console. PROPOSED_DEFAULT (growth ADR-041..047, ARCH section 16): ships ON per ADR-023"
+  },
+  {
+    "key": "growth.campaign_approval_required",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "Campaign activation no longer needs a second approver below the policy threshold; above CAMPAIGN_POLICY.approvalAboveMinor and for sensitive channels a second approver is still required",
+    "dependsOn": [
+      "growth.campaigns"
+    ],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON per ADR-023 unless stated"
+  },
+  {
+    "key": "growth.provider_marketing_v2",
+    "product": "kiorly-clinic",
+    "scopes": [
+      "global",
+      "market",
+      "org"
+    ],
+    "class": "Module",
+    "whenOff": "The provider portal v2 (social templates, shareable slots, statements v2) is hidden; links, QR codes and statements v1 keep working",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON per ADR-023 unless stated"
+  },
+  {
+    "key": "growth.assistant_real_model",
+    "product": "kiorex",
+    "scopes": [
+      "global"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "The WhatsApp assistant uses only the deterministic booking machine and the recorded mock model; no real model call is made",
+    "dependsOn": [
+      "kiorex.whatsapp_ai_assistant"
+    ],
+    "launchLocked": true,
+    "gate": "Clinical-safety review of the assistant and the prompt-injection corpus signed by the CMO (NEEDS_HUMAN)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): OFF until the gate evidence is recorded (ADR-024)"
+  },
+  {
+    "key": "growth.lifecycle_journeys",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "Lifecycle journeys stop starting; running enrolments end with reason FLAG_OFF; transactional and clinical notifications of the notification layer are unaffected",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON per ADR-023 unless stated"
+  },
+  {
+    "key": "growth.referral_fraud_enforce",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Module",
+    "whenOff": "Referral fraud scoring stays in shadow mode: scores and cases are recorded, rewards pass the thresholds that existed before it",
+    "dependsOn": [
+      "growth.patient_referral"
+    ],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): OFF = shadow mode (AD-11)"
+  },
+  {
+    "key": "growth.integrations.googleads",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The googleads read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.searchconsole",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The searchconsole read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.ga4",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The ga4 read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.playconsole",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The playconsole read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.appstoreconnect",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The appstoreconnect read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.metaads",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The metaads read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.tiktok",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The tiktok read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.whatsappcloud",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The whatsappcloud read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.fcmapns",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The fcmapns read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
+  },
+  {
+    "key": "growth.integrations.crux",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Integration",
+    "whenOff": "The crux read-only integration stops pulling; stored aggregates stay and the page shows 'not connected'",
+    "dependsOn": [],
+    "launchLocked": false,
+    "gate": null,
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0): ships ON in mock mode; real mode needs secretRef and is never exercised in CI"
   }
 ] as const satisfies readonly FlagCatalogueEntry[];
 
@@ -1247,7 +1478,22 @@ export const FLAG_KEYS = [
   "growth.patient_referral",
   "growth.rewards",
   "kiorex.whatsapp_ai_assistant",
-  "growth.experiments"
+  "growth.experiments",
+  "growth.campaign_approval_required",
+  "growth.provider_marketing_v2",
+  "growth.assistant_real_model",
+  "growth.lifecycle_journeys",
+  "growth.referral_fraud_enforce",
+  "growth.integrations.googleads",
+  "growth.integrations.searchconsole",
+  "growth.integrations.ga4",
+  "growth.integrations.playconsole",
+  "growth.integrations.appstoreconnect",
+  "growth.integrations.metaads",
+  "growth.integrations.tiktok",
+  "growth.integrations.whatsappcloud",
+  "growth.integrations.fcmapns",
+  "growth.integrations.crux"
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
 
@@ -1321,6 +1567,21 @@ export const FLAGS = {
   GROWTH_REWARDS: "growth.rewards",
   KIOREX_WHATSAPP_AI_ASSISTANT: "kiorex.whatsapp_ai_assistant",
   GROWTH_EXPERIMENTS: "growth.experiments",
+  GROWTH_CAMPAIGN_APPROVAL_REQUIRED: "growth.campaign_approval_required",
+  GROWTH_PROVIDER_MARKETING_V2: "growth.provider_marketing_v2",
+  GROWTH_ASSISTANT_REAL_MODEL: "growth.assistant_real_model",
+  GROWTH_LIFECYCLE_JOURNEYS: "growth.lifecycle_journeys",
+  GROWTH_REFERRAL_FRAUD_ENFORCE: "growth.referral_fraud_enforce",
+  GROWTH_INTEGRATIONS_GOOGLEADS: "growth.integrations.googleads",
+  GROWTH_INTEGRATIONS_SEARCHCONSOLE: "growth.integrations.searchconsole",
+  GROWTH_INTEGRATIONS_GA4: "growth.integrations.ga4",
+  GROWTH_INTEGRATIONS_PLAYCONSOLE: "growth.integrations.playconsole",
+  GROWTH_INTEGRATIONS_APPSTORECONNECT: "growth.integrations.appstoreconnect",
+  GROWTH_INTEGRATIONS_METAADS: "growth.integrations.metaads",
+  GROWTH_INTEGRATIONS_TIKTOK: "growth.integrations.tiktok",
+  GROWTH_INTEGRATIONS_WHATSAPPCLOUD: "growth.integrations.whatsappcloud",
+  GROWTH_INTEGRATIONS_FCMAPNS: "growth.integrations.fcmapns",
+  GROWTH_INTEGRATIONS_CRUX: "growth.integrations.crux",
 } as const;
 
 /** Pattern keys: clinic.specialty_templates.<code>, market.<country>.live. */
@@ -1531,6 +1792,61 @@ export const SAFETY_NEVER_FLAGS = [
       "mar_duplicate",
       "mar_check",
       "doctor_order"
+    ]
+  },
+  {
+    "id": "assistant_emergency_short_circuit",
+    "label": "Assistant emergency short-circuit (emergency wording ends the model turn and hands over to the emergency message and a human)",
+    "products": [
+      "kiorex"
+    ],
+    "forbiddenKeyTokens": [
+      "emergency_short_circuit",
+      "assistant_emergency"
+    ]
+  },
+  {
+    "id": "assistant_phi_guard",
+    "label": "PHI guard on model input and output",
+    "products": [
+      "kiorex"
+    ],
+    "forbiddenKeyTokens": [
+      "phi_guard",
+      "model_input_guard"
+    ]
+  },
+  {
+    "id": "marketing_consent_check",
+    "label": "Consent and opt-out check before every marketing send",
+    "products": [
+      "kiorex"
+    ],
+    "forbiddenKeyTokens": [
+      "marketing_consent_check",
+      "consent_check"
+    ]
+  },
+  {
+    "id": "k_anonymity_floor",
+    "label": "k-anonymity floor on every patient-derived aggregate",
+    "products": [
+      "kiorex"
+    ],
+    "forbiddenKeyTokens": [
+      "k_anonymity",
+      "k_anon_floor"
+    ]
+  },
+  {
+    "id": "ad_safety_assertion",
+    "label": "assertAdSafe: no PHI, health targeting or patient identifier in any ad payload",
+    "products": [
+      "kiorex"
+    ],
+    "forbiddenKeyTokens": [
+      "assert_ad_safe",
+      "ad_safety"
     ]
   }
 ] as const satisfies readonly SafetyControl[];

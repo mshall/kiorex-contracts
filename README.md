@@ -98,7 +98,7 @@ flowchart TD
 
 | Path | What | Status |
 |---|---|---|
-| `openapi/kiorly-marketplace.v1.openapi.json` | Kiorly Clinic marketplace API (Kiorly stays the producer) | :white_check_mark: 1.5.0 (contracts 1.11.0: `lt`, link registry lookup) |
+| `openapi/kiorly-marketplace.v1.openapi.json` | Kiorly Clinic marketplace API (Kiorly stays the producer) | :white_check_mark: 1.6.0 (contracts 1.12.0: `KIOREX_WHATSAPP`, pay-link entry, `modalities`; 1.5.0 `lt`, link registry lookup) |
 | `consumer/kiorex-consumer-contract.json` | Kiorex's consumer-driven expectations of that API | :white_check_mark: |
 | `openapi/kiorex-control-plane.v1.openapi.json` | Flag snapshot (HMAC, ETag/304), `flag.changed` push, universal `403 FEATURE_DISABLED` | :white_check_mark: 1.0.0 |
 | `openapi/kiorex-webhooks.v1.openapi.json` | Kiorly to Kiorex receiver, PSP webhook shape, OIDC back-channel logout | :white_check_mark: 1.1.0 |

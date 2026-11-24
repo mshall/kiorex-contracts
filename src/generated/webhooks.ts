@@ -159,6 +159,39 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        ProductAcquisitionFactDelivery: {
+            eventId: string;
+            /** @constant */
+            type: "ProductAcquisitionFact";
+            aggregateType: string;
+            aggregateId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @description Same payload as events/ProductAcquisitionFact.schema.json. Signed with the partner's webhook secret like every Kiorex-to-partner delivery; de-duplicate on eventId and factId. A partner that does not know the event ignores it (today pharmacy and lab take rates are 0, so there is no money effect). */
+            data: Record<string, never>;
+        };
+        ProviderVerificationDecidedDelivery: {
+            eventId: string;
+            /** @constant */
+            type: "ProviderVerificationDecided";
+            aggregateType: string;
+            aggregateId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @description Same payload as events/ProviderVerificationDecided.schema.json. Delivered to the Clinic that asked. */
+            data: Record<string, never>;
+        };
+        ProviderVerificationUpdateRequestedDelivery: {
+            eventId: string;
+            /** @constant */
+            type: "ProviderVerificationUpdateRequested";
+            aggregateType: string;
+            aggregateId: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @description Same payload as events/ProviderVerificationUpdateRequested.schema.json. Arrives through the existing POST /webhooks/kiorly receiver; the new value itself is never in the event. */
+            data: Record<string, never>;
+        };
     };
     responses: never;
     parameters: never;
