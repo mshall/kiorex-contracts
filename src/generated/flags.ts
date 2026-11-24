@@ -1523,6 +1523,23 @@ export const FLAG_CATALOGUE = [
     "gate": null,
     "keyPattern": false,
     "note": "PROPOSED_DEFAULT (growth Phase 2, contracts 1.12.0, Rev 2.6 credit amendment)"
+  },
+  {
+    "key": "growth.corporate",
+    "product": "kiorex",
+    "scopes": [
+      "global",
+      "market"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "No corporate code can be redeemed and no sponsor-funded benefit is quoted or applied; accounts, leads and aggregate reports stay visible to ops; benefits already reserved are settled normally",
+    "dependsOn": [
+      "growth.attribution"
+    ],
+    "launchLocked": true,
+    "gate": "Counsel (employee data processing, benefit tax treatment) and CFO (invoicing); contract template and prices are NEEDS_HUMAN (H-16)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (growth Phase 4, work package P4-C; unreleased)"
   }
 ] as const satisfies readonly FlagCatalogueEntry[];
 
@@ -1617,7 +1634,8 @@ export const FLAG_KEYS = [
   "growth.support_goodwill",
   "growth.sponsored_promotions",
   "clinic.provider_credit_v2",
-  "clinic.usage_bundles"
+  "clinic.usage_bundles",
+  "growth.corporate"
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
 
@@ -1713,6 +1731,7 @@ export const FLAGS = {
   GROWTH_SPONSORED_PROMOTIONS: "growth.sponsored_promotions",
   CLINIC_PROVIDER_CREDIT_V2: "clinic.provider_credit_v2",
   CLINIC_USAGE_BUNDLES: "clinic.usage_bundles",
+  GROWTH_CORPORATE: "growth.corporate",
 } as const;
 
 /** Pattern keys: clinic.specialty_templates.<code>, market.<country>.live. */

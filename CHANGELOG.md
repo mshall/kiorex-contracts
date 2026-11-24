@@ -2,6 +2,17 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## Unreleased (Phase 4 corporate set, work package GRW-P4-C; to be published as 1.14.0 together with the still unpublished 1.13.0 by ONE owner)
+
+Additive only. `package.json` stays 1.12.0 and no tarball is packed: 1.13.0 (wave 7 kinds, events and flags) has not been published, so a version jump here would hide it. Consumers keep the vendored 1.12.0 tarball and validate these items locally until the single publish.
+
+### Added
+- **Flag** `growth.corporate` (kiorex, global and market, **launch-locked**: counsel on employee data and benefit tax treatment, CFO on invoicing, H-16). `whenOff`: no code redeemed, no benefit quoted or applied; accounts, leads and aggregate reports stay visible to ops; benefits already reserved are settled normally.
+- **Config kind** `CORPORATE_POLICY` (schema `src/growth-config/CORPORATE_POLICY.schema.json`): eligibility checks (open code, verified e-mail domain, approved HR list), funding mode, code format, HR list match window, `minAggregateK` (cannot be below 10). It holds **no price, discount value or ceiling**: those are per-account terms entered by ops after a signed contract (NEEDS_HUMAN).
+- **Events**: `CorporateAccountCreated`, `CorporateCodeRedeemed` (Kiorex internal; opaque references only, never delivered to an employer) and `CorporateLeadReferred` (Clinic to Kiorex; company name, size bucket and an opaque contact reference only; creates no reward or fee share).
+- **`src/growth.ts`**: corporate vocabulary (`CORPORATE_ACCOUNT_STATUSES`, `CORPORATE_FUNDING_MODES`, `CORPORATE_CODE_KINDS`, `CORPORATE_VERIFIED_BY`, `CORPORATE_LEAD_SOURCES`, `CORPORATE_LEAD_STATUSES`, `CORPORATE_BENEFIT_ENTRY_TYPES` (RESERVE, REDEEM, RELEASE, REVERSE only: no wallet verb), `CORPORATE_MIN_K` = 10, `CORPORATE_ERROR_CODES`).
+- Tests: `test/growth-corporate.test.ts`; the three launch-locked lists in `flags-catalogue.test.ts` and `growth.test.ts` gained the new key.
+
 ## 1.12.0
 
 Additive minor (no field, type string, path, enum value, config key or flag removed or renamed; every new field is optional; no required field added to an existing event, schema or request; the root entry point only gains exports). Foundations of the growth **Phase 2** (work package GRW-P2-X0 of `_docs/growth/GROWTH_PHASE2_4_WORK_PACKAGES.md`). Every default is `PROPOSED_DEFAULT`. Consumers pin 1.12.0 via `npm run pack:local` (`dist-pack/kiorex-contracts-1.12.0.tgz`).

@@ -73,6 +73,8 @@ export const GROWTH_CONFIG_KINDS = [
   "ATTRIBUTION_POLICY", "SEO", "WIDGET_POLICY", "CONSENT_DEFAULTS", "COMMS_CAPS", "CAMPAIGN_GUARDRAILS", "REWARDS", "INTEGRATIONS", "EXPERIMENT_GUARDRAILS", "MARKET_GROWTH",
   // 1.12.0 (additive): Phase 2 kinds. The older proposed names above stay for compatibility; Phase 2 uses the names below.
   "CAMPAIGN_POLICY", "REFERRAL_RULES", "REWARD_RULES", "LIFECYCLE_POLICY", "ASSISTANT_POLICY", "INTEGRATION", "SPONSORED_PROMOTION_POLICY",
+  // Phase 4 (unreleased 1.14.0 set, GRW-P4-C)
+  "CORPORATE_POLICY",
 ] as const;
 export type GrowthConfigKind = (typeof GROWTH_CONFIG_KINDS)[number];
 /** Kinds with a JSON Schema in 1.10.0; the others are Phase 2 and 3 and ship their schema with their phase. */
@@ -264,3 +266,18 @@ export const ASSISTANT_ERROR_CODES = ["ASSISTANT_LINK_INVALID", "ASSISTANT_LINK_
 /** Integration kinds registered as concrete flag keys `growth.integrations.<kind>` (P1 section 8 noted none were registered). */
 export const INTEGRATION_KINDS = ["googleads", "searchconsole", "ga4", "playconsole", "appstoreconnect", "metaads", "tiktok", "whatsappcloud", "fcmapns", "crux"] as const;
 export type IntegrationKind = (typeof INTEGRATION_KINDS)[number];
+
+// ── GRW-P4-C corporate programme vocabulary (additive; unreleased 1.14.0 set). A corporate benefit is its OWN ledger: never a patient credit lot, never a provider credit, never a balance.
+export const CORPORATE_ACCOUNT_STATUSES = ["LEAD", "ACTIVE", "PAUSED", "ENDED"] as const;
+export const CORPORATE_FUNDING_MODES = ["SPONSOR_CREDIT", "PLATFORM_PROMO"] as const;
+export const CORPORATE_CODE_KINDS = ["OPEN", "LIST"] as const;
+export const CORPORATE_VERIFIED_BY = ["DOMAIN_EMAIL", "HR_LIST", "CODE"] as const;
+export const CORPORATE_LEAD_SOURCES = ["B2B_REFERRAL", "OUTBOUND", "INBOUND"] as const;
+export const CORPORATE_LEAD_STATUSES = ["NEW", "CONTACTED", "QUALIFIED", "PROPOSAL", "WON", "LOST", "DUPLICATE"] as const;
+export const CORPORATE_BENEFIT_ENTRY_TYPES = ["RESERVE", "REDEEM", "RELEASE", "REVERSE"] as const;
+/** Smallest group any employer-facing or ops corporate aggregate may show (a safety control, never a flag or a config value below it). */
+export const CORPORATE_MIN_K = 10;
+export const CORPORATE_ERROR_CODES = [
+  "CORPORATE_CODE_INVALID", "CORPORATE_CODE_EXHAUSTED", "CORPORATE_CODE_EXPIRED", "CORPORATE_NOT_ELIGIBLE", "CORPORATE_ALREADY_MEMBER", "CORPORATE_ACCOUNT_NOT_ACTIVE",
+  "CORPORATE_CEILING_EXCEEDED", "CORPORATE_MEMBER_CAP_EXCEEDED", "CORPORATE_SELF_APPROVAL", "CORPORATE_TERMS_INCOMPLETE", "CORPORATE_EMAIL_NOT_VERIFIED",
+] as const;

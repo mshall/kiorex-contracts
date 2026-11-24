@@ -7651,6 +7651,220 @@ export const EVENT_SCHEMAS = {
       "aggregateType",
       "data"
     ]
+  },
+  "CorporateAccountCreated": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CorporateAccountCreated.schema.json",
+    "title": "CorporateAccountCreated",
+    "description": "INTERNAL. A corporate account was opened by Kiorex ops (status LEAD). Opaque account reference, market and funding mode only: no company contact, no contract text, no member data (work package P4-C).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CorporateAccountCreated"
+      },
+      "aggregateType": {
+        "const": "CorporateAccount"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "accountRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "fundingMode": {
+            "enum": [
+              "SPONSOR_CREDIT",
+              "PLATFORM_PROMO"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "accountRef",
+          "fundingMode",
+          "createdAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "CorporateCodeRedeemed": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CorporateCodeRedeemed.schema.json",
+    "title": "CorporateCodeRedeemed",
+    "description": "INTERNAL. A verified patient joined a corporate programme with a code, an e-mail domain or an HR list. The employer never receives this event: it carries the verification method and an opaque member reference only, never the person, the code or any booking (work package P4-C).",
+    "x-producer": "kiorex",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CorporateCodeRedeemed"
+      },
+      "aggregateType": {
+        "const": "CorporateAccount"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "accountRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "memberRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "market": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$"
+          },
+          "verifiedBy": {
+            "enum": [
+              "CODE",
+              "DOMAIN_EMAIL",
+              "HR_LIST"
+            ]
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "accountRef",
+          "memberRef",
+          "verifiedBy",
+          "at"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "CorporateLeadReferred": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CorporateLeadReferred.schema.json",
+    "title": "CorporateLeadReferred",
+    "description": "A provider referred a company to Kiorex as an enterprise lead (Clinic to Kiorex). Company name, an optional size bucket and an opaque contact reference only: never a staff member's name, phone or e-mail, never a patient datum. No fee share or reward is created by this event (work package P4-C; any fee share is counsel and CEO gated).",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CorporateLeadReferred"
+      },
+      "aggregateType": {
+        "const": "ProviderB2BReferral"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "referralId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orgRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "companyName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "sizeBucket": {
+            "enum": [
+              "1_49",
+              "50_199",
+              "200_999",
+              "1000_PLUS",
+              "UNKNOWN"
+            ]
+          },
+          "contactRef": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "Opaque reference held by the referring provider; Kiorex ops asks the provider for the contact. Never a name, phone or e-mail."
+          },
+          "referredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "referralId",
+          "orgRef",
+          "companyName",
+          "referredAt"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
   }
 } as const;
 
@@ -9258,6 +9472,56 @@ export const EVENT_EXAMPLES = {
       "aggregateType": "SponsoredPromotion",
       "aggregateId": "spr_01JF3ZS000"
     }
+  },
+  "CorporateAccountCreated": {
+    "eventId": "01JF3ZEVTCORPORAT",
+    "type": "CorporateAccountCreated",
+    "aggregateType": "CorporateAccount",
+    "aggregateId": "cac_01JF3ZC000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "accountRef": "cac_01JF3ZC000",
+      "market": "EG",
+      "fundingMode": "SPONSOR_CREDIT",
+      "createdAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "CorporateAccount",
+      "aggregateId": "cac_01JF3ZC000"
+    }
+  },
+  "CorporateCodeRedeemed": {
+    "eventId": "01JF3ZEVTCORPORAT",
+    "type": "CorporateCodeRedeemed",
+    "aggregateType": "CorporateAccount",
+    "aggregateId": "cac_01JF3ZC000",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "accountRef": "cac_01JF3ZC000",
+      "memberRef": "cmb_01JF3ZC111",
+      "market": "EG",
+      "verifiedBy": "CODE",
+      "at": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "CorporateAccount",
+      "aggregateId": "cac_01JF3ZC000"
+    }
+  },
+  "CorporateLeadReferred": {
+    "eventId": "01JF3ZEVTCORPORAT",
+    "type": "CorporateLeadReferred",
+    "aggregateType": "ProviderB2BReferral",
+    "aggregateId": "b2b_01JF3ZC222",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "referralId": "b2b_01JF3ZC222",
+      "orgRef": "ten_01JF3Z0000",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "companyName": "Nile Logistics",
+      "sizeBucket": "200_999",
+      "contactRef": "ref-hr-1",
+      "referredAt": "2027-03-04T09:12:44.000Z",
+      "aggregateType": "ProviderB2BReferral",
+      "aggregateId": "b2b_01JF3ZC222"
+    }
   }
 } as const;
 
@@ -9788,10 +10052,28 @@ export const EVENT_META = {
     "aggregateType": "SponsoredPromotion",
     "status": "v2-draft",
     "schemaFile": "SponsoredDiscountReversed.schema.json"
+  },
+  "CorporateAccountCreated": {
+    "producer": "kiorex",
+    "aggregateType": "CorporateAccount",
+    "status": "v2-draft",
+    "schemaFile": "CorporateAccountCreated.schema.json"
+  },
+  "CorporateCodeRedeemed": {
+    "producer": "kiorex",
+    "aggregateType": "CorporateAccount",
+    "status": "v2-draft",
+    "schemaFile": "CorporateCodeRedeemed.schema.json"
+  },
+  "CorporateLeadReferred": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "ProviderB2BReferral",
+    "status": "v2-draft",
+    "schemaFile": "CorporateLeadReferred.schema.json"
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -9977,6 +10259,12 @@ export type SponsoredDiscountReleasedData = { "promotionId": string; "version": 
 export type SponsoredDiscountReleasedEvent = EventEnvelope<"SponsoredDiscountReleased", SponsoredDiscountReleasedData>;
 export type SponsoredDiscountReversedData = { "promotionId": string; "version": number; "reservationRef": string; "bookingRef": string; "amountMinor": number; "currency": string; "reason"?: string; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type SponsoredDiscountReversedEvent = EventEnvelope<"SponsoredDiscountReversed", SponsoredDiscountReversedData>;
+export type CorporateAccountCreatedData = { "accountRef": string; "market"?: string; "fundingMode": "SPONSOR_CREDIT" | "PLATFORM_PROMO"; "createdAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CorporateAccountCreatedEvent = EventEnvelope<"CorporateAccountCreated", CorporateAccountCreatedData>;
+export type CorporateCodeRedeemedData = { "accountRef": string; "memberRef": string; "market"?: string; "verifiedBy": "CODE" | "DOMAIN_EMAIL" | "HR_LIST"; "at": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CorporateCodeRedeemedEvent = EventEnvelope<"CorporateCodeRedeemed", CorporateCodeRedeemedData>;
+export type CorporateLeadReferredData = { "referralId": string; "orgRef": string; "clinicId"?: string; "companyName": string; "sizeBucket"?: "1_49" | "50_199" | "200_999" | "1000_PLUS" | "UNKNOWN"; "contactRef"?: string; "referredAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CorporateLeadReferredEvent = EventEnvelope<"CorporateLeadReferred", CorporateLeadReferredData>;
 
 export interface EventMap {
   "APPOINTMENT_CONFIRMED": AppointmentConfirmedEvent;
@@ -10066,4 +10354,7 @@ export interface EventMap {
   "SponsoredDiscountDebited": SponsoredDiscountDebitedEvent;
   "SponsoredDiscountReleased": SponsoredDiscountReleasedEvent;
   "SponsoredDiscountReversed": SponsoredDiscountReversedEvent;
+  "CorporateAccountCreated": CorporateAccountCreatedEvent;
+  "CorporateCodeRedeemed": CorporateCodeRedeemedEvent;
+  "CorporateLeadReferred": CorporateLeadReferredEvent;
 }

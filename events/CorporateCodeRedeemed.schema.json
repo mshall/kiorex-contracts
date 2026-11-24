@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/CorporateCodeRedeemed.schema.json",
+  "title": "CorporateCodeRedeemed",
+  "description": "INTERNAL. A verified patient joined a corporate programme with a code, an e-mail domain or an HR list. The employer never receives this event: it carries the verification method and an opaque member reference only, never the person, the code or any booking (work package P4-C).",
+  "x-producer": "kiorex",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "CorporateCodeRedeemed"
+    },
+    "aggregateType": {
+      "const": "CorporateAccount"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "accountRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "memberRef": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "verifiedBy": {
+          "enum": [
+            "CODE",
+            "DOMAIN_EMAIL",
+            "HR_LIST"
+          ]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "accountRef",
+        "memberRef",
+        "verifiedBy",
+        "at"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

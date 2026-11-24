@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/CorporateLeadReferred.schema.json",
+  "title": "CorporateLeadReferred",
+  "description": "A provider referred a company to Kiorex as an enterprise lead (Clinic to Kiorex). Company name, an optional size bucket and an opaque contact reference only: never a staff member's name, phone or e-mail, never a patient datum. No fee share or reward is created by this event (work package P4-C; any fee share is counsel and CEO gated).",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "CorporateLeadReferred"
+    },
+    "aggregateType": {
+      "const": "ProviderB2BReferral"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "referralId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orgRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (tenant) reference that owns the link code; the same value the signed `lt` carries as `o`. Additive in 1.11.0 on ReferralLinkCreated (optional there); required on ReferralLinkRevoked."
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "companyName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sizeBucket": {
+          "enum": [
+            "1_49",
+            "50_199",
+            "200_999",
+            "1000_PLUS",
+            "UNKNOWN"
+          ]
+        },
+        "contactRef": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Opaque reference held by the referring provider; Kiorex ops asks the provider for the contact. Never a name, phone or e-mail."
+        },
+        "referredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "referralId",
+        "orgRef",
+        "companyName",
+        "referredAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

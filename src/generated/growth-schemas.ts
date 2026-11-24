@@ -518,6 +518,87 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "textVersionIds"
     ]
   },
+  "CORPORATE_POLICY": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/CORPORATE_POLICY.schema.json",
+    "title": "Growth config: CORPORATE_POLICY",
+    "description": "Corporate programme rules (GRW-P4-C): which eligibility checks are on, the funding mode, the code format and the aggregate floor of employer reports. No price, discount value or ceiling lives here: those are per-account terms set by ops after the contract (NEEDS_HUMAN). Money relevant: two-person rule. Added in the unreleased 1.14.0 set. PROPOSED_DEFAULT until ratified. Unknown keys rejected; the aggregate floor can be raised, never below 10.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "description": "Master switch of the rule set (the launch-locked flag growth.corporate still decides whether anything runs)."
+      },
+      "eligibility": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "openCode": {
+            "type": "boolean",
+            "description": "A code usable by anyone who holds it (up to its redemption cap)."
+          },
+          "domainEmail": {
+            "type": "boolean",
+            "description": "Eligibility by the domain of a verified Passport e-mail claim. Never an unverified address."
+          },
+          "hrList": {
+            "type": "boolean",
+            "description": "Eligibility by a two-person-approved HR list (keyed hashes only, deleted after the matching window)."
+          }
+        }
+      },
+      "fundingMode": {
+        "enum": [
+          "SPONSOR_CREDIT",
+          "PLATFORM_PROMO"
+        ],
+        "description": "SPONSOR_CREDIT: the corporate funds a ceiling in its own separate benefit ledger. PLATFORM_PROMO: Kiorex funds it as a marketing expense (counsel and CFO decide)."
+      },
+      "minAggregateK": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 1000,
+        "description": "Smallest group an employer or ops report may show. The floor 10 is a safety control, not a preference."
+      },
+      "codeFormat": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "length": {
+            "type": "integer",
+            "minimum": 8,
+            "maximum": 16,
+            "description": "Characters of the Crockford base32 code (no I, L, O, U). PROPOSED_DEFAULT 10."
+          },
+          "groupSize": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8,
+            "description": "Display grouping with a hyphen; 0 = none. Hyphens and spaces are ignored on input."
+          }
+        }
+      },
+      "hrList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "matchWindowDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "description": "Days an approved list can be matched; after that its hashed rows are deleted. PROPOSED_DEFAULT 30 (privacy, counsel to confirm)."
+          },
+          "maxRows": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "description": "Largest list one upload may carry."
+          }
+        }
+      }
+    }
+  },
   "INTEGRATION": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION.schema.json",

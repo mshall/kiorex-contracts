@@ -808,6 +808,25 @@ export const EVENTS = [
     data: { properties: { promotionId: ID, version: { type: "integer", minimum: 1 }, reservationRef: ID, bookingRef: ID, amountMinor: { type: "integer", minimum: 1 }, currency: { type: "string", minLength: 3, maxLength: 3 }, reason: REASON_CODE, at: TS, ...AGG }, required: ["promotionId", "version", "reservationRef", "bookingRef", "amountMinor", "currency", "at"] },
     example: { aggregateId: "spr_01JF3ZS000", data: { promotionId: "spr_01JF3ZS000", version: 2, reservationRef: "rsv_01JF3ZT000", bookingRef: "kx_bk_01JF3Z8P2M", amountMinor: 10000, currency: "EGP", reason: t === "SponsoredDiscountReserved" ? "HELD" : t === "SponsoredDiscountDebited" ? "VISIT_COMPLETED" : t === "SponsoredDiscountReleased" ? "CANCELLED" : "REFUNDED", at: "2027-03-12T10:00:00.000Z", aggregateType: "SponsoredPromotion", aggregateId: "spr_01JF3ZS000" } },
   })),
+  // ── Phase 4 corporate programme (GRW-P4-C; additive, work package order 1.14.0, still unreleased: see CHANGELOG "Unreleased")
+  {
+    type: "CorporateAccountCreated", producer: "kiorex", aggregateType: "CorporateAccount", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A corporate account was opened by Kiorex ops (status LEAD). Opaque account reference, market and funding mode only: no company contact, no contract text, no member data (work package P4-C).",
+    data: { properties: { accountRef: ID, market: MARKET, fundingMode: { enum: ["SPONSOR_CREDIT", "PLATFORM_PROMO"] }, createdAt: TS, ...AGG }, required: ["accountRef", "fundingMode", "createdAt"] },
+    example: { aggregateId: "cac_01JF3ZC000", data: { accountRef: "cac_01JF3ZC000", market: "EG", fundingMode: "SPONSOR_CREDIT", createdAt: "2027-03-04T09:12:44.000Z", aggregateType: "CorporateAccount", aggregateId: "cac_01JF3ZC000" } },
+  },
+  {
+    type: "CorporateCodeRedeemed", producer: "kiorex", aggregateType: "CorporateAccount", status: "v2-draft", group: "growth",
+    description: "INTERNAL. A verified patient joined a corporate programme with a code, an e-mail domain or an HR list. The employer never receives this event: it carries the verification method and an opaque member reference only, never the person, the code or any booking (work package P4-C).",
+    data: { properties: { accountRef: ID, memberRef: ID, market: MARKET, verifiedBy: { enum: ["CODE", "DOMAIN_EMAIL", "HR_LIST"] }, at: TS, ...AGG }, required: ["accountRef", "memberRef", "verifiedBy", "at"] },
+    example: { aggregateId: "cac_01JF3ZC000", data: { accountRef: "cac_01JF3ZC000", memberRef: "cmb_01JF3ZC111", market: "EG", verifiedBy: "CODE", at: "2027-03-04T09:12:44.000Z", aggregateType: "CorporateAccount", aggregateId: "cac_01JF3ZC000" } },
+  },
+  {
+    type: "CorporateLeadReferred", producer: "kiorly-clinic", aggregateType: "ProviderB2BReferral", status: "v2-draft", group: "growth",
+    description: "A provider referred a company to Kiorex as an enterprise lead (Clinic to Kiorex). Company name, an optional size bucket and an opaque contact reference only: never a staff member's name, phone or e-mail, never a patient datum. No fee share or reward is created by this event (work package P4-C; any fee share is counsel and CEO gated).",
+    data: { properties: { referralId: ID, orgRef: LINK_ORG_REF, clinicId: ID, companyName: { type: "string", minLength: 2, maxLength: 120 }, sizeBucket: { enum: ["1_49", "50_199", "200_999", "1000_PLUS", "UNKNOWN"] }, contactRef: { type: "string", maxLength: 80, description: "Opaque reference held by the referring provider; Kiorex ops asks the provider for the contact. Never a name, phone or e-mail." }, referredAt: TS, ...AGG }, required: ["referralId", "orgRef", "companyName", "referredAt"] },
+    example: { aggregateId: "b2b_01JF3ZC222", data: { referralId: "b2b_01JF3ZC222", orgRef: "ten_01JF3Z0000", clinicId: "clinic_01JF3Z7ZZZ", companyName: "Nile Logistics", sizeBucket: "200_999", contactRef: "ref-hr-1", referredAt: "2027-03-04T09:12:44.000Z", aggregateType: "ProviderB2BReferral", aggregateId: "b2b_01JF3ZC222" } },
+  },
 ];
 
 export const ENVELOPE = {

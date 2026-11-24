@@ -698,6 +698,30 @@
       "producer": "kiorly-clinic",
       "aggregateType": "SponsoredPromotion",
       "status": "v2-draft"
+    },
+    {
+      "type": "CorporateAccountCreated",
+      "aliases": [],
+      "file": "CorporateAccountCreated",
+      "producer": "kiorex",
+      "aggregateType": "CorporateAccount",
+      "status": "v2-draft"
+    },
+    {
+      "type": "CorporateCodeRedeemed",
+      "aliases": [],
+      "file": "CorporateCodeRedeemed",
+      "producer": "kiorex",
+      "aggregateType": "CorporateAccount",
+      "status": "v2-draft"
+    },
+    {
+      "type": "CorporateLeadReferred",
+      "aliases": [],
+      "file": "CorporateLeadReferred",
+      "producer": "kiorly-clinic",
+      "aggregateType": "ProviderB2BReferral",
+      "status": "v2-draft"
     }
   ]
 }
