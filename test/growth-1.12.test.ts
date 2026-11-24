@@ -194,7 +194,7 @@ describe("1.12.0 configuration kinds", () => {
     REWARD_RULES: { mode: "COUPON", currency: "EGP", amounts: { referrerMinor: 0, refereeMinor: 0, repeatMinor: 0, promoMinor: 0 }, expiryMonths: 12, perUserAnnualCapMinor: 0, perCampaignCapMinor: 0, ruleBudgetCeilingMinor: 0, redemption: { maxPercentOfDeposit: 100, minPayableMinor: 0, postToPayLedger: false } },
     LIFECYCLE_POLICY: { messageClasses: ["TRANSACTIONAL", "SECURITY", "CLINICAL", "MARKETING"], frequencyCaps: { marketingPerDay: 1, marketingPerWeek: 3 }, quietHours: { start: "21:00", end: "09:00", timezone: "Africa/Cairo" }, journeys: { welcome: { enabled: true, messageClass: "TRANSACTIONAL" } }, segments: { new_users: { attributes: ["stage", "platform", "language"] } }, holdoutBps: 0 },
     ASSISTANT_POLICY: { languages: ["ar", "en"], toolsByState: { SEARCH: ["search_providers", "get_slots"] }, budgets: { tokensPerTurn: 1500, tokensPerConversation: 8000, turnsPerConversation: 40, tokensPerSubjectDay: 30000, costPerMarketDayMinor: 200000 }, rateLimits: { messagesPerNumberPerHour: 30, globalConcurrency: 50 }, retentionDays: 30, escalationSlaMinutes: 30, model: { mode: "mock", providerLabel: "mock" } },
-    INTEGRATION: { kind: "googleads", mode: "mock", secretRef: "growth/googleads/dev", accountLabel: "Main account", pullSchedule: "daily", rateBudgetPerHour: 60, retentionDays: 395 },
+    INTEGRATION: { integrations: { googleads: { mode: "mock", secretRef: "growth/googleads/dev", accountLabel: "Main account", pullSchedule: "daily", rateBudgetPerHour: 60, retentionDays: 395 } } },
   };
   it("the six Phase 2 kinds ship a schema and are named; the older ten are still named", () => {
     for (const k of Object.keys(GOOD)) { expect(Object.keys(GROWTH_CONFIG_SCHEMAS)).toContain(k); expect(GROWTH_CONFIG_KINDS).toContain(k); expect(readJson(`src/growth-config/${k}.schema.json`)).toEqual((GROWTH_CONFIG_SCHEMAS as any)[k]); }
@@ -219,8 +219,10 @@ describe("1.12.0 configuration kinds", () => {
     expect(validateGrowthConfig("LIFECYCLE_POLICY", { ...l, segments: { s1: { attributes: ["specialty"] } } }).valid).toBe(false);
     expect(validateGrowthConfig("LIFECYCLE_POLICY", { ...l, segments: { s1: { attributes: ["diagnosis"] } } }).valid).toBe(false);
     expect(validateGrowthConfig("REWARD_RULES", { ...GOOD.REWARD_RULES, mode: "CASH" }).valid).toBe(false);
-    expect(validateGrowthConfig("INTEGRATION", { ...GOOD.INTEGRATION, secretRef: "SK_LIVE_ABCDEFGHIJKLMNOP" }).valid).toBe(false);
-    expect(validateGrowthConfig("INTEGRATION", { ...GOOD.INTEGRATION, mode: "live" }).valid).toBe(false);
+    const one = (over: object) => ({ integrations: { googleads: { ...(GOOD.INTEGRATION as any).integrations.googleads, ...over } } });
+    expect(validateGrowthConfig("INTEGRATION", one({ secretRef: "SK_LIVE_ABCDEFGHIJKLMNOP" })).valid).toBe(false);
+    expect(validateGrowthConfig("INTEGRATION", one({ mode: "live" })).valid).toBe(false);
+    expect(validateGrowthConfig("INTEGRATION", { integrations: { "Bad Kind": (GOOD.INTEGRATION as any).integrations.googleads } }).valid).toBe(false);
   });
   it("ATTRIBUTION_POLICY.ltBinding and SEO.delistedStatus are optional additions; a 1.11.0 payload still validates", () => {
     const attr = { providerTouchWindowDays: 30, patientReferralWindowDays: 30, campaignClickWindowDays: 7, campaignViewWindowHours: 0, visitorKeyMaxDays: 180, newPatientLookbackMonths: 24, touchEvidenceRetentionMonths: 25, unlinkedTouchRetentionMonths: 13, minDwellMsForProviderTouch: 1000, ltTokenTtlMinutes: 30, precedence: "PROVIDER_FIRST", allowOfflineEvidence: false };

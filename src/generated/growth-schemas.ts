@@ -522,56 +522,68 @@ export const GROWTH_CONFIG_SCHEMAS = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION.schema.json",
     "title": "Growth config: INTEGRATION",
-    "description": "Non-secret settings of one read-only marketing integration kind (GRW-P2-F): mode, secretRef names, account label, pull schedule, rate budget and retention. One version per kind and scope; secrets are never stored, only their names. Integrations never create or edit anything on an external platform (AD-1). Added in contracts 1.12.0. Every default is PROPOSED_DEFAULT until the founder ratifies it. Unknown keys are rejected; secrets are never stored here, only secretRef names.",
+    "description": "Non-secret settings of the read-only marketing integrations (GRW-P2-F), keyed by integration kind: mode, secretRef names, account label, pull schedule, rate budget and retention. secrets are never stored, only their names. Integrations never create or edit anything on an external platform (AD-1). Added in contracts 1.12.0. Every default is PROPOSED_DEFAULT until the founder ratifies it. Unknown keys are rejected; secrets are never stored here, only secretRef names.",
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "kind": {
-        "type": "string",
-        "pattern": "^[a-z][a-z0-9_]{1,31}$",
-        "description": "googleads, searchconsole, ga4, playconsole, appstoreconnect, metaads, tiktok, whatsappcloud, fcmapns, crux or a kind added later."
-      },
-      "mode": {
-        "enum": [
-          "mock",
-          "real"
-        ],
-        "description": "PROPOSED_DEFAULT mock. real is never exercised in CI."
-      },
-      "secretRef": {
-        "type": [
-          "string",
-          "null"
-        ],
-        "pattern": "^[a-z0-9][a-z0-9/_.-]{0,127}$",
-        "description": "NAME of a secret in the secrets store, never the value."
-      },
-      "accountLabel": {
-        "type": "string",
-        "maxLength": 80,
-        "description": "Display label of the account (never an id or a secret)."
-      },
-      "pullSchedule": {
-        "type": "string",
-        "pattern": "^(hourly|daily|weekly|off)$"
-      },
-      "rateBudgetPerHour": {
-        "type": "integer",
-        "minimum": 1,
-        "maximum": 100000
-      },
-      "retentionDays": {
-        "type": "integer",
-        "minimum": 1,
-        "maximum": 3650
+      "integrations": {
+        "type": "object",
+        "maxProperties": 20,
+        "propertyNames": {
+          "pattern": "^[a-z][a-z0-9_]{1,31}$",
+          "description": "Integration kind: googleads, searchconsole, ga4, playconsole, appstoreconnect, metaads, tiktok, whatsappcloud, fcmapns, crux or a kind added later."
+        },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "enum": [
+                "mock",
+                "real"
+              ],
+              "description": "PROPOSED_DEFAULT mock. real is never exercised in CI."
+            },
+            "secretRef": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[a-z0-9][a-z0-9/_.-]{0,127}$",
+              "description": "NAME of a secret in the secrets store, never the value."
+            },
+            "accountLabel": {
+              "type": "string",
+              "maxLength": 80,
+              "description": "Display label of the account (never an id or a secret)."
+            },
+            "pullSchedule": {
+              "type": "string",
+              "pattern": "^(hourly|daily|weekly|off)$"
+            },
+            "rateBudgetPerHour": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "retentionDays": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3650
+            }
+          },
+          "required": [
+            "mode",
+            "pullSchedule",
+            "rateBudgetPerHour",
+            "retentionDays"
+          ]
+        },
+        "description": "Settings per integration kind, keyed by kind. One version covers every integration of the scope; the platform flag growth.integrations.<kind> still switches each one."
       }
     },
     "required": [
-      "kind",
-      "mode",
-      "pullSchedule",
-      "rateBudgetPerHour",
-      "retentionDays"
+      "integrations"
     ]
   },
   "LIFECYCLE_POLICY": {
