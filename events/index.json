@@ -108,6 +108,14 @@
       "status": "emitted"
     },
     {
+      "type": "COMMISSION_CHARGE_STATUS_CHANGED",
+      "aliases": [],
+      "file": "COMMISSION_CHARGE_STATUS_CHANGED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Appointment",
+      "status": "emitted"
+    },
+    {
       "type": "REVIEW_INVITATION_ELIGIBLE",
       "aliases": [],
       "file": "REVIEW_INVITATION_ELIGIBLE",

@@ -1,0 +1,511 @@
+{
+  "description": "COM-2 vectors (TEST placeholders, not rates): every implementation resolves the same effective rate and rounds the same amount.",
+  "effective": [
+    {
+      "name": "nothing set is NOT_SET (no charge)",
+      "at": "2026-05-01T00:00:00.000Z",
+      "history": [],
+      "expected": {
+        "state": "NOT_SET",
+        "source": null,
+        "version": null
+      }
+    },
+    {
+      "name": "before any row starts",
+      "at": "2025-12-31T23:59:59.000Z",
+      "history": [
+        {
+          "version": 1,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-01-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1000,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-06-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1500,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 1,
+          "scope": "ORG",
+          "kind": "RATE",
+          "effectiveFrom": "2026-03-01T00:00:00.000Z",
+          "reason": "negotiated",
+          "spec": {
+            "feeType": "FLAT",
+            "percentBps": null,
+            "flatMinor": 4000,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "ORG",
+          "kind": "INHERIT",
+          "effectiveFrom": "2026-09-01T00:00:00.000Z",
+          "reason": "contract ended",
+          "spec": null
+        }
+      ],
+      "expected": {
+        "state": "NOT_SET",
+        "source": null,
+        "version": null
+      }
+    },
+    {
+      "name": "default v1 applies from its start",
+      "at": "2026-01-01T00:00:00.000Z",
+      "history": [
+        {
+          "version": 1,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-01-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1000,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-06-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1500,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 1,
+          "scope": "ORG",
+          "kind": "RATE",
+          "effectiveFrom": "2026-03-01T00:00:00.000Z",
+          "reason": "negotiated",
+          "spec": {
+            "feeType": "FLAT",
+            "percentBps": null,
+            "flatMinor": 4000,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "ORG",
+          "kind": "INHERIT",
+          "effectiveFrom": "2026-09-01T00:00:00.000Z",
+          "reason": "contract ended",
+          "spec": null
+        }
+      ],
+      "expected": {
+        "state": "SET",
+        "source": "DEFAULT",
+        "version": 1
+      }
+    },
+    {
+      "name": "override from 1 March",
+      "at": "2026-03-01T00:00:00.000Z",
+      "history": [
+        {
+          "version": 1,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-01-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1000,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-06-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1500,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 1,
+          "scope": "ORG",
+          "kind": "RATE",
+          "effectiveFrom": "2026-03-01T00:00:00.000Z",
+          "reason": "negotiated",
+          "spec": {
+            "feeType": "FLAT",
+            "percentBps": null,
+            "flatMinor": 4000,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "ORG",
+          "kind": "INHERIT",
+          "effectiveFrom": "2026-09-01T00:00:00.000Z",
+          "reason": "contract ended",
+          "spec": null
+        }
+      ],
+      "expected": {
+        "state": "SET",
+        "source": "OVERRIDE",
+        "version": 1
+      }
+    },
+    {
+      "name": "override survives a later default change",
+      "at": "2026-07-01T00:00:00.000Z",
+      "history": [
+        {
+          "version": 1,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-01-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1000,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-06-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1500,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 1,
+          "scope": "ORG",
+          "kind": "RATE",
+          "effectiveFrom": "2026-03-01T00:00:00.000Z",
+          "reason": "negotiated",
+          "spec": {
+            "feeType": "FLAT",
+            "percentBps": null,
+            "flatMinor": 4000,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "ORG",
+          "kind": "INHERIT",
+          "effectiveFrom": "2026-09-01T00:00:00.000Z",
+          "reason": "contract ended",
+          "spec": null
+        }
+      ],
+      "expected": {
+        "state": "SET",
+        "source": "OVERRIDE",
+        "version": 1
+      }
+    },
+    {
+      "name": "inherit hands back to the default in force (v2)",
+      "at": "2026-09-01T00:00:00.000Z",
+      "history": [
+        {
+          "version": 1,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-01-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1000,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-06-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1500,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 1,
+          "scope": "ORG",
+          "kind": "RATE",
+          "effectiveFrom": "2026-03-01T00:00:00.000Z",
+          "reason": "negotiated",
+          "spec": {
+            "feeType": "FLAT",
+            "percentBps": null,
+            "flatMinor": 4000,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "ORG",
+          "kind": "INHERIT",
+          "effectiveFrom": "2026-09-01T00:00:00.000Z",
+          "reason": "contract ended",
+          "spec": null
+        }
+      ],
+      "expected": {
+        "state": "SET",
+        "source": "DEFAULT",
+        "version": 2
+      }
+    },
+    {
+      "name": "the instant before inherit still has the override",
+      "at": "2026-08-31T23:59:59.000Z",
+      "history": [
+        {
+          "version": 1,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-01-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1000,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "DEFAULT",
+          "kind": "RATE",
+          "effectiveFrom": "2026-06-01T00:00:00.000Z",
+          "reason": null,
+          "spec": {
+            "feeType": "PERCENT",
+            "percentBps": 1500,
+            "flatMinor": null,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 1,
+          "scope": "ORG",
+          "kind": "RATE",
+          "effectiveFrom": "2026-03-01T00:00:00.000Z",
+          "reason": "negotiated",
+          "spec": {
+            "feeType": "FLAT",
+            "percentBps": null,
+            "flatMinor": 4000,
+            "minMinor": null,
+            "maxMinor": null,
+            "mode": null
+          }
+        },
+        {
+          "version": 2,
+          "scope": "ORG",
+          "kind": "INHERIT",
+          "effectiveFrom": "2026-09-01T00:00:00.000Z",
+          "reason": "contract ended",
+          "spec": null
+        }
+      ],
+      "expected": {
+        "state": "SET",
+        "source": "OVERRIDE",
+        "version": 1
+      }
+    },
+    {
+      "name": "an inherit row with no default is NOT_SET",
+      "at": "2026-10-01T00:00:00.000Z",
+      "history": [
+        {
+          "version": 2,
+          "scope": "ORG",
+          "kind": "INHERIT",
+          "effectiveFrom": "2026-09-01T00:00:00.000Z",
+          "reason": "contract ended",
+          "spec": null
+        }
+      ],
+      "expected": {
+        "state": "NOT_SET",
+        "source": null,
+        "version": null
+      }
+    }
+  ],
+  "amount": [
+    {
+      "name": "percent half up",
+      "basisMinor": 10005,
+      "spec": {
+        "feeType": "PERCENT",
+        "percentBps": 1000,
+        "flatMinor": null,
+        "minMinor": null,
+        "maxMinor": null,
+        "mode": null
+      },
+      "expected": 1001
+    },
+    {
+      "name": "percent exact",
+      "basisMinor": 10050,
+      "spec": {
+        "feeType": "PERCENT",
+        "percentBps": 1000,
+        "flatMinor": null,
+        "minMinor": null,
+        "maxMinor": null,
+        "mode": null
+      },
+      "expected": 1005
+    },
+    {
+      "name": "percent repeating",
+      "basisMinor": 333,
+      "spec": {
+        "feeType": "PERCENT",
+        "percentBps": 3333,
+        "flatMinor": null,
+        "minMinor": null,
+        "maxMinor": null,
+        "mode": null
+      },
+      "expected": 111
+    },
+    {
+      "name": "floor applies",
+      "basisMinor": 1000,
+      "spec": {
+        "feeType": "PERCENT",
+        "percentBps": 1000,
+        "flatMinor": null,
+        "minMinor": 500,
+        "maxMinor": null,
+        "mode": null
+      },
+      "expected": 500
+    },
+    {
+      "name": "cap applies",
+      "basisMinor": 1000000,
+      "spec": {
+        "feeType": "PERCENT",
+        "percentBps": 1000,
+        "flatMinor": null,
+        "minMinor": null,
+        "maxMinor": 5000,
+        "mode": null
+      },
+      "expected": 5000
+    },
+    {
+      "name": "flat ignores the basis",
+      "basisMinor": 999999,
+      "spec": {
+        "feeType": "FLAT",
+        "percentBps": null,
+        "flatMinor": 2500,
+        "minMinor": null,
+        "maxMinor": null,
+        "mode": null
+      },
+      "expected": 2500
+    },
+    {
+      "name": "zero percent is an explicit zero",
+      "basisMinor": 12345,
+      "spec": {
+        "feeType": "PERCENT",
+        "percentBps": 0,
+        "flatMinor": null,
+        "minMinor": null,
+        "maxMinor": null,
+        "mode": null
+      },
+      "expected": 0
+    }
+  ]
+}

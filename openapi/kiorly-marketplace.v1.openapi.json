@@ -3,7 +3,7 @@
   "info": {
     "title": "Kiorex Marketplace API",
     "version": "1.7.0",
-    "description": "Platform connector for Kiorex (KX-01). Authenticate with HMAC headers. v1.2.0 (KX-09 Rev 2.3, additive): provider sync profession/edition/home-visit fields, serviceLocation+district on slots, visitAddress on holds, 422 OUT_OF_COVERAGE, care-plan-requests (P3 draft). The same client serves both Kiorly editions (Clinic and Nurse). v1.4.0 (contracts 1.10.0, additive): optional signed `acquisition` block on POST /bookings (growth attribution evidence, ARCH section 6.7); a Clinic that does not know it ignores it and treats the booking as UNATTRIBUTED; booking GET and every response are unchanged. v1.5.0 (contracts 1.11.0, additive): optional Clinic link token `lt` on POST /bookings (GRW-P1-C/D1: a valid, unexpired token of an ACTIVE referral link of the booking organisation makes the booking provider-led; it can only remove a commission); signed link-registry lookup `GET /referral-links/{code}` and reconciliation list `GET /referral-links` (a code is known to Kiorex before its first token; revocations are visible). v1.6.0 (contracts 1.12.0, additive): booking `channel` accepts KIOREX_WHATSAPP; the Kiorex pay-link registration call is documented (`POST /pay/links`, hosted on Kiorex, called by Kiorly); provider listings may declare `modalities` including VIDEO; events WAITLIST_OFFER_CREATED/EXPIRED, optional Rx `items[]` and optional `followUp.intervalDays` on the visit summary; waitlist join/leave and slot capacity were already documented in 1.1.0 and are unchanged. Rewards never reach the clinic: no referral or reward field exists on any marketplace call. Rev 2.6 additions (still 1.6.0, additive): signed promotion commands `POST /promotions/{promotionId}/reserve` and `/release` (provider-sponsored promotions, P2-S: the clinic funds its own discount, it is never a Kiorex discount), optional `sponsoredDiscount` block on `POST /bookings`, optional `tender` on the two deposit-paid calls (gross and funding sources, never a patient identity)."
+    "description": "Platform connector for Kiorex (KX-01). Authenticate with HMAC headers. v1.2.0 (KX-09 Rev 2.3, additive): provider sync profession/edition/home-visit fields, serviceLocation+district on slots, visitAddress on holds, 422 OUT_OF_COVERAGE, care-plan-requests (P3 draft). The same client serves both Kiorly editions (Clinic and Nurse). v1.4.0 (contracts 1.10.0, additive): optional signed `acquisition` block on POST /bookings (growth attribution evidence, ARCH section 6.7); a Clinic that does not know it ignores it and treats the booking as UNATTRIBUTED; booking GET and every response are unchanged. v1.5.0 (contracts 1.11.0, additive): optional Clinic link token `lt` on POST /bookings (GRW-P1-C/D1: a valid, unexpired token of an ACTIVE referral link of the booking organisation makes the booking provider-led; it can only remove a commission); signed link-registry lookup `GET /referral-links/{code}` and reconciliation list `GET /referral-links` (a code is known to Kiorex before its first token; revocations are visible). v1.6.0 (contracts 1.12.0, additive): booking `channel` accepts KIOREX_WHATSAPP; the Kiorex pay-link registration call is documented (`POST /pay/links`, hosted on Kiorex, called by Kiorly); provider listings may declare `modalities` including VIDEO; events WAITLIST_OFFER_CREATED/EXPIRED, optional Rx `items[]` and optional `followUp.intervalDays` on the visit summary; waitlist join/leave and slot capacity were already documented in 1.1.0 and are unchanged. Rewards never reach the clinic: no referral or reward field exists on any marketplace call. Rev 2.6 additions (still 1.6.0, additive): signed promotion commands `POST /promotions/{promotionId}/reserve` and `/release` (provider-sponsored promotions, P2-S: the clinic funds its own discount, it is never a Kiorex discount), optional `sponsoredDiscount` block on `POST /bookings`, optional `tender` on the two deposit-paid calls (gross and funding sources, never a patient identity). v1.7.0 additions (still 1.7.0, additive, contracts 1.13.0): signed `POST /commission-rates` (COM-2: the organisation's commission rate view, read-only on the Clinic) and the documented `POST /commission-collections` (COM-1)."
   },
   "servers": [
     {
@@ -1822,6 +1822,183 @@
           }
         }
       }
+    },
+    "/commission-rates": {
+      "post": {
+        "operationId": "marketplaceRecordCommissionRate",
+        "summary": "Kiorex reports the organisation's commission rate view (COM-2, contracts 1.13.0); idempotent, newest version wins",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommissionRateView"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Applied (or ignored as not newer)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applied": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_RATE_VIEW: the view is malformed"
+          },
+          "404": {
+            "description": "The view names another organisation"
+          }
+        }
+      }
+    },
+    "/commission-collections": {
+      "post": {
+        "operationId": "marketplaceRecordCommissionCollection",
+        "summary": "Kiorex reports a commission collection run (COM-1); idempotent on runId, newest version wins, refused whole when it names another organisation's charge. Documented in contracts 1.13.0 (the endpoint has existed since COM-1).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "runId",
+                  "orgRef",
+                  "periodKey",
+                  "status",
+                  "mode",
+                  "currency",
+                  "claimsCount",
+                  "claimsMinor",
+                  "version"
+                ],
+                "properties": {
+                  "runId": {
+                    "type": "string"
+                  },
+                  "orgRef": {
+                    "type": "string"
+                  },
+                  "periodKey": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "enum": [
+                      "NET_FROM_PAYOUT",
+                      "AUTO_CHARGE_SAVED_METHOD",
+                      "INVOICE_AND_COLLECT"
+                    ]
+                  },
+                  "modeRequested": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "fallbackReason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "provider": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "currency": {
+                    "type": "string"
+                  },
+                  "claimsCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "claimsMinor": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "collectedMinor": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "deductedMinor": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "invoicedMinor": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "paidMinor": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "version": {
+                    "type": "integer",
+                    "description": "Monotonic; newest wins."
+                  },
+                  "claims": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "attempts": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  },
+                  "timeline": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Applied (or ignored as not newer)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applied": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed, or names a charge that does not belong to the organisation"
+          },
+          "404": {
+            "description": "Unknown organisation"
+          }
+        }
+      }
     }
   },
   "webhooks": {
@@ -2701,6 +2878,139 @@
           "reason": {
             "type": "string",
             "pattern": "^[A-Z][A-Z0-9_]{2,63}$"
+          }
+        }
+      },
+      "CommissionRateView": {
+        "type": "object",
+        "required": [
+          "orgRef",
+          "product",
+          "version",
+          "history"
+        ],
+        "description": "COM-2 (additive, contracts 1.13.0). The organisation's commission rate as Kiorex sets it (default per organisation type, override per organisation, maker-checker, append-only, effective-dated). Read-only on the product side: it only displays it. The effective rate is computed from `history` at read time (reference: effectiveCommissionRate in @kiorex/contracts). No numeric rate is shipped: an empty history is 'rate not set', no commission is charged. No actor identity travels.",
+        "properties": {
+          "orgRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "product": {
+            "enum": [
+              "CLINIC",
+              "PHARMACY",
+              "LAB"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "Monotonic; the newest version wins, an equal or older one is ignored."
+          },
+          "mode": {
+            "enum": [
+              "NET_FROM_PAYOUT",
+              "AUTO_CHARGE_SAVED_METHOD",
+              "INVOICE_AND_COLLECT",
+              null
+            ]
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "version",
+                "scope",
+                "kind",
+                "effectiveFrom"
+              ],
+              "properties": {
+                "version": {
+                  "type": "integer"
+                },
+                "scope": {
+                  "enum": [
+                    "DEFAULT",
+                    "ORG"
+                  ]
+                },
+                "kind": {
+                  "enum": [
+                    "RATE",
+                    "INHERIT"
+                  ]
+                },
+                "effectiveFrom": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "spec": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "feeType"
+                      ],
+                      "properties": {
+                        "feeType": {
+                          "enum": [
+                            "PERCENT",
+                            "FLAT"
+                          ]
+                        },
+                        "percentBps": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 10000
+                        },
+                        "flatMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "minMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "maxMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "mode": {
+                          "enum": [
+                            "NET_FROM_PAYOUT",
+                            "AUTO_CHARGE_SAVED_METHOD",
+                            "INVOICE_AND_COLLECT",
+                            null
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }

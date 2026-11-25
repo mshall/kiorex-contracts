@@ -1,6 +1,7 @@
 export * from "./hmac.js";
 export * from "./intake.js";
 export * from "./growth.js";
+export * from "./commission-rate.js";
 export * from "./events.js";
 export * from "./flags.js";
 export {

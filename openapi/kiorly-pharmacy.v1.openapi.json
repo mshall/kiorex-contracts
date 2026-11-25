@@ -4,7 +4,7 @@
   "info": {
     "title": "Kiorly Pharmacy Marketplace API (draft)",
     "version": "0.3.0",
-    "description": "Kiorex -> Kiorly Pharmacy machine API (kiorly-pharmacy apps/api src/modules/marketplace), reconciled in 1.4.0 against the running services (NH-PH-024, NH-023). Auth: Kiorly HMAC request scheme with a per-pharmacy integration client key (the key IS the tenant address, no X-Kiorex-Org-Id). Pharmacy -> Kiorex events (OrderReady, DispenseCompleted, OrderRejected) are signed with the webhook scheme plus X-Kiorly-Client-Key and posted to Kiorex /api/v1/webhooks/pharmacy. Money: Kiorex Pay captures first; OrderRejected triggers a full refund; partial dispense parks in PARTIAL_REVIEW. No tax-authority reporting. 1.8.0 (additive): optional Arabic names (nameAr, formAr) on CatalogueItem and Quote items; OrderResult.status may be OUT_FOR_DELIVERY for DELIVERY orders; new outbound event OrderOutForDelivery; DispenseCompleted gains optional per-line fulfilment (lines, deliveryMade)."
+    "description": "Kiorex -> Kiorly Pharmacy machine API (kiorly-pharmacy apps/api src/modules/marketplace), reconciled in 1.4.0 against the running services (NH-PH-024, NH-023). Auth: Kiorly HMAC request scheme with a per-pharmacy integration client key (the key IS the tenant address, no X-Kiorex-Org-Id). Pharmacy -> Kiorex events (OrderReady, DispenseCompleted, OrderRejected) are signed with the webhook scheme plus X-Kiorly-Client-Key and posted to Kiorex /api/v1/webhooks/pharmacy. Money: Kiorex Pay captures first; OrderRejected triggers a full refund; partial dispense parks in PARTIAL_REVIEW. No tax-authority reporting. 1.8.0 (additive): optional Arabic names (nameAr, formAr) on CatalogueItem and Quote items; OrderResult.status may be OUT_FOR_DELIVERY for DELIVERY orders; new outbound event OrderOutForDelivery; DispenseCompleted gains optional per-line fulfilment (lines, deliveryMade). 1.13.0 (additive): signed `POST /marketplace/v1/commission-rates` (COM-2: the pharmacy's commission rate view; the pharmacy only displays it)."
   },
   "servers": [
     {
@@ -723,6 +723,86 @@
           }
         }
       }
+    },
+    "/marketplace/v1/commission-rates": {
+      "post": {
+        "operationId": "pharmacyRecordCommissionRate",
+        "summary": "Kiorex reports the pharmacy's commission rate view (COM-2, contracts 1.13.0); read-only on the pharmacy",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommissionRateView"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Applied (or ignored as not newer)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applied": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_RATE_VIEW: the view is malformed"
+          },
+          "404": {
+            "description": "The view names another organisation"
+          }
+        },
+        "tags": [
+          "marketplace-v1"
+        ],
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Partner integration client key. Binds the request to ONE partner organisation (tenant): there is no org header (NH-PH-024 resolved)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "base64url HMAC-SHA256(secret, `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)`), path WITHOUT query string and WITH any prefix, e.g. /marketplace/v1/orders."
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1223,6 +1303,139 @@
             "minLength": 1,
             "maxLength": 128,
             "description": "Optional fact reference (1.13.0). decisionId is used when absent."
+          }
+        }
+      },
+      "CommissionRateView": {
+        "type": "object",
+        "required": [
+          "orgRef",
+          "product",
+          "version",
+          "history"
+        ],
+        "description": "COM-2 (additive, contracts 1.13.0). The organisation's commission rate as Kiorex sets it (default per organisation type, override per organisation, maker-checker, append-only, effective-dated). Read-only on the product side: it only displays it. The effective rate is computed from `history` at read time (reference: effectiveCommissionRate in @kiorex/contracts). No numeric rate is shipped: an empty history is 'rate not set', no commission is charged. No actor identity travels.",
+        "properties": {
+          "orgRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "product": {
+            "enum": [
+              "CLINIC",
+              "PHARMACY",
+              "LAB"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "Monotonic; the newest version wins, an equal or older one is ignored."
+          },
+          "mode": {
+            "enum": [
+              "NET_FROM_PAYOUT",
+              "AUTO_CHARGE_SAVED_METHOD",
+              "INVOICE_AND_COLLECT",
+              null
+            ]
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "version",
+                "scope",
+                "kind",
+                "effectiveFrom"
+              ],
+              "properties": {
+                "version": {
+                  "type": "integer"
+                },
+                "scope": {
+                  "enum": [
+                    "DEFAULT",
+                    "ORG"
+                  ]
+                },
+                "kind": {
+                  "enum": [
+                    "RATE",
+                    "INHERIT"
+                  ]
+                },
+                "effectiveFrom": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "spec": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "feeType"
+                      ],
+                      "properties": {
+                        "feeType": {
+                          "enum": [
+                            "PERCENT",
+                            "FLAT"
+                          ]
+                        },
+                        "percentBps": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 10000
+                        },
+                        "flatMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "minMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "maxMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "mode": {
+                          "enum": [
+                            "NET_FROM_PAYOUT",
+                            "AUTO_CHARGE_SAVED_METHOD",
+                            "INVOICE_AND_COLLECT",
+                            null
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }

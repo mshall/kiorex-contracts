@@ -88,6 +88,40 @@
           "maxLength": 64,
           "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
         },
+        "tenantId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (Clinic tenant) that owns the charge; the reference Kiorex collects against (additive, 1.13.0)."
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Clinic of the visit (additive, 1.13.0)."
+        },
+        "decisionAmount": {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+          "description": "Amount the append-only commission decision states, decimal string 2 dp; a charge whose amount differs is a reconciliation finding (additive, 1.13.0)."
+        },
+        "disputeDeadline": {
+          "type": "string",
+          "format": "date-time",
+          "description": "End of the provider's dispute window (additive, 1.13.0)."
+        },
+        "disputeStatus": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "OPEN",
+            "AUTO_APPROVED",
+            "APPROVED",
+            "REJECTED",
+            null
+          ],
+          "description": "Status of the charge's dispute, null when there is none (additive, 1.13.0)."
+        },
         "aggregateType": {
           "type": "string",
           "description": "Injected by the Kiorly outbox; mirrors the envelope field."

@@ -637,6 +637,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/commission-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Kiorex reports the organisation's commission rate view (COM-2, contracts 1.13.0); idempotent, newest version wins */
+        post: operations["marketplaceRecordCommissionRate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/commission-collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Kiorex reports a commission collection run (COM-1); idempotent on runId, newest version wins, refused whole when it names another organisation's charge. Documented in contracts 1.13.0 (the endpoint has existed since COM-1). */
+        post: operations["marketplaceRecordCommissionCollection"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export interface webhooks {
     kiorexOutboxEvent: {
@@ -912,6 +946,36 @@ export interface components {
             applied: boolean;
             amountMinor?: number;
             reason?: string;
+        };
+        /** @description COM-2 (additive, contracts 1.13.0). The organisation's commission rate as Kiorex sets it (default per organisation type, override per organisation, maker-checker, append-only, effective-dated). Read-only on the product side: it only displays it. The effective rate is computed from `history` at read time (reference: effectiveCommissionRate in @kiorex/contracts). No numeric rate is shipped: an empty history is 'rate not set', no commission is charged. No actor identity travels. */
+        CommissionRateView: {
+            orgRef: string;
+            /** @enum {unknown} */
+            product: "CLINIC" | "PHARMACY" | "LAB";
+            /** @description Monotonic; the newest version wins, an equal or older one is ignored. */
+            version: string;
+            /** @enum {unknown} */
+            mode?: "NET_FROM_PAYOUT" | "AUTO_CHARGE_SAVED_METHOD" | "INVOICE_AND_COLLECT" | null;
+            history: {
+                version: number;
+                /** @enum {unknown} */
+                scope: "DEFAULT" | "ORG";
+                /** @enum {unknown} */
+                kind: "RATE" | "INHERIT";
+                /** Format: date-time */
+                effectiveFrom: string;
+                reason?: string | null;
+                spec?: {
+                    /** @enum {unknown} */
+                    feeType: "PERCENT" | "FLAT";
+                    percentBps?: number | null;
+                    flatMinor?: number | null;
+                    minMinor?: number | null;
+                    maxMinor?: number | null;
+                    /** @enum {unknown} */
+                    mode?: "NET_FROM_PAYOUT" | "AUTO_CHARGE_SAVED_METHOD" | "INVOICE_AND_COLLECT" | null;
+                } | null;
+            }[];
         };
     };
     responses: never;
@@ -2169,6 +2233,108 @@ export interface operations {
             };
             /** @description INVALID_HASHES */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceRecordCommissionRate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommissionRateView"];
+            };
+        };
+        responses: {
+            /** @description Applied (or ignored as not newer) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        applied?: boolean;
+                    };
+                };
+            };
+            /** @description INVALID_RATE_VIEW: the view is malformed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description The view names another organisation */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    marketplaceRecordCommissionCollection: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    runId: string;
+                    orgRef: string;
+                    periodKey: string;
+                    status: string;
+                    /** @enum {unknown} */
+                    mode: "NET_FROM_PAYOUT" | "AUTO_CHARGE_SAVED_METHOD" | "INVOICE_AND_COLLECT";
+                    modeRequested?: string | null;
+                    fallbackReason?: string | null;
+                    provider?: string | null;
+                    currency: string;
+                    claimsCount: number;
+                    claimsMinor: number;
+                    collectedMinor?: number;
+                    deductedMinor?: number;
+                    invoicedMinor?: number;
+                    paidMinor?: number;
+                    /** @description Monotonic; newest wins. */
+                    version: number;
+                    claims?: Record<string, never>[];
+                    attempts?: Record<string, never>[];
+                    timeline?: Record<string, never>[];
+                };
+            };
+        };
+        responses: {
+            /** @description Applied (or ignored as not newer) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        applied?: boolean;
+                    };
+                };
+            };
+            /** @description Malformed, or names a charge that does not belong to the organisation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown organisation */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

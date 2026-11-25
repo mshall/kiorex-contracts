@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/COMMISSION_CHARGE_STATUS_CHANGED.schema.json",
+  "title": "COMMISSION_CHARGE_STATUS_CHANGED",
+  "description": "A commission charge changed status (confirmed, disputed, dispute rejected). Kiorex mirrors it as a claim, idempotently and in time order (an event older than the newest applied one is ignored). The Clinic stays the system of record for the charge and the decision; Kiorex's collection ledger follows this event. Additive in 1.13.0 (the Clinic has emitted it since COM-1).",
+  "x-producer": "kiorly-clinic",
+  "x-status": "emitted",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "COMMISSION_CHARGE_STATUS_CHANGED"
+    },
+    "aggregateType": {
+      "const": "Appointment"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "chargeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appointmentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amount": {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+          "description": "Decimal string, 2 dp."
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "status": {
+          "enum": [
+            "PENDING",
+            "CONFIRMED",
+            "DISPUTED",
+            "REVERSED",
+            "WAIVED",
+            "BILLED"
+          ]
+        },
+        "attendedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "decisionRef": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+        },
+        "origin": {
+          "enum": [
+            "PROVIDER_LED",
+            "MARKETPLACE",
+            "UNATTRIBUTED"
+          ],
+          "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+        },
+        "policyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+        },
+        "feeBasisMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)."
+        },
+        "sponsoredDiscountMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Provider-sponsored discount on the booking, informational (additive, 1.12.0)."
+        },
+        "basisPolicyVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
+        },
+        "tenantId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Organisation (Clinic tenant) that owns the charge; the reference Kiorex collects against (additive, 1.13.0)."
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Clinic of the visit (additive, 1.13.0)."
+        },
+        "decisionAmount": {
+          "type": "string",
+          "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+          "description": "Amount the append-only commission decision states, decimal string 2 dp; a charge whose amount differs is a reconciliation finding (additive, 1.13.0)."
+        },
+        "disputeDeadline": {
+          "type": "string",
+          "format": "date-time",
+          "description": "End of the provider's dispute window (additive, 1.13.0)."
+        },
+        "disputeStatus": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "OPEN",
+            "AUTO_APPROVED",
+            "APPROVED",
+            "REJECTED",
+            null
+          ],
+          "description": "Status of the charge's dispute, null when there is none (additive, 1.13.0)."
+        },
+        "confirmedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "When the charge was confirmed; null while it is not."
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "chargeId",
+        "appointmentId",
+        "amount",
+        "currency",
+        "status",
+        "attendedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

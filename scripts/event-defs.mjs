@@ -90,6 +90,12 @@ const chargeProps = {
   feeBasisMinor: { type: "integer", minimum: 0, description: "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)." },
   sponsoredDiscountMinor: { type: "integer", minimum: 0, description: "Provider-sponsored discount on the booking, informational (additive, 1.12.0)." },
   basisPolicyVersion: { type: "string", minLength: 1, maxLength: 64, description: "Version id of the policy that fixed the basis (additive, 1.12.0)." },
+  // 1.13.0 (additive, COM-1 / COM-2): what Kiorex needs to mirror the charge as a claim and to reconcile it with the decision. All optional; Kiorly Clinic already sends them.
+  tenantId: { type: "string", minLength: 1, description: "Organisation (Clinic tenant) that owns the charge; the reference Kiorex collects against (additive, 1.13.0)." },
+  clinicId: { type: "string", minLength: 1, description: "Clinic of the visit (additive, 1.13.0)." },
+  decisionAmount: { type: "string", pattern: "^-?\\d+(\\.\\d{1,2})?$", description: "Amount the append-only commission decision states, decimal string 2 dp; a charge whose amount differs is a reconciliation finding (additive, 1.13.0)." },
+  disputeDeadline: { type: "string", format: "date-time", description: "End of the provider's dispute window (additive, 1.13.0)." },
+  disputeStatus: { type: ["string", "null"], enum: ["OPEN", "AUTO_APPROVED", "APPROVED", "REJECTED", null], description: "Status of the charge's dispute, null when there is none (additive, 1.13.0)." },
 };
 
 /** Each def: type, aliases?, producer, aggregateType, status ('emitted'|'v2-draft'|'kiorly-extra'), description, data schema, example (data + aggregateId), kxNote? */
@@ -197,6 +203,12 @@ export const EVENTS = [
     description: "Commission charge reversed (check-in reverted, dispute upheld, etc.).",
     data: { properties: { ...chargeProps, reason: S, ...AGG }, required: ["chargeId", "appointmentId", "amount", "currency", "status", "attendedAt", "reason"] },
     example: { aggregateId: "apt_01JF3Z8Q0K", data: { chargeId: "chg_01JF3Z9AAA", appointmentId: "apt_01JF3Z8Q0K", amount: "75.00", currency: "EGP", status: "REVERSED", attendedAt: "2027-03-05T10:45:00.000Z", reason: "check_in_reverted", aggregateType: "Appointment", aggregateId: "apt_01JF3Z8Q0K" } },
+  },
+  {
+    type: "COMMISSION_CHARGE_STATUS_CHANGED", producer: "kiorly-clinic", aggregateType: "Appointment", status: "emitted",
+    description: "A commission charge changed status (confirmed, disputed, dispute rejected). Kiorex mirrors it as a claim, idempotently and in time order (an event older than the newest applied one is ignored). The Clinic stays the system of record for the charge and the decision; Kiorex's collection ledger follows this event. Additive in 1.13.0 (the Clinic has emitted it since COM-1).",
+    data: { properties: { ...chargeProps, confirmedAt: { type: ["string", "null"], format: "date-time", description: "When the charge was confirmed; null while it is not." }, ...AGG }, required: ["chargeId", "appointmentId", "amount", "currency", "status", "attendedAt"] },
+    example: { aggregateId: "apt_01JF3Z8Q0K", data: { chargeId: "chg_01JF3Z9AAA", appointmentId: "apt_01JF3Z8Q0K", tenantId: "ten_01JF3Z7AAA", clinicId: "clinic_01JF3Z7ZZZ", amount: "75.00", decisionAmount: "75.00", currency: "EGP", status: "CONFIRMED", attendedAt: "2027-03-05T10:45:00.000Z", confirmedAt: "2027-03-05T12:45:00.000Z", disputeDeadline: "2027-03-12T10:45:00.000Z", disputeStatus: null, aggregateType: "Appointment", aggregateId: "apt_01JF3Z8Q0K" } },
   },
   {
     type: "REVIEW_INVITATION_ELIGIBLE", producer: "kiorly-clinic", aggregateType: "Appointment", status: "emitted",

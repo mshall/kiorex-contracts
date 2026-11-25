@@ -4,7 +4,7 @@
   "info": {
     "title": "Kiorly Lab Integration API (draft)",
     "version": "0.5.0",
-    "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists. 1.4.0: catalogue, quote and slots endpoints for the Kiorex marketplace (additive); the client key binds the tenant (no org header); outbox events go to Kiorex /api/v1/webhooks/lab signed with the webhook scheme + X-Kiorly-Client-Key. 0.3.0 (contracts 1.6.0): ratified Nurse-edition additions (KNLAB01/KLORD05): third client source KIORLY_NURSE (Kiorly Nurse is an edition of Kiorly Clinic, ADR-031; Kiorex holds the registration and relays), optional `nurseCollection`, `identifiersChecked` and `collection.districtId` on the inbound order, and the custody read `GET /integration/v1/orders/{sourceRef}/custody`. 0.4.0 / 1.8.0 (additive): optional Arabic test names and preparation text (nameAr, preparationAr, sampleTypeAr) on GET /tests and POST /tests/quote."
+    "description": "DRAFT (x-status: draft). Inbound order API of Kiorly Lab (kiorly-lab apps/api src/integration), mirrored from the code and Docs/NEEDS_HUMAN.md NH-LB-025; not frozen until the lab owner approves (NH-LB-023). Callers are Kiorex (KIOREX_BOOKING) and Kiorly Clinic lab-order handoff (KIORLY_CLINIC); the client's source is bound to its key. Outbound events are the Lab* schemas in events/. Requests are signed with the Kiorly HMAC scheme; no tax-authority reporting exists. 1.4.0: catalogue, quote and slots endpoints for the Kiorex marketplace (additive); the client key binds the tenant (no org header); outbox events go to Kiorex /api/v1/webhooks/lab signed with the webhook scheme + X-Kiorly-Client-Key. 0.3.0 (contracts 1.6.0): ratified Nurse-edition additions (KNLAB01/KLORD05): third client source KIORLY_NURSE (Kiorly Nurse is an edition of Kiorly Clinic, ADR-031; Kiorex holds the registration and relays), optional `nurseCollection`, `identifiersChecked` and `collection.districtId` on the inbound order, and the custody read `GET /integration/v1/orders/{sourceRef}/custody`. 0.4.0 / 1.8.0 (additive): optional Arabic test names and preparation text (nameAr, preparationAr, sampleTypeAr) on GET /tests and POST /tests/quote. 1.13.0 (additive): signed `POST /integration/v1/commission-rates` (COM-2: the lab's commission rate view; the lab only displays it)."
   },
   "servers": [
     {
@@ -881,6 +881,86 @@
           }
         }
       }
+    },
+    "/integration/v1/commission-rates": {
+      "post": {
+        "operationId": "labRecordCommissionRate",
+        "summary": "Kiorex reports the lab's commission rate view (COM-2, contracts 1.13.0); read-only on the lab",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommissionRateView"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Applied (or ignored as not newer)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "applied": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_RATE_VIEW: the view is malformed"
+          },
+          "404": {
+            "description": "The view names another organisation"
+          }
+        },
+        "tags": [
+          "integration"
+        ],
+        "parameters": [
+          {
+            "name": "X-Kiorly-Client-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Integration client key (created by a lab owner via POST /integration-clients)."
+          },
+          {
+            "name": "X-Kiorly-Timestamp",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unix epoch MILLISECONDS."
+          },
+          {
+            "name": "X-Kiorly-Nonce",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique per request; replays are rejected."
+          },
+          {
+            "name": "X-Kiorly-Signature",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC-SHA256 over `ts\\nnonce\\nMETHOD\\npath\\nsha256(body)` (query string stripped); same scheme as kiorly-marketplace."
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1555,6 +1635,139 @@
             "minLength": 1,
             "maxLength": 128,
             "description": "Optional fact reference (1.13.0). decisionId is used when absent."
+          }
+        }
+      },
+      "CommissionRateView": {
+        "type": "object",
+        "required": [
+          "orgRef",
+          "product",
+          "version",
+          "history"
+        ],
+        "description": "COM-2 (additive, contracts 1.13.0). The organisation's commission rate as Kiorex sets it (default per organisation type, override per organisation, maker-checker, append-only, effective-dated). Read-only on the product side: it only displays it. The effective rate is computed from `history` at read time (reference: effectiveCommissionRate in @kiorex/contracts). No numeric rate is shipped: an empty history is 'rate not set', no commission is charged. No actor identity travels.",
+        "properties": {
+          "orgRef": {
+            "type": "string",
+            "minLength": 1
+          },
+          "product": {
+            "enum": [
+              "CLINIC",
+              "PHARMACY",
+              "LAB"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d{1,18}$",
+            "description": "Monotonic; the newest version wins, an equal or older one is ignored."
+          },
+          "mode": {
+            "enum": [
+              "NET_FROM_PAYOUT",
+              "AUTO_CHARGE_SAVED_METHOD",
+              "INVOICE_AND_COLLECT",
+              null
+            ]
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "version",
+                "scope",
+                "kind",
+                "effectiveFrom"
+              ],
+              "properties": {
+                "version": {
+                  "type": "integer"
+                },
+                "scope": {
+                  "enum": [
+                    "DEFAULT",
+                    "ORG"
+                  ]
+                },
+                "kind": {
+                  "enum": [
+                    "RATE",
+                    "INHERIT"
+                  ]
+                },
+                "effectiveFrom": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "spec": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "feeType"
+                      ],
+                      "properties": {
+                        "feeType": {
+                          "enum": [
+                            "PERCENT",
+                            "FLAT"
+                          ]
+                        },
+                        "percentBps": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 10000
+                        },
+                        "flatMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "minMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "maxMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "mode": {
+                          "enum": [
+                            "NET_FROM_PAYOUT",
+                            "AUTO_CHARGE_SAVED_METHOD",
+                            "INVOICE_AND_COLLECT",
+                            null
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }

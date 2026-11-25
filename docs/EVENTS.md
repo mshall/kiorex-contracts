@@ -17,6 +17,7 @@ Generated from `events/index.json` and `flags/catalogue.json` (documentation sna
 | `LISTING_STATUS_CHANGED` | kiorly-clinic | MarketplaceListing | emitted |  | [LISTING_STATUS_CHANGED.schema.json](../events/LISTING_STATUS_CHANGED.schema.json) |
 | `COMMISSION_CHARGE_CREATED` | kiorly-clinic | Appointment | emitted |  | [COMMISSION_CHARGE_CREATED.schema.json](../events/COMMISSION_CHARGE_CREATED.schema.json) |
 | `COMMISSION_CHARGE_REVERSED` | kiorly-clinic | Appointment | emitted |  | [COMMISSION_CHARGE_REVERSED.schema.json](../events/COMMISSION_CHARGE_REVERSED.schema.json) |
+| `COMMISSION_CHARGE_STATUS_CHANGED` | kiorly-clinic | Appointment | emitted |  | [COMMISSION_CHARGE_STATUS_CHANGED.schema.json](../events/COMMISSION_CHARGE_STATUS_CHANGED.schema.json) |
 | `REVIEW_INVITATION_ELIGIBLE` | kiorly-clinic | Appointment | emitted |  | [REVIEW_INVITATION_ELIGIBLE.schema.json](../events/REVIEW_INVITATION_ELIGIBLE.schema.json) |
 | `REVIEW_REPLY_POSTED` | kiorly-clinic | KiorexReview | emitted |  | [REVIEW_REPLY_POSTED.schema.json](../events/REVIEW_REPLY_POSTED.schema.json) |
 | `MARKETPLACE_BOOKING_CONFIRM_TIMEOUT` | kiorly-clinic | Appointment | kiorly-extra |  | [MARKETPLACE_BOOKING_CONFIRM_TIMEOUT.schema.json](../events/MARKETPLACE_BOOKING_CONFIRM_TIMEOUT.schema.json) |

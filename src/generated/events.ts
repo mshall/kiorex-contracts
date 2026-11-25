@@ -1312,6 +1312,40 @@ export const EVENT_SCHEMAS = {
             "maxLength": 64,
             "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
           },
+          "tenantId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (Clinic tenant) that owns the charge; the reference Kiorex collects against (additive, 1.13.0)."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Clinic of the visit (additive, 1.13.0)."
+          },
+          "decisionAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+            "description": "Amount the append-only commission decision states, decimal string 2 dp; a charge whose amount differs is a reconciliation finding (additive, 1.13.0)."
+          },
+          "disputeDeadline": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the provider's dispute window (additive, 1.13.0)."
+          },
+          "disputeStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "OPEN",
+              "AUTO_APPROVED",
+              "APPROVED",
+              "REJECTED",
+              null
+            ],
+            "description": "Status of the charge's dispute, null when there is none (additive, 1.13.0)."
+          },
           "aggregateType": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
@@ -1427,6 +1461,40 @@ export const EVENT_SCHEMAS = {
             "maxLength": 64,
             "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
           },
+          "tenantId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (Clinic tenant) that owns the charge; the reference Kiorex collects against (additive, 1.13.0)."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Clinic of the visit (additive, 1.13.0)."
+          },
+          "decisionAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+            "description": "Amount the append-only commission decision states, decimal string 2 dp; a charge whose amount differs is a reconciliation finding (additive, 1.13.0)."
+          },
+          "disputeDeadline": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the provider's dispute window (additive, 1.13.0)."
+          },
+          "disputeStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "OPEN",
+              "AUTO_APPROVED",
+              "APPROVED",
+              "REJECTED",
+              null
+            ],
+            "description": "Status of the charge's dispute, null when there is none (additive, 1.13.0)."
+          },
           "reason": {
             "type": "string"
           },
@@ -1447,6 +1515,163 @@ export const EVENT_SCHEMAS = {
           "status",
           "attendedAt",
           "reason"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "COMMISSION_CHARGE_STATUS_CHANGED": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/COMMISSION_CHARGE_STATUS_CHANGED.schema.json",
+    "title": "COMMISSION_CHARGE_STATUS_CHANGED",
+    "description": "A commission charge changed status (confirmed, disputed, dispute rejected). Kiorex mirrors it as a claim, idempotently and in time order (an event older than the newest applied one is ignored). The Clinic stays the system of record for the charge and the decision; Kiorex's collection ledger follows this event. Additive in 1.13.0 (the Clinic has emitted it since COM-1).",
+    "x-producer": "kiorly-clinic",
+    "x-status": "emitted",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "COMMISSION_CHARGE_STATUS_CHANGED"
+      },
+      "aggregateType": {
+        "const": "Appointment"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "chargeId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "appointmentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+            "description": "Decimal string, 2 dp."
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "DISPUTED",
+              "REVERSED",
+              "WAIVED",
+              "BILLED"
+            ]
+          },
+          "attendedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decisionRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Id of the Kiorex AttributionDecision (or the Clinic CommissionDecision) that explains the outcome. Additive in 1.10.0."
+          },
+          "origin": {
+            "enum": [
+              "PROVIDER_LED",
+              "MARKETPLACE",
+              "UNATTRIBUTED"
+            ],
+            "description": "Commission-relevant acquisition origin decided by the Kiorex attribution function (additive in 1.10.0). Absent = UNATTRIBUTED and today's rules apply."
+          },
+          "policyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the ATTRIBUTION_POLICY config that was ACTIVE at decision time. Additive in 1.10.0."
+          },
+          "feeBasisMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Fee the Kiorex fee was computed on, before any sponsored discount (additive, 1.12.0; policy SPONSORED_PROMOTION_POLICY.commissionBasis)."
+          },
+          "sponsoredDiscountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Provider-sponsored discount on the booking, informational (additive, 1.12.0)."
+          },
+          "basisPolicyVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Version id of the policy that fixed the basis (additive, 1.12.0)."
+          },
+          "tenantId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Organisation (Clinic tenant) that owns the charge; the reference Kiorex collects against (additive, 1.13.0)."
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Clinic of the visit (additive, 1.13.0)."
+          },
+          "decisionAmount": {
+            "type": "string",
+            "pattern": "^-?\\d+(\\.\\d{1,2})?$",
+            "description": "Amount the append-only commission decision states, decimal string 2 dp; a charge whose amount differs is a reconciliation finding (additive, 1.13.0)."
+          },
+          "disputeDeadline": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End of the provider's dispute window (additive, 1.13.0)."
+          },
+          "disputeStatus": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "OPEN",
+              "AUTO_APPROVED",
+              "APPROVED",
+              "REJECTED",
+              null
+            ],
+            "description": "Status of the charge's dispute, null when there is none (additive, 1.13.0)."
+          },
+          "confirmedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When the charge was confirmed; null while it is not."
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "chargeId",
+          "appointmentId",
+          "amount",
+          "currency",
+          "status",
+          "attendedAt"
         ]
       }
     },
@@ -9621,6 +9846,30 @@ export const EVENT_EXAMPLES = {
       "aggregateId": "apt_01JF3Z8Q0K"
     }
   },
+  "COMMISSION_CHARGE_STATUS_CHANGED": {
+    "eventId": "01JF3ZEVTCOMMISSI",
+    "type": "COMMISSION_CHARGE_STATUS_CHANGED",
+    "aggregateType": "Appointment",
+    "aggregateId": "apt_01JF3Z8Q0K",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "chargeId": "chg_01JF3Z9AAA",
+      "appointmentId": "apt_01JF3Z8Q0K",
+      "tenantId": "ten_01JF3Z7AAA",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "amount": "75.00",
+      "decisionAmount": "75.00",
+      "currency": "EGP",
+      "status": "CONFIRMED",
+      "attendedAt": "2027-03-05T10:45:00.000Z",
+      "confirmedAt": "2027-03-05T12:45:00.000Z",
+      "disputeDeadline": "2027-03-12T10:45:00.000Z",
+      "disputeStatus": null,
+      "aggregateType": "Appointment",
+      "aggregateId": "apt_01JF3Z8Q0K"
+    }
+  },
   "REVIEW_INVITATION_ELIGIBLE": {
     "eventId": "01JF3ZEVTREVIEWIN",
     "type": "REVIEW_INVITATION_ELIGIBLE",
@@ -11431,6 +11680,12 @@ export const EVENT_META = {
     "status": "emitted",
     "schemaFile": "COMMISSION_CHARGE_REVERSED.schema.json"
   },
+  "COMMISSION_CHARGE_STATUS_CHANGED": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "Appointment",
+    "status": "emitted",
+    "schemaFile": "COMMISSION_CHARGE_STATUS_CHANGED.schema.json"
+  },
   "REVIEW_INVITATION_ELIGIBLE": {
     "producer": "kiorly-clinic",
     "aggregateType": "Appointment",
@@ -12003,7 +12258,7 @@ export const EVENT_META = {
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_SUGGESTED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred" | "ExperimentStarted" | "ExperimentStopped" | "ExperimentConcluded" | "ExperimentSrmDetected" | "ExperimentShipRequested" | "FraudCaseOpened" | "FraudCaseResolved" | "GrowthRecommendationProposed" | "GrowthRecommendationDecided" | "GrowthJourneyPublished" | "GrowthJourneyKilled" | "MarketOnboardingStateChanged" | "SeoQualityGateFailed" | "SeoVitalBudgetBreached" | "LoyaltyPointsAccrued" | "LoyaltyPointsConverted" | "PartnershipCodeRedeemed";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "COMMISSION_CHARGE_STATUS_CHANGED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_SUGGESTED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred" | "ExperimentStarted" | "ExperimentStopped" | "ExperimentConcluded" | "ExperimentSrmDetected" | "ExperimentShipRequested" | "FraudCaseOpened" | "FraudCaseResolved" | "GrowthRecommendationProposed" | "GrowthRecommendationDecided" | "GrowthJourneyPublished" | "GrowthJourneyKilled" | "MarketOnboardingStateChanged" | "SeoQualityGateFailed" | "SeoVitalBudgetBreached" | "LoyaltyPointsAccrued" | "LoyaltyPointsConverted" | "PartnershipCodeRedeemed";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -12037,10 +12292,12 @@ export type ProviderProfileUpdatedData = { "listingId": string; "clinicId": stri
 export type ProviderProfileUpdatedEvent = EventEnvelope<"PROVIDER_PROFILE_UPDATED", ProviderProfileUpdatedData>;
 export type ListingStatusChangedData = { "listingId": string; "clinicId": string; "clinicianId": string; "previousStatus": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "nextStatus": "DRAFT" | "PENDING_VERIFICATION" | "LIVE" | "PAUSED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ListingStatusChangedEvent = EventEnvelope<"LISTING_STATUS_CHANGED", ListingStatusChangedData>;
-export type CommissionChargeCreatedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionChargeCreatedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "tenantId"?: string; "clinicId"?: string; "decisionAmount"?: string; "disputeDeadline"?: string; "disputeStatus"?: "OPEN" | "AUTO_APPROVED" | "APPROVED" | "REJECTED" | null; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CommissionChargeCreatedEvent = EventEnvelope<"COMMISSION_CHARGE_CREATED", CommissionChargeCreatedData>;
-export type CommissionChargeReversedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "reason": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionChargeReversedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "tenantId"?: string; "clinicId"?: string; "decisionAmount"?: string; "disputeDeadline"?: string; "disputeStatus"?: "OPEN" | "AUTO_APPROVED" | "APPROVED" | "REJECTED" | null; "reason": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CommissionChargeReversedEvent = EventEnvelope<"COMMISSION_CHARGE_REVERSED", CommissionChargeReversedData>;
+export type CommissionChargeStatusChangedData = { "chargeId": string; "appointmentId": string; "amount": string; "currency": string; "status": "PENDING" | "CONFIRMED" | "DISPUTED" | "REVERSED" | "WAIVED" | "BILLED"; "attendedAt": string; "decisionRef"?: string; "origin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "policyVersion"?: string; "feeBasisMinor"?: number; "sponsoredDiscountMinor"?: number; "basisPolicyVersion"?: string; "tenantId"?: string; "clinicId"?: string; "decisionAmount"?: string; "disputeDeadline"?: string; "disputeStatus"?: "OPEN" | "AUTO_APPROVED" | "APPROVED" | "REJECTED" | null; "confirmedAt"?: string | null; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CommissionChargeStatusChangedEvent = EventEnvelope<"COMMISSION_CHARGE_STATUS_CHANGED", CommissionChargeStatusChangedData>;
 export type ReviewInvitationEligibleData = { "appointmentId": string; "clinicId": string; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type ReviewInvitationEligibleEvent = EventEnvelope<"REVIEW_INVITATION_ELIGIBLE", ReviewInvitationEligibleData>;
 export type ReviewReplyPostedData = { "kiorexReviewId": string; "clinicId": string; "replyText": string; "repliedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
@@ -12246,6 +12503,7 @@ export interface EventMap {
   "LISTING_STATUS_CHANGED": ListingStatusChangedEvent;
   "COMMISSION_CHARGE_CREATED": CommissionChargeCreatedEvent;
   "COMMISSION_CHARGE_REVERSED": CommissionChargeReversedEvent;
+  "COMMISSION_CHARGE_STATUS_CHANGED": CommissionChargeStatusChangedEvent;
   "REVIEW_INVITATION_ELIGIBLE": ReviewInvitationEligibleEvent;
   "REVIEW_REPLY_POSTED": ReviewReplyPostedEvent;
   "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT": MarketplaceBookingConfirmTimeoutEvent;
