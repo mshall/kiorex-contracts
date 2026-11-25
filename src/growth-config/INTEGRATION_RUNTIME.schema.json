@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION_RUNTIME.schema.json",
+  "title": "Growth config: INTEGRATION_RUNTIME",
+  "description": "Circuit breaker and retry parameters shared by the growth integration jobs (GRW-P2-F). Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "breakerThreshold": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 20,
+      "default": 5,
+      "description": "Consecutive failed runs that open the circuit."
+    },
+    "breakerCooldownMinutes": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 720,
+      "default": 30,
+      "description": "Minutes before one probe run is allowed (HALF_OPEN)."
+    },
+    "maxAttempts": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 3,
+      "description": "Attempts per run on timeout, 5xx and 429 (never on 4xx or parse errors)."
+    }
+  }
+}

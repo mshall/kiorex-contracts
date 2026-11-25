@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION_MODES.schema.json",
+  "title": "Growth config: INTEGRATION_MODES",
+  "description": "The mode the founder approved for each external integration (mock or real). A switch to real is a maker-checker change: it is the approval record and audit trail, and the Integrations Control Center shows any drift against the deployed environment. It never carries a credential. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "modes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "PAYMOB": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "FAWRY": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "INSTAPAY": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "SMS": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "EMAIL": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "WHATSAPP_CLOUD": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "PUSH_FCM": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "PUSH_APNS": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "PUSH_EXPO": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "GOOGLE_ADS": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "GA4": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "SEARCH_CONSOLE": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "META_ADS": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "TIKTOK": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "PLAY_CONSOLE": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "APP_STORE_CONNECT": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "CRUX": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "LLM_ASSISTANT": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "LLM_RECOMMENDATIONS": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "TURN_VIDEO": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "PASSPORT_IDP": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "MAPS_GEOCODING": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "OBJECT_STORAGE": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        },
+        "ERROR_MONITORING": {
+          "type": "string",
+          "enum": [
+            "mock",
+            "real"
+          ]
+        }
+      }
+    }
+  }
+}

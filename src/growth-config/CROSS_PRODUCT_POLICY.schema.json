@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/CROSS_PRODUCT_POLICY.schema.json",
+  "title": "Growth config: CROSS_PRODUCT_POLICY",
+  "description": "Continuity prompts between Clinic visits and Pharmacy, Lab and Nurse (GRW-P4-A): how long a prompt lives and how far back the parent visit may be. No clinical data. Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "rxToPharmacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "default": {
+        "ttlDays": 30,
+        "lookbackDays": 7
+      },
+      "properties": {
+        "ttlDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "default": 30,
+          "description": "Prompt lifetime in days."
+        },
+        "lookbackDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "default": 7,
+          "description": "Parent visit window in days."
+        }
+      }
+    },
+    "labOrderToLab": {
+      "type": "object",
+      "additionalProperties": false,
+      "default": {
+        "ttlDays": 30,
+        "lookbackDays": 7
+      },
+      "properties": {
+        "ttlDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "default": 30,
+          "description": "Prompt lifetime in days."
+        },
+        "lookbackDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "default": 7,
+          "description": "Parent visit window in days."
+        }
+      }
+    },
+    "carePlanToHomeVisit": {
+      "type": "object",
+      "additionalProperties": false,
+      "default": {
+        "ttlDays": 30,
+        "lookbackDays": 30
+      },
+      "properties": {
+        "ttlDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "default": 30,
+          "description": "Prompt lifetime in days."
+        },
+        "lookbackDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 90,
+          "default": 30,
+          "description": "Parent visit window in days."
+        }
+      }
+    }
+  }
+}

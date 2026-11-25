@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/REWARD_GUARDS.schema.json",
+  "title": "Growth config: REWARD_GUARDS",
+  "description": "Issuance guards of the reward ledger (GRW-P2-D). The block after a recoverable loss cannot go below 30 days. Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "recoverableLossBlockDays": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 365,
+      "default": 90,
+      "description": "Days a person is blocked from new issuance after a recoverable loss (chargeback, reversed reward). Never below 30."
+    },
+    "maxActiveLots": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 500,
+      "default": 50,
+      "description": "Most active (unexpired, unspent) reward lots one patient may hold."
+    }
+  }
+}

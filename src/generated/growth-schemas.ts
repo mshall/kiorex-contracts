@@ -830,6 +830,88 @@ export const GROWTH_CONFIG_SCHEMAS = {
       }
     }
   },
+  "CROSS_PRODUCT_POLICY": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/CROSS_PRODUCT_POLICY.schema.json",
+    "title": "Growth config: CROSS_PRODUCT_POLICY",
+    "description": "Continuity prompts between Clinic visits and Pharmacy, Lab and Nurse (GRW-P4-A): how long a prompt lives and how far back the parent visit may be. No clinical data. Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "rxToPharmacy": {
+        "type": "object",
+        "additionalProperties": false,
+        "default": {
+          "ttlDays": 30,
+          "lookbackDays": 7
+        },
+        "properties": {
+          "ttlDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 30,
+            "description": "Prompt lifetime in days."
+          },
+          "lookbackDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 7,
+            "description": "Parent visit window in days."
+          }
+        }
+      },
+      "labOrderToLab": {
+        "type": "object",
+        "additionalProperties": false,
+        "default": {
+          "ttlDays": 30,
+          "lookbackDays": 7
+        },
+        "properties": {
+          "ttlDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 30,
+            "description": "Prompt lifetime in days."
+          },
+          "lookbackDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 7,
+            "description": "Parent visit window in days."
+          }
+        }
+      },
+      "carePlanToHomeVisit": {
+        "type": "object",
+        "additionalProperties": false,
+        "default": {
+          "ttlDays": 30,
+          "lookbackDays": 30
+        },
+        "properties": {
+          "ttlDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 30,
+            "description": "Prompt lifetime in days."
+          },
+          "lookbackDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 30,
+            "description": "Parent visit window in days."
+          }
+        }
+      }
+    }
+  },
   "EXPERIMENT_POLICY": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/EXPERIMENT_POLICY.schema.json",
@@ -1289,6 +1371,221 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "integrations"
     ]
   },
+  "INTEGRATION_MODES": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION_MODES.schema.json",
+    "title": "Growth config: INTEGRATION_MODES",
+    "description": "The mode the founder approved for each external integration (mock or real). A switch to real is a maker-checker change: it is the approval record and audit trail, and the Integrations Control Center shows any drift against the deployed environment. It never carries a credential. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "modes": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "PAYMOB": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "FAWRY": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "INSTAPAY": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "SMS": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "EMAIL": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "WHATSAPP_CLOUD": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "PUSH_FCM": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "PUSH_APNS": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "PUSH_EXPO": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "GOOGLE_ADS": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "GA4": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "SEARCH_CONSOLE": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "META_ADS": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "TIKTOK": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "PLAY_CONSOLE": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "APP_STORE_CONNECT": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "CRUX": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "LLM_ASSISTANT": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "LLM_RECOMMENDATIONS": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "TURN_VIDEO": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "PASSPORT_IDP": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "MAPS_GEOCODING": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "OBJECT_STORAGE": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "ERROR_MONITORING": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "INTEGRATION_RUNTIME": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION_RUNTIME.schema.json",
+    "title": "Growth config: INTEGRATION_RUNTIME",
+    "description": "Circuit breaker and retry parameters shared by the growth integration jobs (GRW-P2-F). Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "breakerThreshold": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 20,
+        "default": 5,
+        "description": "Consecutive failed runs that open the circuit."
+      },
+      "breakerCooldownMinutes": {
+        "type": "integer",
+        "minimum": 5,
+        "maximum": 720,
+        "default": 30,
+        "description": "Minutes before one probe run is allowed (HALF_OPEN)."
+      },
+      "maxAttempts": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "default": 3,
+        "description": "Attempts per run on timeout, 5xx and 429 (never on 4xx or parse errors)."
+      }
+    }
+  },
   "LIFECYCLE_POLICY": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/LIFECYCLE_POLICY.schema.json",
@@ -1441,6 +1738,44 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "segments",
       "holdoutBps"
     ]
+  },
+  "LIFECYCLE_STAGES": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/LIFECYCLE_STAGES.schema.json",
+    "title": "Growth config: LIFECYCLE_STAGES",
+    "description": "Day thresholds that derive a patient lifecycle stage from booking and attendance timestamps (GRW-P2-E). Non-clinical. churnedDays must exceed dormantDays (checked by the platform). Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "dormantDays": {
+        "type": "integer",
+        "minimum": 30,
+        "maximum": 730,
+        "default": 180,
+        "description": "Days without a booking before a person is DORMANT."
+      },
+      "churnedDays": {
+        "type": "integer",
+        "minimum": 60,
+        "maximum": 1460,
+        "default": 365,
+        "description": "Days without a booking before a person is CHURNED. Must be greater than dormantDays."
+      },
+      "retainedAttendedMin": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 2,
+        "description": "Attended visits inside the window to count as RETAINED."
+      },
+      "retainedWindowDays": {
+        "type": "integer",
+        "minimum": 30,
+        "maximum": 730,
+        "default": 365,
+        "description": "Window for retainedAttendedMin."
+      }
+    }
   },
   "LOYALTY_RULES": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -1905,6 +2240,65 @@ export const GROWTH_CONFIG_SCHEMAS = {
       }
     }
   },
+  "RECOMMENDATION_POLICY": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/RECOMMENDATION_POLICY.schema.json",
+    "title": "Growth config: RECOMMENDATION_POLICY",
+    "description": "Thresholds of the rule-based growth recommendations (GRW-P3-E). Aggregates only; k never below 10. Reporting and proposals only: a recommendation changes nothing by itself. Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "k": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 1000,
+        "default": 10,
+        "description": "k-anonymity floor of every number a recommendation rests on. Never below 10 (ADR-007)."
+      },
+      "spendFloorMinor": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100000000,
+        "default": 50000,
+        "description": "A CAC below this spend (minor units) says nothing. Same floor as the channel performance report."
+      },
+      "expiryDays": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 90,
+        "default": 14,
+        "description": "An unanswered proposal expires after this many days."
+      },
+      "maxPerRun": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50,
+        "default": 10,
+        "description": "Most proposals one nightly run may create."
+      },
+      "maxShiftBp": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 5000,
+        "default": 2000,
+        "description": "Most a reallocation may suggest moving, in basis points of the weaker channel spend."
+      },
+      "minRatioBp": {
+        "type": "integer",
+        "minimum": 10001,
+        "maximum": 100000,
+        "default": 15000,
+        "description": "Stronger channel must beat the weaker by this ratio in basis points (15000 = 1.5 times)."
+      },
+      "maxAiSummariesPerDay": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 200,
+        "default": 20,
+        "description": "AI-written summaries per day (0 = none). Aggregates only."
+      }
+    }
+  },
   "REFERRAL_RULES": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/REFERRAL_RULES.schema.json",
@@ -2033,6 +2427,30 @@ export const GROWTH_CONFIG_SCHEMAS = {
       "eligibleCareTypes",
       "signals"
     ]
+  },
+  "REWARD_GUARDS": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/growth-config/REWARD_GUARDS.schema.json",
+    "title": "Growth config: REWARD_GUARDS",
+    "description": "Issuance guards of the reward ledger (GRW-P2-D). The block after a recoverable loss cannot go below 30 days. Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "recoverableLossBlockDays": {
+        "type": "integer",
+        "minimum": 30,
+        "maximum": 365,
+        "default": 90,
+        "description": "Days a person is blocked from new issuance after a recoverable loss (chargeback, reversed reward). Never below 30."
+      },
+      "maxActiveLots": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 500,
+        "default": 50,
+        "description": "Most active (unexpired, unspent) reward lots one patient may hold."
+      }
+    }
   },
   "REWARD_RULES": {
     "$schema": "https://json-schema.org/draft/2020-12/schema",

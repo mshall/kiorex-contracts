@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/growth-config/LIFECYCLE_STAGES.schema.json",
+  "title": "Growth config: LIFECYCLE_STAGES",
+  "description": "Day thresholds that derive a patient lifecycle stage from booking and attendance timestamps (GRW-P2-E). Non-clinical. churnedDays must exceed dormantDays (checked by the platform). Added in 1.13.0; defaults equal the values that shipped in code. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dormantDays": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 730,
+      "default": 180,
+      "description": "Days without a booking before a person is DORMANT."
+    },
+    "churnedDays": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 1460,
+      "default": 365,
+      "description": "Days without a booking before a person is CHURNED. Must be greater than dormantDays."
+    },
+    "retainedAttendedMin": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 2,
+      "description": "Attended visits inside the window to count as RETAINED."
+    },
+    "retainedWindowDays": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 730,
+      "default": 365,
+      "description": "Window for retainedAttendedMin."
+    }
+  }
+}
