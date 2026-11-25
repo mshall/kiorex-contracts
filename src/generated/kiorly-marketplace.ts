@@ -949,6 +949,7 @@ export interface components {
         };
         /** @description COM-2 (additive, contracts 1.13.0). The organisation's commission rate as Kiorex sets it (default per organisation type, override per organisation, maker-checker, append-only, effective-dated). Read-only on the product side: it only displays it. The effective rate is computed from `history` at read time (reference: effectiveCommissionRate in @kiorex/contracts). No numeric rate is shipped: an empty history is 'rate not set', no commission is charged. No actor identity travels. */
         CommissionRateView: {
+            /** @description Kiorex's own reference to the organisation: the Clinic tenant id; for Pharmacy and Lab the Kiorex partner registration id. The signed client key (Pharmacy, Lab) or the tenant (Clinic), not this field, addresses the organisation. */
             orgRef: string;
             /** @enum {unknown} */
             product: "CLINIC" | "PHARMACY" | "LAB";

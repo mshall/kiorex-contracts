@@ -1318,7 +1318,8 @@
         "properties": {
           "orgRef": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Kiorex's own reference to the organisation: the Clinic tenant id; for Pharmacy and Lab the Kiorex partner registration id. The signed client key (Pharmacy, Lab) or the tenant (Clinic), not this field, addresses the organisation."
           },
           "product": {
             "enum": [
