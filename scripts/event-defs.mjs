@@ -124,7 +124,11 @@ export const EVENTS = [
   {
     type: "CHECKED_IN", producer: "kiorly-clinic", aggregateType: "Appointment", status: "emitted",
     description: "Patient checked in at the clinic. Drives commission charge PENDING (Kiorly-side).",
-    data: apptBase("CHECKED_IN"),
+    data: (() => {
+      const d = apptBase("CHECKED_IN");
+      d.properties.checkedInAt = { ...TS, description: "Optional (1.13.0): when the front desk checked the patient in. A time only; used by Kiorex fraud rules (short visit), never for a fee." };
+      return d;
+    })(),
     example: { aggregateId: "apt_01JF3Z8Q0K", data: apptExample("CHECKED_IN", "CONFIRMED") },
   },
   {
@@ -141,7 +145,12 @@ export const EVENTS = [
   {
     type: "COMPLETED", producer: "kiorly-clinic", aggregateType: "Appointment", status: "emitted",
     description: "Visit completed. Drives commission confirmation and review eligibility.",
-    data: apptBase("COMPLETED"),
+    data: (() => {
+      const d = apptBase("COMPLETED");
+      d.properties.checkedInAt = { ...TS, description: "Optional (1.13.0): when the patient was checked in (absent when the visit was completed without a check-in)." };
+      d.properties.completedAt = { ...TS, description: "Optional (1.13.0): when the visit was completed. With checkedInAt it gives the visit length for the Kiorex short-visit fraud rule; a time only, never a fee input." };
+      return d;
+    })(),
     example: { aggregateId: "apt_01JF3Z8Q0K", data: apptExample("COMPLETED", "CHECKED_IN") },
   },
   {

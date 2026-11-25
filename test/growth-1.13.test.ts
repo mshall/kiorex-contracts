@@ -191,3 +191,12 @@ describe("1.13.0 cross-product appointment hints (additive, optional)", () => {
     expect(c.required).not.toContain("acquisition");
   });
 });
+
+describe("1.13.0 visit times (additive, optional)", () => {
+  it("CHECKED_IN gains checkedInAt and COMPLETED gains checkedInAt and completedAt, none required", () => {
+    for (const [f, keys] of [["CHECKED_IN", ["checkedInAt"]], ["COMPLETED", ["checkedInAt", "completedAt"]]] as const) {
+      const d = readJson(`events/${f}.schema.json`).properties.data;
+      for (const k of keys) { expect(Object.keys(d.properties)).toContain(k); expect(d.required).not.toContain(k); }
+    }
+  });
+});

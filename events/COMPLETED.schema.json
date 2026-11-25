@@ -98,6 +98,16 @@
         "aggregateId": {
           "type": "string",
           "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "checkedInAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional (1.13.0): when the patient was checked in (absent when the visit was completed without a check-in)."
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional (1.13.0): when the visit was completed. With checkedInAt it gives the visit length for the Kiorex short-visit fraud rule; a time only, never a fee input."
         }
       },
       "required": [

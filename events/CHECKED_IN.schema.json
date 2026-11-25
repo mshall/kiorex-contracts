@@ -98,6 +98,11 @@
         "aggregateId": {
           "type": "string",
           "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "checkedInAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional (1.13.0): when the front desk checked the patient in. A time only; used by Kiorex fraud rules (short visit), never for a fee."
         }
       },
       "required": [

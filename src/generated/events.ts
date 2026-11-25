@@ -607,6 +607,11 @@ export const EVENT_SCHEMAS = {
           "aggregateId": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "checkedInAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional (1.13.0): when the front desk checked the patient in. A time only; used by Kiorex fraud rules (short visit), never for a fee."
           }
         },
         "required": [
@@ -839,6 +844,16 @@ export const EVENT_SCHEMAS = {
           "aggregateId": {
             "type": "string",
             "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "checkedInAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional (1.13.0): when the patient was checked in (absent when the visit was completed without a check-in)."
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional (1.13.0): when the visit was completed. With checkedInAt it gives the visit length for the Kiorex short-visit fraud rule; a time only, never a fee input."
           }
         },
         "required": [
@@ -12008,11 +12023,11 @@ export type CancelledByClinicData = { "appointmentId": string; "clinicId": strin
 export type CancelledByClinicEvent = EventEnvelope<"CANCELLED_BY_CLINIC", CancelledByClinicData>;
 export type CancelledByPatientData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CANCELLED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; "cancelledBy"?: "PATIENT"; "cancellationReason"?: string | null; "depositRefundable"?: boolean | null; [k: string]: unknown };
 export type CancelledByPatientEvent = EventEnvelope<"CANCELLED_BY_PATIENT", CancelledByPatientData>;
-export type CheckedInData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CHECKED_IN"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CheckedInData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "CHECKED_IN"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; "checkedInAt"?: string; [k: string]: unknown };
 export type CheckedInEvent = EventEnvelope<"CHECKED_IN", CheckedInData>;
 export type CheckInRevertedData = { "appointmentId": string; "clinicId": string; "previousStatus": "CHECKED_IN"; "nextStatus": "SCHEDULED" | "CONFIRMED" | "CANCELLED" | "NO_SHOW"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CheckInRevertedEvent = EventEnvelope<"CHECK_IN_REVERTED", CheckInRevertedData>;
-export type CompletedData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "COMPLETED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CompletedData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "COMPLETED"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; "checkedInAt"?: string; "completedAt"?: string; [k: string]: unknown };
 export type CompletedEvent = EventEnvelope<"COMPLETED", CompletedData>;
 export type NoShowData = { "appointmentId": string; "clinicId": string; "previousStatus": "SCHEDULED" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW"; "nextStatus": "NO_SHOW"; "bookingSource": "FRONT_DESK" | "PHONE" | "WALK_IN" | "CLINIC_LINK" | "KIOREX_MARKETPLACE" | "KIOREX_WHATSAPP" | "INTEGRATION" | "IMPORT"; "externalReference"?: string | null; "source"?: string; "clinicianId"?: string; "startsAt"?: string; "endsAt"?: string; "isNewPatientAtBooking"?: boolean; "version"?: number; "acquisitionOrigin"?: "PROVIDER_LED" | "MARKETPLACE" | "UNATTRIBUTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type NoShowEvent = EventEnvelope<"NO_SHOW", NoShowData>;
