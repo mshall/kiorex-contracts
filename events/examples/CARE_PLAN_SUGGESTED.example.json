@@ -1,0 +1,17 @@
+{
+  "eventId": "01JF3ZEVTCAREPLAN",
+  "type": "CARE_PLAN_SUGGESTED",
+  "aggregateType": "Encounter",
+  "aggregateId": "enc_01JF3ZB000",
+  "target": "KIOREX",
+  "occurredAt": "2027-03-04T09:12:44.000Z",
+  "data": {
+    "patientId": "pat_01JF3Z0000",
+    "encounterId": "enc_01JF3ZB000",
+    "clinicId": "clinic_01JF3Z7ZZZ",
+    "appointmentId": "apt_01JF3ZH001",
+    "suggestedAt": "2027-03-05T11:20:00.000Z",
+    "aggregateType": "Encounter",
+    "aggregateId": "enc_01JF3ZB000"
+  }
+}

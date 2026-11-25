@@ -356,6 +356,14 @@
       "status": "v2-draft"
     },
     {
+      "type": "CARE_PLAN_SUGGESTED",
+      "aliases": [],
+      "file": "CARE_PLAN_SUGGESTED",
+      "producer": "kiorly-clinic",
+      "aggregateType": "Encounter",
+      "status": "v2-draft"
+    },
+    {
       "type": "CARE_PLAN_ENDED",
       "aliases": [],
       "file": "CARE_PLAN_ENDED",

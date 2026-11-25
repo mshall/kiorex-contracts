@@ -2232,6 +2232,9 @@
                 "type": "string"
               }
             }
+          },
+          "acquisition": {
+            "$ref": "#/components/schemas/AcquisitionBlock"
           }
         }
       },

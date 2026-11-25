@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.kiorex.com/events/CARE_PLAN_SUGGESTED.schema.json",
+  "title": "CARE_PLAN_SUGGESTED",
+  "description": "Optional (1.13.0): the treating clinician of a signed visit suggested follow-up care at home (a Nurse care plan). A prompt only: it carries ids and a time, never the reason, the diagnosis or any note, and it is sent only when the patient's VISIT_SUMMARY record-share consent is active. Kiorex may show the patient a card; the patient decides. Absent = Kiorex follows any attended visit of the last 30 days.",
+  "x-producer": "kiorly-clinic",
+  "x-status": "v2-draft",
+  "allOf": [
+    {
+      "$ref": "envelope.schema.json"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "type": {
+      "const": "CARE_PLAN_SUGGESTED"
+    },
+    "aggregateType": {
+      "const": "Encounter"
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "patientId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encounterId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clinicId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "appointmentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "suggestedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregateType": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        },
+        "aggregateId": {
+          "type": "string",
+          "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+        }
+      },
+      "required": [
+        "patientId",
+        "encounterId",
+        "clinicId",
+        "suggestedAt"
+      ]
+    }
+  },
+  "required": [
+    "type",
+    "aggregateType",
+    "data"
+  ]
+}

@@ -780,6 +780,7 @@ export interface components {
                 firstNameEn: string;
                 lastNameEn: string;
             };
+            acquisition?: components["schemas"]["AcquisitionBlock"];
         };
         CarePlanRequestAck: {
             requestRef?: string;

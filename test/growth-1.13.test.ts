@@ -170,3 +170,24 @@ describe("1.13.0 vocabulary, OpenAPI and vectors", () => {
     expect(baseline.flags).not.toContain("growth.loyalty");
   });
 });
+
+describe("1.13.0 cross-product appointment hints (additive, optional)", () => {
+  it("PRESCRIPTION_SHARED and LabOrderPlaced gain an OPTIONAL appointmentId; the old payload still validates", () => {
+    for (const file of ["PRESCRIPTION_SHARED", "LabOrderPlaced"]) {
+      const s = readJson(`events/${file}.schema.json`);
+      expect(Object.keys(s.properties.data.properties)).toContain("appointmentId");
+      expect(s.properties.data.required).not.toContain("appointmentId");
+    }
+  });
+  it("CARE_PLAN_SUGGESTED carries ids and a time only", () => {
+    const s = readJson("events/CARE_PLAN_SUGGESTED.schema.json");
+    expect(Object.keys(s.properties.data.properties).sort()).toEqual(["aggregateId", "aggregateType", "appointmentId", "clinicId", "encounterId", "patientId", "suggestedAt"].sort());
+    expect(s.properties.data.required).not.toContain("appointmentId");
+    expect(isEventType("CARE_PLAN_SUGGESTED")).toBe(true);
+  });
+  it("CarePlanRequest gains an optional acquisition block", () => {
+    const c = readJson("openapi/kiorly-marketplace.v1.openapi.json").components.schemas.CarePlanRequest;
+    expect(c.properties.acquisition.$ref).toBe("#/components/schemas/AcquisitionBlock");
+    expect(c.required).not.toContain("acquisition");
+  });
+});

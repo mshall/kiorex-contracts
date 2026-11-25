@@ -225,7 +225,7 @@ export const EVENTS = [
   {
     type: "PRESCRIPTION_SHARED", producer: "kiorly-clinic", aggregateType: "Encounter", aggregateTypeAlt: ["Record"], status: "kiorly-extra",
     description: "Prescription of a signed encounter shared with the patient app after consent. Not in KX-09 §04.",
-    data: { properties: { patientId: ID, scope: { const: "PRESCRIPTIONS" }, encounterId: ID, clinicId: ID, signedAt: TS, items: { type: "array", maxItems: 50, description: "Optional structured Rx lines (additive, 1.12.0); the signed PDF stays the legal document.", items: { type: "object", properties: { name: { type: "string", maxLength: 200 }, dose: { type: "string", maxLength: 100 }, frequency: { type: "string", maxLength: 100 }, durationDays: { type: "integer", minimum: 1, maximum: 3650 } }, required: ["name"] } }, pdf: { type: "object", description: "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.", properties: { url: { type: "string", format: "uri" }, expiresAt: TS }, required: ["url", "expiresAt"] }, ...AGG }, required: ["patientId", "scope", "encounterId", "clinicId", "signedAt"] },
+    data: { properties: { patientId: ID, scope: { const: "PRESCRIPTIONS" }, encounterId: ID, clinicId: ID, signedAt: TS, appointmentId: { ...ID, description: "Optional (1.13.0): the Clinic appointment of the visit the prescription was written in. Kiorex uses it to link a downstream pharmacy order to the visit; absent = Kiorex infers the visit (same patient and clinic, attended, within 7 days). An id only, never clinical content." }, items: { type: "array", maxItems: 50, description: "Optional structured Rx lines (additive, 1.12.0); the signed PDF stays the legal document.", items: { type: "object", properties: { name: { type: "string", maxLength: 200 }, dose: { type: "string", maxLength: 100 }, frequency: { type: "string", maxLength: 100 }, durationDays: { type: "integer", minimum: 1, maximum: 3650 } }, required: ["name"] } }, pdf: { type: "object", description: "Signed expiring public link to the Rx PDF (additive, 1.1.0); fetch it into the patient vault before expiresAt.", properties: { url: { type: "string", format: "uri" }, expiresAt: TS }, required: ["url", "expiresAt"] }, ...AGG }, required: ["patientId", "scope", "encounterId", "clinicId", "signedAt"] },
     example: { aggregateId: "enc_01JF3ZB000", data: { patientId: "pat_01JF3Z0000", scope: "PRESCRIPTIONS", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", signedAt: "2027-03-05T11:10:00.000Z", pdf: { url: "https://app.kiorly.com/api/v1/public/rx/verify/abc123/pdf", expiresAt: "2027-03-19T11:10:00.000Z" }, aggregateType: "Encounter", aggregateId: "enc_01JF3ZB000" } },
   },
   {
@@ -267,6 +267,7 @@ export const EVENTS = [
       properties: {
         orderId: ID, encounterId: ID, clinicId: ID, patientRef: { type: "string", minLength: 1, description: "Kiorly patient reference; never a national ID." },
         orderingClinicianId: ID, consentToken: { type: "string", minLength: 1 }, orderedAt: TS,
+        appointmentId: { ...ID, description: "Optional (1.13.0): the Clinic appointment of the visit the order was placed in (id only). Absent = Kiorex infers the visit within 7 days." },
         items: { type: "array", minItems: 1, items: { type: "object", properties: { code: S, nameEn: { type: "string", minLength: 1 }, nameAr: S }, required: ["nameEn"] } },
         notes: S, preferredLabId: ID, ...AGG,
         // 1.6.0 (KNLAB01 / KLORD05, ratified optional fields): nurse-collected samples. Present only for originEdition NURSE.
@@ -536,6 +537,12 @@ export const EVENTS = [
       required: ["carePlanId", "clinicId", "confirmedAt", "visits"],
     },
     example: { aggregateId: "cp_01JF3ZP001", data: { carePlanId: "cp_01JF3ZP001", clinicId: "clinic_01JF3Z7ZZZ", requestRef: "kx_cpr_01JF3ZP000", edition: "NURSE", confirmedAt: "2027-03-05T08:00:00.000Z", visits: [{ appointmentId: "apt_01JF3ZH101", startsAt: "2027-03-06T09:00:00.000Z", endsAt: "2027-03-06T09:45:00.000Z", serviceLocation: "HOME" }, { appointmentId: "apt_01JF3ZH102", startsAt: "2027-03-07T09:00:00.000Z", endsAt: "2027-03-07T09:45:00.000Z", serviceLocation: "HOME" }], aggregateType: "CarePlan", aggregateId: "cp_01JF3ZP001" } },
+  },
+  {
+    type: "CARE_PLAN_SUGGESTED", producer: "kiorly-clinic", aggregateType: "Encounter", status: "v2-draft", group: "growth",
+    description: "Optional (1.13.0): the treating clinician of a signed visit suggested follow-up care at home (a Nurse care plan). A prompt only: it carries ids and a time, never the reason, the diagnosis or any note, and it is sent only when the patient's VISIT_SUMMARY record-share consent is active. Kiorex may show the patient a card; the patient decides. Absent = Kiorex follows any attended visit of the last 30 days.",
+    data: { properties: { patientId: ID, encounterId: ID, clinicId: ID, appointmentId: ID, suggestedAt: TS, ...AGG }, required: ["patientId", "encounterId", "clinicId", "suggestedAt"] },
+    example: { aggregateId: "enc_01JF3ZB000", data: { patientId: "pat_01JF3Z0000", encounterId: "enc_01JF3ZB000", clinicId: "clinic_01JF3Z7ZZZ", appointmentId: "apt_01JF3ZH001", suggestedAt: "2027-03-05T11:20:00.000Z", aggregateType: "Encounter", aggregateId: "enc_01JF3ZB000" } },
   },
   {
     type: "CARE_PLAN_ENDED", producer: "kiorly-clinic", aggregateType: "CarePlan", status: "v2-draft", group: "rev23",

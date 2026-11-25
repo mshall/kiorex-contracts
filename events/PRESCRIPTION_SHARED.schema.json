@@ -43,6 +43,11 @@
           "type": "string",
           "format": "date-time"
         },
+        "appointmentId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional (1.13.0): the Clinic appointment of the visit the prescription was written in. Kiorex uses it to link a downstream pharmacy order to the visit; absent = Kiorex infers the visit (same patient and clinic, attended, within 7 days). An id only, never clinical content."
+        },
         "items": {
           "type": "array",
           "maxItems": 50,

@@ -1808,6 +1808,11 @@ export const EVENT_SCHEMAS = {
             "type": "string",
             "format": "date-time"
           },
+          "appointmentId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional (1.13.0): the Clinic appointment of the visit the prescription was written in. Kiorex uses it to link a downstream pharmacy order to the visit; absent = Kiorex infers the visit (same patient and clinic, attended, within 7 days). An id only, never clinical content."
+          },
           "items": {
             "type": "array",
             "maxItems": 50,
@@ -2189,6 +2194,11 @@ export const EVENT_SCHEMAS = {
           "orderedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "appointmentId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional (1.13.0): the Clinic appointment of the visit the order was placed in (id only). Absent = Kiorex infers the visit within 7 days."
           },
           "items": {
             "type": "array",
@@ -4077,6 +4087,72 @@ export const EVENT_SCHEMAS = {
           "clinicId",
           "confirmedAt",
           "visits"
+        ]
+      }
+    },
+    "required": [
+      "type",
+      "aggregateType",
+      "data"
+    ]
+  },
+  "CARE_PLAN_SUGGESTED": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.kiorex.com/events/CARE_PLAN_SUGGESTED.schema.json",
+    "title": "CARE_PLAN_SUGGESTED",
+    "description": "Optional (1.13.0): the treating clinician of a signed visit suggested follow-up care at home (a Nurse care plan). A prompt only: it carries ids and a time, never the reason, the diagnosis or any note, and it is sent only when the patient's VISIT_SUMMARY record-share consent is active. Kiorex may show the patient a card; the patient decides. Absent = Kiorex follows any attended visit of the last 30 days.",
+    "x-producer": "kiorly-clinic",
+    "x-status": "v2-draft",
+    "allOf": [
+      {
+        "$ref": "envelope.schema.json"
+      }
+    ],
+    "type": "object",
+    "properties": {
+      "type": {
+        "const": "CARE_PLAN_SUGGESTED"
+      },
+      "aggregateType": {
+        "const": "Encounter"
+      },
+      "data": {
+        "type": "object",
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "encounterId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "clinicId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "appointmentId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "suggestedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "aggregateType": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          },
+          "aggregateId": {
+            "type": "string",
+            "description": "Injected by the Kiorly outbox; mirrors the envelope field."
+          }
+        },
+        "required": [
+          "patientId",
+          "encounterId",
+          "clinicId",
+          "suggestedAt"
         ]
       }
     },
@@ -10089,6 +10165,23 @@ export const EVENT_EXAMPLES = {
       "aggregateId": "cp_01JF3ZP001"
     }
   },
+  "CARE_PLAN_SUGGESTED": {
+    "eventId": "01JF3ZEVTCAREPLAN",
+    "type": "CARE_PLAN_SUGGESTED",
+    "aggregateType": "Encounter",
+    "aggregateId": "enc_01JF3ZB000",
+    "target": "KIOREX",
+    "occurredAt": "2027-03-04T09:12:44.000Z",
+    "data": {
+      "patientId": "pat_01JF3Z0000",
+      "encounterId": "enc_01JF3ZB000",
+      "clinicId": "clinic_01JF3Z7ZZZ",
+      "appointmentId": "apt_01JF3ZH001",
+      "suggestedAt": "2027-03-05T11:20:00.000Z",
+      "aggregateType": "Encounter",
+      "aggregateId": "enc_01JF3ZB000"
+    }
+  },
   "CARE_PLAN_ENDED": {
     "eventId": "01JF3ZEVTCAREPLAN",
     "type": "CARE_PLAN_ENDED",
@@ -11509,6 +11602,12 @@ export const EVENT_META = {
     "status": "v2-draft",
     "schemaFile": "CARE_PLAN_CONFIRMED.schema.json"
   },
+  "CARE_PLAN_SUGGESTED": {
+    "producer": "kiorly-clinic",
+    "aggregateType": "Encounter",
+    "status": "v2-draft",
+    "schemaFile": "CARE_PLAN_SUGGESTED.schema.json"
+  },
   "CARE_PLAN_ENDED": {
     "producer": "kiorly-clinic",
     "aggregateType": "CarePlan",
@@ -11889,7 +11988,7 @@ export const EVENT_META = {
   }
 } as const;
 
-export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred" | "ExperimentStarted" | "ExperimentStopped" | "ExperimentConcluded" | "ExperimentSrmDetected" | "ExperimentShipRequested" | "FraudCaseOpened" | "FraudCaseResolved" | "GrowthRecommendationProposed" | "GrowthRecommendationDecided" | "GrowthJourneyPublished" | "GrowthJourneyKilled" | "MarketOnboardingStateChanged" | "SeoQualityGateFailed" | "SeoVitalBudgetBreached" | "LoyaltyPointsAccrued" | "LoyaltyPointsConverted" | "PartnershipCodeRedeemed";
+export type EventType = "APPOINTMENT_CONFIRMED" | "RESCHEDULED" | "CANCELLED_BY_CLINIC" | "CANCELLED_BY_PATIENT" | "CHECKED_IN" | "CHECK_IN_REVERTED" | "COMPLETED" | "NO_SHOW" | "SLOTS_CHANGED" | "PROVIDER_PROFILE_UPDATED" | "LISTING_STATUS_CHANGED" | "COMMISSION_CHARGE_CREATED" | "COMMISSION_CHARGE_REVERSED" | "REVIEW_INVITATION_ELIGIBLE" | "REVIEW_REPLY_POSTED" | "MARKETPLACE_BOOKING_CONFIRM_TIMEOUT" | "VISIT_SUMMARY_SHARED" | "PRESCRIPTION_SHARED" | "RECORD_SHARE_REVOKED" | "WAITLIST_OFFER" | "PrescriptionIssued" | "LabOrderPlaced" | "OrderReady" | "OrderOutForDelivery" | "DispenseCompleted" | "OrderRejected" | "LabResultReleased" | "LabOrderCreated" | "LabOrderStatusChanged" | "LabCriticalEscalated" | "LabReportCorrected" | "LabInvoiceIssued" | "LabPaymentRecorded" | "subject.deleted" | "session.revoked" | "guardian.link.changed" | "membership.changed" | "account.merged" | "flag.changed" | "HOME_VISIT_ASSIGNED" | "HOME_VISIT_EN_ROUTE" | "HOME_VISIT_ABORTED_UNSAFE" | "SAFETY_ALERT_RAISED" | "CARE_PLAN_CONFIRMED" | "CARE_PLAN_SUGGESTED" | "CARE_PLAN_ENDED" | "ReferralIssued" | "MedicationOrderShared" | "CommissionAdjusted" | "PatientConsentUpdated" | "AttributionAssigned" | "PatientAcquisitionRecorded" | "ReferralLinkCreated" | "ReferralLinkRevoked" | "CampaignCreated" | "CampaignStatusChanged" | "CampaignBudgetThresholdReached" | "CampaignApprovalDecided" | "ReferralCodeIssued" | "ReferralRelationshipCreated" | "ReferralQualified" | "ReferralRejected" | "RewardIssued" | "RewardRedeemed" | "RewardReversed" | "RewardExpired" | "RewardHeld" | "AssistantConversationEscalated" | "AssistantBudgetBreakerTripped" | "LifecycleDecisionRecorded" | "IntegrationRunFailed" | "ProductAcquisitionFact" | "ProviderVerificationUpdateRequested" | "ProviderVerificationDecided" | "WAITLIST_OFFER_CREATED" | "WAITLIST_OFFER_EXPIRED" | "RefundDestinationChosen" | "RewardRestored" | "GoodwillGranted" | "ProviderCreditGranted" | "ProviderCreditConsumed" | "ProviderCreditExpired" | "PROVIDER_PROMOTION_UPDATED" | "PromotionReviewDecided" | "SponsoredDiscountReserved" | "SponsoredDiscountDebited" | "SponsoredDiscountReleased" | "SponsoredDiscountReversed" | "CorporateAccountCreated" | "CorporateCodeRedeemed" | "CorporateLeadReferred" | "ExperimentStarted" | "ExperimentStopped" | "ExperimentConcluded" | "ExperimentSrmDetected" | "ExperimentShipRequested" | "FraudCaseOpened" | "FraudCaseResolved" | "GrowthRecommendationProposed" | "GrowthRecommendationDecided" | "GrowthJourneyPublished" | "GrowthJourneyKilled" | "MarketOnboardingStateChanged" | "SeoQualityGateFailed" | "SeoVitalBudgetBreached" | "LoyaltyPointsAccrued" | "LoyaltyPointsConverted" | "PartnershipCodeRedeemed";
 
 export interface EventEnvelope<T extends string = string, D = Record<string, unknown>> {
   eventId: string;
@@ -11935,7 +12034,7 @@ export type MarketplaceBookingConfirmTimeoutData = { "appointmentId": string; "c
 export type MarketplaceBookingConfirmTimeoutEvent = EventEnvelope<"MARKETPLACE_BOOKING_CONFIRM_TIMEOUT", MarketplaceBookingConfirmTimeoutData>;
 export type VisitSummarySharedData = { "patientId": string; "scope": "VISIT_SUMMARY"; "summary": { "encounterId": string; "clinicId": string; "signedAt": string; "soap": { "chiefComplaint"?: string | null; "subjective"?: string | null; "objective"?: string | null; "assessment"?: string | null; "plan"?: string | null; [k: string]: unknown }; [k: string]: unknown }; "signature": string; "followUp"?: { "intervalDays": number; [k: string]: unknown }; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type VisitSummarySharedEvent = EventEnvelope<"VISIT_SUMMARY_SHARED", VisitSummarySharedData>;
-export type PrescriptionSharedData = { "patientId": string; "scope": "PRESCRIPTIONS"; "encounterId": string; "clinicId": string; "signedAt": string; "items"?: Array<{ "name": string; "dose"?: string; "frequency"?: string; "durationDays"?: number; [k: string]: unknown }>; "pdf"?: { "url": string; "expiresAt": string; [k: string]: unknown }; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type PrescriptionSharedData = { "patientId": string; "scope": "PRESCRIPTIONS"; "encounterId": string; "clinicId": string; "signedAt": string; "appointmentId"?: string; "items"?: Array<{ "name": string; "dose"?: string; "frequency"?: string; "durationDays"?: number; [k: string]: unknown }>; "pdf"?: { "url": string; "expiresAt": string; [k: string]: unknown }; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type PrescriptionSharedEvent = EventEnvelope<"PRESCRIPTION_SHARED", PrescriptionSharedData>;
 export type RecordShareRevokedData = { "patientId": string; "scope": "VISIT_SUMMARY" | "PRESCRIPTIONS" | "LAB_RESULTS" | "SHARE_WITH_OTHER_CLINICS"; "action": "DELETE_REQUESTED"; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type RecordShareRevokedEvent = EventEnvelope<"RECORD_SHARE_REVOKED", RecordShareRevokedData>;
@@ -11943,7 +12042,7 @@ export type WaitlistOfferData = { "offerId": string; "waitlistRef": string; "cli
 export type WaitlistOfferEvent = EventEnvelope<"WAITLIST_OFFER", WaitlistOfferData>;
 export type PrescriptionIssuedData = { "prescriptionId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "prescriberId": string; "consentToken": string; "issuedAt": string; "aggregateType"?: string; "aggregateId"?: string; "items": Array<{ "activeIngredient": string; "drugName"?: string; "strength"?: string; "dose"?: string; "quantity": number; "controlled"?: boolean; [k: string]: unknown }>; [k: string]: unknown };
 export type PrescriptionIssuedEvent = EventEnvelope<"PrescriptionIssued", PrescriptionIssuedData>;
-export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "orderingClinicianId"?: string; "consentToken": string; "orderedAt": string; "items": Array<{ "code"?: string; "nameEn": string; "nameAr"?: string; [k: string]: unknown }>; "notes"?: string; "preferredLabId"?: string; "aggregateType"?: string; "aggregateId"?: string; "originEdition"?: "CLINIC" | "NURSE"; "prescriberName"?: string; "identifiersChecked"?: Array<"fullName" | "dateOfBirth" | "phone" | "nationalId" | "externalId">; "patient"?: { "fullName": string; "dateOfBirth"?: string; "sex"?: "M" | "F" | "OTHER" | "UNKNOWN"; "phone"?: string; "preferredLocale"?: "ar" | "en"; [k: string]: unknown }; "nurseCollection"?: { "visitRef": string; "collectorRef": string; "collectorName"?: string; "collectedAt": string; "handedOverAt"?: string; "temperatureC"?: number; "samples": Array<{ "label": string; "specimenType": string; "container"?: string; [k: string]: unknown }>; [k: string]: unknown }; [k: string]: unknown };
+export type LabOrderPlacedData = { "orderId": string; "encounterId"?: string; "clinicId": string; "patientRef": string; "orderingClinicianId"?: string; "consentToken": string; "orderedAt": string; "appointmentId"?: string; "items": Array<{ "code"?: string; "nameEn": string; "nameAr"?: string; [k: string]: unknown }>; "notes"?: string; "preferredLabId"?: string; "aggregateType"?: string; "aggregateId"?: string; "originEdition"?: "CLINIC" | "NURSE"; "prescriberName"?: string; "identifiersChecked"?: Array<"fullName" | "dateOfBirth" | "phone" | "nationalId" | "externalId">; "patient"?: { "fullName": string; "dateOfBirth"?: string; "sex"?: "M" | "F" | "OTHER" | "UNKNOWN"; "phone"?: string; "preferredLocale"?: "ar" | "en"; [k: string]: unknown }; "nurseCollection"?: { "visitRef": string; "collectorRef": string; "collectorName"?: string; "collectedAt": string; "handedOverAt"?: string; "temperatureC"?: number; "samples": Array<{ "label": string; "specimenType": string; "container"?: string; [k: string]: unknown }>; [k: string]: unknown }; [k: string]: unknown };
 export type LabOrderPlacedEvent = EventEnvelope<"LabOrderPlaced", LabOrderPlacedData>;
 export type OrderReadyData = { "orderId": string; "pharmacyId": string; "branchId"?: string; "readyAt": string; "pharmacistSignoff": { "userId": string; "signedAt": string; [k: string]: unknown }; [k: string]: unknown };
 export type OrderReadyEvent = EventEnvelope<"OrderReady", OrderReadyData>;
@@ -11989,6 +12088,8 @@ export type SafetyAlertRaisedData = { "alertId": string; "clinicId": string; "ap
 export type SafetyAlertRaisedEvent = EventEnvelope<"SAFETY_ALERT_RAISED", SafetyAlertRaisedData>;
 export type CarePlanConfirmedData = { "carePlanId": string; "clinicId": string; "requestRef"?: string | null; "edition"?: "NURSE"; "confirmedAt": string; "visits": Array<{ "appointmentId": string; "startsAt": string; "endsAt"?: string; "serviceLocation"?: "IN_CLINIC" | "HOME"; [k: string]: unknown }>; "visitAddress"?: never; "address"?: never; "line1"?: never; "lat"?: never; "lng"?: never; "latitude"?: never; "longitude"?: never; "geostamp"?: never; "phone"?: never; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CarePlanConfirmedEvent = EventEnvelope<"CARE_PLAN_CONFIRMED", CarePlanConfirmedData>;
+export type CarePlanSuggestedData = { "patientId": string; "encounterId": string; "clinicId": string; "appointmentId"?: string; "suggestedAt": string; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
+export type CarePlanSuggestedEvent = EventEnvelope<"CARE_PLAN_SUGGESTED", CarePlanSuggestedData>;
 export type CarePlanEndedData = { "carePlanId": string; "clinicId": string; "requestRef"?: string | null; "endedAt": string; "reason": "COMPLETED" | "CANCELLED_BY_PATIENT" | "CANCELLED_BY_PROVIDER" | "EXPIRED"; "visitsCompleted"?: number; "cancelledAppointmentIds"?: Array<string>; "visitAddress"?: never; "address"?: never; "line1"?: never; "lat"?: never; "lng"?: never; "latitude"?: never; "longitude"?: never; "geostamp"?: never; "phone"?: never; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
 export type CarePlanEndedEvent = EventEnvelope<"CARE_PLAN_ENDED", CarePlanEndedData>;
 export type ReferralIssuedData = { "referralId": string; "fromClinicId": string; "toClinicId"?: string; "toProfession"?: "PHYSICIAN" | "DENTIST" | "PHYSIOTHERAPIST" | "NURSE"; "patientRef": string; "referrerId": string; "consentToken": string; "issuedAt": string; "expiresAt"?: string; "secureLink"?: string; "diagnosis"?: never; "notes"?: never; "content"?: never; "aggregateType"?: string; "aggregateId"?: string; [k: string]: unknown };
@@ -12161,6 +12262,7 @@ export interface EventMap {
   "HOME_VISIT_ABORTED_UNSAFE": HomeVisitAbortedUnsafeEvent;
   "SAFETY_ALERT_RAISED": SafetyAlertRaisedEvent;
   "CARE_PLAN_CONFIRMED": CarePlanConfirmedEvent;
+  "CARE_PLAN_SUGGESTED": CarePlanSuggestedEvent;
   "CARE_PLAN_ENDED": CarePlanEndedEvent;
   "ReferralIssued": ReferralIssuedEvent;
   "MedicationOrderShared": MedicationOrderSharedEvent;
