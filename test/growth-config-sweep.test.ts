@@ -47,7 +47,7 @@ describe("1.13.0 configurability sweep: policy numbers that were code constants 
     expect(validateGrowthConfig("INTEGRATION_MODES", { modes: { SMS: "real", PAYMOB: "mock" } }).valid).toBe(true);
     for (const bad of [{ modes: { SMS: "sandbox" } }, { modes: { NOT_A_VENDOR: "real" } }, { modes: {}, apiKey: "sk_live_x" }, { secret: "x" }]) expect(validateGrowthConfig("INTEGRATION_MODES", bad).valid, JSON.stringify(bad)).toBe(false);
     const props = readJson("src/growth-config/INTEGRATION_MODES.schema.json").properties.modes.properties;
-    expect(Object.keys(props)).toEqual(expect.arrayContaining(["PAYMOB", "FAWRY", "INSTAPAY", "SMS", "EMAIL", "WHATSAPP_CLOUD", "PUSH_FCM", "GOOGLE_ADS", "LLM_ASSISTANT", "TURN_VIDEO", "PASSPORT_IDP", "OBJECT_STORAGE"]));
+    expect(Object.keys(props)).toEqual(expect.arrayContaining(["PAYMOB", "FAWRY", "INSTAPAY", "SMS", "EMAIL", "WHATSAPP_CLOUD", "PUSH_FCM", "GOOGLE_ADS", "LLM_ASSISTANT", "LLM_AI_GATEWAY", "TURN_VIDEO", "PASSPORT_IDP", "OBJECT_STORAGE"]));
   });
   it("the three kinds that already existed in 1.13.0 keep their keys (EXPERIMENT_POLICY, AUTOMATION_POLICY, ATTRIBUTION_MODELS are untouched by the sweep)", () => {
     expect(Object.keys(readJson("src/growth-config/EXPERIMENT_POLICY.schema.json").properties)).toEqual(expect.arrayContaining(["minRunDays", "srmAlpha", "kAnonymity", "conversionWindowDays"]));

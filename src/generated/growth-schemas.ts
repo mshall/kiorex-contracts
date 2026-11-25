@@ -1516,6 +1516,13 @@ export const GROWTH_CONFIG_SCHEMAS = {
               "real"
             ]
           },
+          "LLM_AI_GATEWAY": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
           "TURN_VIDEO": {
             "type": "string",
             "enum": [
