@@ -78,7 +78,7 @@ export const GROWTH_CONFIG_KINDS = [
   // Phase 4 (1.13.0 branch, GRW-P4-D)
   "LOYALTY_RULES",
   // 1.13.0 configurability sweep (additive): policy numbers that were code constants, plus the approved mode per integration
-  "RECOMMENDATION_POLICY", "REWARD_GUARDS", "LIFECYCLE_STAGES", "CROSS_PRODUCT_POLICY", "INTEGRATION_RUNTIME", "INTEGRATION_MODES",
+  "RECOMMENDATION_POLICY", "REWARD_GUARDS", "LIFECYCLE_STAGES", "CROSS_PRODUCT_POLICY", "REFERRAL_FRAUD_THRESHOLDS", "INTEGRATION_RUNTIME", "INTEGRATION_MODES",
 ] as const;
 export type GrowthConfigKind = (typeof GROWTH_CONFIG_KINDS)[number];
 /** Kinds with a JSON Schema in 1.10.0; the others are Phase 2 and 3 and ship their schema with their phase. */

@@ -3,13 +3,13 @@ import { GROWTH_CONFIG_KINDS, GROWTH_CONFIG_KINDS_WITH_SCHEMA, validateGrowthCon
 import { readJson } from "./helpers.js";
 
 const baseline = readJson("test/growth-baseline-1.12.0.json");
-const SWEEP = ["RECOMMENDATION_POLICY", "REWARD_GUARDS", "LIFECYCLE_STAGES", "CROSS_PRODUCT_POLICY", "INTEGRATION_RUNTIME", "INTEGRATION_MODES"] as const;
+const SWEEP = ["RECOMMENDATION_POLICY", "REWARD_GUARDS", "LIFECYCLE_STAGES", "CROSS_PRODUCT_POLICY", "REFERRAL_FRAUD_THRESHOLDS", "INTEGRATION_RUNTIME", "INTEGRATION_MODES"] as const;
 
 /** Every property of a schema carries a default equal to what shipped in code, so a stored version that omits a key changes nothing. */
 const defaultsOf = (s: any): any => Object.fromEntries(Object.entries<any>(s.properties).filter(([, v]) => "default" in v || v.properties).map(([k, v]) => [k, "default" in v ? v.default : defaultsOf(v)]));
 
 describe("1.13.0 configurability sweep: policy numbers that were code constants (additive)", () => {
-  it("six new kinds, registered, with a schema, and none of them is a 1.12.0 kind", () => {
+  it("seven new kinds, registered, with a schema, and none of them is a 1.12.0 kind", () => {
     for (const k of SWEEP) {
       expect(GROWTH_CONFIG_KINDS).toContain(k);
       expect(GROWTH_CONFIG_KINDS_WITH_SCHEMA).toContain(k);
@@ -38,6 +38,10 @@ describe("1.13.0 configurability sweep: policy numbers that were code constants 
       ["INTEGRATION_RUNTIME", { breakerThreshold: 1 }], ["INTEGRATION_RUNTIME", { breakerCooldownMinutes: 4 }], ["INTEGRATION_RUNTIME", { maxAttempts: 6 }], ["INTEGRATION_RUNTIME", { apiKey: "x" }],
     ];
     for (const [k, p] of bad) expect(validateGrowthConfig(k, p).valid, `${k} ${JSON.stringify(p)}`).toBe(false);
+  });
+  it("REFERRAL_FRAUD_THRESHOLDS: defaults equal the shipped numbers and no number can switch a rule off", () => {
+    expect(defaultsOf(readJson("src/growth-config/REFERRAL_FRAUD_THRESHOLDS.schema.json"))).toEqual({ signupsPerIpPrefix24h: 5, minSecondsClaimToSignup: 3, otpFailuresBot: 5, refereesPerReferrerWindow: 6, refereesWithOneProvider: 3, firstBookingsWithinMinutes: 10, firstBookingsClusterSize: 3, paymentFingerprintCluster: 2, neverBookedTwiceShare: 0.8, neverBookedTwiceMinReferees: 5, minVisitMinutes: 5, providerShareOfReferees: 0.6, providerShareMinReferees: 4, cancelledRedemptionsRecent: 3 });
+    for (const bad of [{ signupsPerIpPrefix24h: 51 }, { signupsPerIpPrefix24h: 1 }, { neverBookedTwiceShare: 0.99 }, { providerShareOfReferees: 1 }, { minSecondsClaimToSignup: 0 }, { otpFailuresBot: 1000 }, { rule: "off" }]) expect(validateGrowthConfig("REFERRAL_FRAUD_THRESHOLDS", bad).valid, JSON.stringify(bad)).toBe(false);
   });
   it("INTEGRATION_MODES: only known integration keys, only mock or real, and no field can carry a credential", () => {
     expect(validateGrowthConfig("INTEGRATION_MODES", { modes: { SMS: "real", PAYMOB: "mock" } }).valid).toBe(true);
