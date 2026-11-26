@@ -1759,6 +1759,77 @@
                             "INVOICE_AND_COLLECT",
                             null
                           ]
+                        },
+                        "currency": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "rounding": {
+                          "enum": [
+                            "HALF_UP",
+                            "DOWN",
+                            "UP",
+                            null
+                          ]
+                        },
+                        "minCollectMinor": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "graceDays": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 30
+                        },
+                        "retryDays": {
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "integer"
+                          }
+                        },
+                        "invoiceDueDays": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1,
+                          "maximum": 90
+                        },
+                        "reminderDays": {
+                          "type": [
+                            "array",
+                            "null"
+                          ],
+                          "items": {
+                            "type": "integer"
+                          },
+                          "description": "Days relative to the invoice due date (negative = before)."
+                        },
+                        "disputeWindowDays": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 365
+                        },
+                        "savedMethodChargeAllowed": {
+                          "type": [
+                            "boolean",
+                            "null"
+                          ]
                         }
                       }
                     },
@@ -1767,6 +1838,60 @@
                     }
                   ]
                 }
+              }
+            }
+          },
+          "disclosure": {
+            "type": "object",
+            "description": "COM-3 (additive). Provider-facing disclosure texts exactly as the Kiorex super admin entered them (no wording is shipped: empty strings and wordingSet=false mean the text block is hidden). Read only.",
+            "properties": {
+              "rateDisclosure": {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string"
+                  },
+                  "ar": {
+                    "type": "string"
+                  }
+                }
+              },
+              "termsSummary": {
+                "type": "object",
+                "properties": {
+                  "en": {
+                    "type": "string"
+                  },
+                  "ar": {
+                    "type": "string"
+                  }
+                }
+              },
+              "showOverrideReason": {
+                "type": "boolean"
+              },
+              "wordingSet": {
+                "type": "boolean"
+              }
+            }
+          },
+          "counsel": {
+            "type": "object",
+            "description": "COM-3 (additive). Funds-flow counsel status for the organisation's market (NOT_REVIEWED, APPROVED_WITH_CONDITIONS, APPROVED, REJECTED). Read only; informational.",
+            "properties": {
+              "status": {
+                "enum": [
+                  "NOT_REVIEWED",
+                  "APPROVED_WITH_CONDITIONS",
+                  "APPROVED",
+                  "REJECTED"
+                ]
+              },
+              "reviewedOn": {
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             }
           }

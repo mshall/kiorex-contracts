@@ -24,6 +24,17 @@ export interface CommissionRateSpec {
   maxMinor: number | null;
   /** null = follow the collection settings. */
   mode: CommissionCollectionMode | null;
+  /** COM-3 (additive, all optional; null / absent = follow the collection settings, nothing is shipped). */
+  currency?: string | null;
+  rounding?: "HALF_UP" | "DOWN" | "UP" | null;
+  minCollectMinor?: number | null;
+  graceDays?: number | null;
+  retryDays?: number[] | null;
+  invoiceDueDays?: number | null;
+  /** Days relative to the invoice due date (negative = before). */
+  reminderDays?: number[] | null;
+  disputeWindowDays?: number | null;
+  savedMethodChargeAllowed?: boolean | null;
 }
 export interface CommissionRateHistoryRow {
   version: number;
@@ -41,6 +52,10 @@ export interface CommissionRateView {
   version: string;
   mode?: CommissionCollectionMode | null;
   history: CommissionRateHistoryRow[];
+  /** COM-3 (additive, optional): disclosure texts as entered by the Kiorex super admin; empty = "wording not set" (hide the block, keep the numbers). Read only. */
+  disclosure?: { rateDisclosure: { en: string; ar: string }; termsSummary: { en: string; ar: string }; showOverrideReason: boolean; wordingSet: boolean };
+  /** COM-3 (additive, optional): funds-flow counsel status of the organisation's market. Informational. */
+  counsel?: { status: "NOT_REVIEWED" | "APPROVED_WITH_CONDITIONS" | "APPROVED" | "REJECTED"; reviewedOn: string | null };
 }
 export interface EffectiveCommissionRate {
   state: "SET" | "NOT_SET";

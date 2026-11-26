@@ -975,8 +975,38 @@ export interface components {
                     maxMinor?: number | null;
                     /** @enum {unknown} */
                     mode?: "NET_FROM_PAYOUT" | "AUTO_CHARGE_SAVED_METHOD" | "INVOICE_AND_COLLECT" | null;
+                    currency?: string | null;
+                    /** @enum {unknown} */
+                    rounding?: "HALF_UP" | "DOWN" | "UP" | null;
+                    minCollectMinor?: number | null;
+                    graceDays?: number | null;
+                    retryDays?: number[] | null;
+                    invoiceDueDays?: number | null;
+                    /** @description Days relative to the invoice due date (negative = before). */
+                    reminderDays?: number[] | null;
+                    disputeWindowDays?: number | null;
+                    savedMethodChargeAllowed?: boolean | null;
                 } | null;
             }[];
+            /** @description COM-3 (additive). Provider-facing disclosure texts exactly as the Kiorex super admin entered them (no wording is shipped: empty strings and wordingSet=false mean the text block is hidden). Read only. */
+            disclosure?: {
+                rateDisclosure?: {
+                    en?: string;
+                    ar?: string;
+                };
+                termsSummary?: {
+                    en?: string;
+                    ar?: string;
+                };
+                showOverrideReason?: boolean;
+                wordingSet?: boolean;
+            };
+            /** @description COM-3 (additive). Funds-flow counsel status for the organisation's market (NOT_REVIEWED, APPROVED_WITH_CONDITIONS, APPROVED, REJECTED). Read only; informational. */
+            counsel?: {
+                /** @enum {unknown} */
+                status?: "NOT_REVIEWED" | "APPROVED_WITH_CONDITIONS" | "APPROVED" | "REJECTED";
+                reviewedOn?: string | null;
+            };
         };
     };
     responses: never;
