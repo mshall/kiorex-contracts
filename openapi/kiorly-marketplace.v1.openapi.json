@@ -1881,7 +1881,11 @@
                   "currency",
                   "claimsCount",
                   "claimsMinor",
-                  "version"
+                  "version",
+                  "collectedMinor",
+                  "deductedMinor",
+                  "invoicedMinor",
+                  "paidMinor"
                 ],
                 "properties": {
                   "runId": {
@@ -1955,7 +1959,37 @@
                   "claims": {
                     "type": "array",
                     "items": {
-                      "type": "object"
+                      "type": "object",
+                      "required": [
+                        "chargeId",
+                        "amountMinor"
+                      ],
+                      "properties": {
+                        "chargeId": {
+                          "type": "string"
+                        },
+                        "appointmentId": {
+                          "type": "string"
+                        },
+                        "amountMinor": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "collectedMinor": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "collectionStatus": {
+                          "type": "string"
+                        },
+                        "chargeStatus": {
+                          "type": "string"
+                        },
+                        "decisionRef": {
+                          "type": "string",
+                          "nullable": true
+                        }
+                      }
                     }
                   },
                   "attempts": {
@@ -1969,6 +2003,25 @@
                     "items": {
                       "type": "object"
                     }
+                  },
+                  "invoiceNo": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "invoiceDueAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "cutoffAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
+                  },
+                  "collectAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "nullable": true
                   }
                 }
               }

@@ -2,6 +2,17 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.13.2 (patch, additive; tagged locally `v1.13.2`, registry publish deferred)
+
+### Added
+- Flag catalogue: `clinic.pay_collections` (kiorly-clinic, global/market/org, Launch-locked, gate = finance and counsel review of the Kiorly Pay screens). The Clinic has enforced this key since the Pay screens; the catalogue now lists it (104 keys) so the control plane serves it instead of treating it as unknown.
+
+### Changed (documentation of an existing endpoint)
+- `openapi/kiorly-marketplace.v1.openapi.json` `POST /commission-collections` request body now matches what the Clinic accepts: `collectedMinor`, `deductedMinor`, `invoicedMinor`, `paidMinor` required (the Clinic rejects a body without them), optional nullable `invoiceNo`, `invoiceDueAt`, `cutoffAt`, `collectAt`, and the per-claim item schema. No path or operationId changed; the sender (Kiorex) already sends these fields.
+
+### Fixed (test)
+- `test/openapi-drift.test.ts`: the superset check against the sibling Clinic spec reported 20 differences that were only spelling and sender-side narrowing (`nullable` vs a type array with null, an inlined schema vs a shared `$ref`, `mode` as an enum where the Clinic copy says string) plus the four missing optional fields above. The comparator now understands those equivalences (sender narrowing is allowed only for the two Kiorex-sent request bodies `/commission-collections` and `/commission-rates`); any removal, retyping or widening is still drift.
+
 ## Unreleased (documentation only)
 
 - `openapi/kiorly-lab.v1.openapi.json`: the 401 description of the partner routes now reads `HMAC_REJECTED (...)`, the code the Lab returns since the kx-test hardening (27 Nov 2026), identical in shape to the Pharmacy: `{ statusCode: 401, code: "HMAC_REJECTED", message: <reason> }` (previously `INVALID_CLIENT`, `INVALID_SIGNATURE` with `reason`, `REPLAYED_NONCE`). No schema, path or field changed; the platform client only reads the status.

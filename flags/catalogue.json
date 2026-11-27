@@ -1655,6 +1655,22 @@
       "keyPattern": false
     },
     {
+      "key": "clinic.pay_collections",
+      "product": "kiorly-clinic",
+      "scopes": [
+        "global",
+        "market",
+        "org"
+      ],
+      "class": "Launch-locked",
+      "whenOff": "The Pay screens and the staff Pay routes (matching, links, status) are hidden and refuse; public payment links already issued keep working; invoices and payments are unchanged",
+      "dependsOn": [],
+      "launchLocked": true,
+      "gate": "Finance and counsel review of the Kiorly Pay screens (mock providers only until LG-COM-18 funds-flow sign-off)",
+      "note": "PROPOSED_DEFAULT (contracts 1.13.2): the Clinic already enforces this key; the catalogue now lists it so the control plane serves it",
+      "keyPattern": false
+    },
+    {
       "key": "growth.loyalty",
       "product": "kiorex",
       "scopes": [

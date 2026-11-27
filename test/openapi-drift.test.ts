@@ -45,7 +45,7 @@ describe("consumer contract vs Kiorly OpenAPI (drift)", () => {
     const csrc = join(ROOT, "..", "clinics-management/apps/api/openapi/kiorex-consumer-contract.json");
     try {
       const kiorly = JSON.parse(readFileSync(src, "utf8"));
-      expect(supersetOf(spec, kiorly), "contracts spec must only ADD to the Kiorly spec (no removed/changed path, param, schema or enum value)").toEqual([]);
+      expect(supersetOf(spec, kiorly, "$", spec), "contracts spec must only ADD to the Kiorly spec (no removed/changed path, param, schema or enum value)").toEqual([]);
       expect(readFileSync(join(ROOT, "consumer/kiorex-consumer-contract.json"), "utf8")).toBe(readFileSync(csrc, "utf8"));
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e; // standalone checkout / Kiorly moved on: pinning is the point
@@ -53,19 +53,48 @@ describe("consumer contract vs Kiorly OpenAPI (drift)", () => {
   });
 });
 
-/** Returns the paths where `base` has something `ext` lacks or changes (arrays: every base element must have a superset match in ext). Info text/version may change. */
-function supersetOf(ext: any, base: any, at = "$"): string[] {
+/**
+ * Returns the paths where `base` has something `ext` lacks or changes (arrays: every base element must have a superset match in ext).
+ * Info text/version and descriptions may change. Semantically equal spellings are accepted so a restyle is not reported as drift:
+ * OpenAPI 3.0 `nullable: true` equals a type array that includes "null", and a local `$ref` in `ext` is resolved against `root`
+ * (the Clinic copy inlines what the pinned spec shares through components).
+ * Kiorex-to-Kiorly request bodies (sender side) may NARROW a loose string to an enum of strings: the sender promises less than the
+ * receiver accepts, which can never break the receiver; widening, removing or retyping stays drift.
+ */
+function supersetOf(ext: any, base: any, at = "$", root: any = ext): string[] {
   if (at === "$.info") return [];
+  if (ext && typeof ext === "object" && !Array.isArray(ext) && typeof ext.$ref === "string" && ext.$ref.startsWith("#/") && !(base && typeof base === "object" && "$ref" in base)) {
+    let cur: any = root;
+    for (const seg of ext.$ref.slice(2).split("/")) cur = cur?.[seg];
+    if (cur) ext = cur;
+  }
   if (Array.isArray(base)) {
     if (!Array.isArray(ext)) return [at];
-    return base.flatMap((b, i) => (ext.some((e) => supersetOf(e, b, at).length === 0) ? [] : [`${at}[${i}]`]));
+    return base.flatMap((b, i) => (ext.some((e) => supersetOf(e, b, at, root).length === 0) ? [] : [`${at}[${i}]`]));
   }
   if (base && typeof base === "object") {
     if (!ext || typeof ext !== "object") return [at];
-    return Object.keys(base).flatMap((k) => supersetOf(ext[k], base[k], `${at}.${k}`));
+    const nb = normaliseNullable(base);
+    const ne = normaliseNullable(ext);
+    if (SENDER_NARROWING.test(at) && typeof nb.type === "string" && !nb.enum && Array.isArray(ne.enum) && ne.enum.every((v: unknown) => v === null || typeof v === nb.type)) {
+      return Object.keys(nb).filter((k) => k !== "type" && k !== "nullable").flatMap((k) => supersetOf(ne[k], nb[k], `${at}.${k}`, root));
+    }
+    return Object.keys(nb).flatMap((k) => supersetOf(ne[k], nb[k], `${at}.${k}`, root));
   }
   if (/\.(description|summary)$/.test(at)) return []; // wording may be refined additively
   return ext === base ? [] : [at];
+}
+
+/** Request bodies Kiorex sends (and the Clinic receives): the sender may be stricter than the receiver's own copy. */
+const SENDER_NARROWING = /^\$\.paths\.\/commission-(collections|rates)\.post\.requestBody\./;
+
+function normaliseNullable(schema: any): any {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) return schema;
+  const out: any = { ...schema };
+  if (out.nullable === true && typeof out.type === "string") out.type = [out.type, "null"];
+  delete out.nullable;
+  if (Array.isArray(out.type)) out.type = [...out.type].sort();
+  return out;
 }
 
 describe("Rev 2.3 additions to the marketplace OpenAPI (KX-09 §03 v2.3, contracts 1.5.0)", () => {

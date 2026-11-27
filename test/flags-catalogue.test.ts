@@ -55,7 +55,7 @@ describe("flag catalogue (KX-08 §09)", () => {
       // 1.12.0 Rev 2.6: patient credit, goodwill, sponsored promotions, provider credit v2
       "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate", "growth.loyalty", "clinic.provider_credit_v2", "clinic.usage_bundles",
       // 1.13.0 consolidated
-      "growth.attribution_models", "growth.cohorts_ltv", "growth.fraud_scoring", "growth.automation_journeys", "growth.ai_recommendations", "growth.seo_automation", "growth.market_onboarding", "clinic.sponsored_promotions",
+      "growth.attribution_models", "growth.cohorts_ltv", "growth.fraud_scoring", "growth.automation_journeys", "growth.ai_recommendations", "growth.seo_automation", "growth.market_onboarding", "clinic.sponsored_promotions", "clinic.pay_collections",
     ];
     expect(cat.flags.map((f: any) => f.key).sort()).toEqual(expected.sort());
   });
@@ -88,6 +88,8 @@ describe("flag catalogue (KX-08 §09)", () => {
       "growth.patient_credit", "growth.refund_as_credit", "growth.family_credit", "growth.support_goodwill", "growth.sponsored_promotions", "growth.corporate", "growth.loyalty",
       // 1.13.0
       "growth.ai_recommendations",
+      // 1.13.2 (Kiorly Pay screens, funds-flow sign-off)
+      "clinic.pay_collections",
     ].sort());
   });
 });

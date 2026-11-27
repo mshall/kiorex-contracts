@@ -2333,15 +2333,30 @@ export interface operations {
                     currency: string;
                     claimsCount: number;
                     claimsMinor: number;
-                    collectedMinor?: number;
-                    deductedMinor?: number;
-                    invoicedMinor?: number;
-                    paidMinor?: number;
+                    collectedMinor: number;
+                    deductedMinor: number;
+                    invoicedMinor: number;
+                    paidMinor: number;
                     /** @description Monotonic; newest wins. */
                     version: number;
-                    claims?: Record<string, never>[];
+                    claims?: {
+                        chargeId: string;
+                        appointmentId?: string;
+                        amountMinor: number;
+                        collectedMinor?: number;
+                        collectionStatus?: string;
+                        chargeStatus?: string;
+                        decisionRef?: string | null;
+                    }[];
                     attempts?: Record<string, never>[];
                     timeline?: Record<string, never>[];
+                    invoiceNo?: string | null;
+                    /** Format: date-time */
+                    invoiceDueAt?: string | null;
+                    /** Format: date-time */
+                    cutoffAt?: string | null;
+                    /** Format: date-time */
+                    collectAt?: string | null;
                 };
             };
         };

@@ -1673,6 +1673,22 @@ export const FLAG_CATALOGUE = [
     "note": "PROPOSED_DEFAULT (growth Phase 2, consolidated contracts 1.13.0): the Clinic mirror of growth.sponsored_promotions (until now clinic.provider_credit_v2 gated it)"
   },
   {
+    "key": "clinic.pay_collections",
+    "product": "kiorly-clinic",
+    "scopes": [
+      "global",
+      "market",
+      "org"
+    ],
+    "class": "Launch-locked",
+    "whenOff": "The Pay screens and the staff Pay routes (matching, links, status) are hidden and refuse; public payment links already issued keep working; invoices and payments are unchanged",
+    "dependsOn": [],
+    "launchLocked": true,
+    "gate": "Finance and counsel review of the Kiorly Pay screens (mock providers only until LG-COM-18 funds-flow sign-off)",
+    "keyPattern": false,
+    "note": "PROPOSED_DEFAULT (contracts 1.13.2): the Clinic already enforces this key; the catalogue now lists it so the control plane serves it"
+  },
+  {
     "key": "growth.loyalty",
     "product": "kiorex",
     "scopes": [
@@ -1792,6 +1808,7 @@ export const FLAG_KEYS = [
   "growth.seo_automation",
   "growth.market_onboarding",
   "clinic.sponsored_promotions",
+  "clinic.pay_collections",
   "growth.loyalty"
 ] as const;
 export type FlagKey = (typeof FLAG_KEYS)[number];
@@ -1897,6 +1914,7 @@ export const FLAGS = {
   GROWTH_SEO_AUTOMATION: "growth.seo_automation",
   GROWTH_MARKET_ONBOARDING: "growth.market_onboarding",
   CLINIC_SPONSORED_PROMOTIONS: "clinic.sponsored_promotions",
+  CLINIC_PAY_COLLECTIONS: "clinic.pay_collections",
   GROWTH_LOYALTY: "growth.loyalty",
 } as const;
 
