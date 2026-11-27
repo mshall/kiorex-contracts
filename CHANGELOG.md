@@ -2,6 +2,10 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## Unreleased (documentation only)
+
+- `openapi/kiorly-lab.v1.openapi.json`: the 401 description of the partner routes now reads `HMAC_REJECTED (...)`, the code the Lab returns since the kx-test hardening (27 Nov 2026), identical in shape to the Pharmacy: `{ statusCode: 401, code: "HMAC_REJECTED", message: <reason> }` (previously `INVALID_CLIENT`, `INVALID_SIGNATURE` with `reason`, `REPLAYED_NONCE`). No schema, path or field changed; the platform client only reads the status.
+
 ## 1.13.1 (patch, additive; tagged locally `v1.13.1`, NOT published)
 
 ### Added

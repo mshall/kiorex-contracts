@@ -120,7 +120,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -217,7 +217,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -316,7 +316,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -404,7 +404,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -473,7 +473,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -566,7 +566,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -655,7 +655,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -772,7 +772,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
@@ -860,7 +860,7 @@
             }
           },
           "401": {
-            "description": "INVALID_CLIENT | INVALID_SIGNATURE | REPLAYED_NONCE",
+            "description": "HMAC_REJECTED (unknown client key, bad signature, stale timestamp, replayed nonce; same shape as the Pharmacy)",
             "content": {
               "application/json": {
                 "schema": {
