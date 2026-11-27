@@ -49,6 +49,12 @@ describe("1.13.0 configurability sweep: policy numbers that were code constants 
     const props = readJson("src/growth-config/INTEGRATION_MODES.schema.json").properties.modes.properties;
     expect(Object.keys(props)).toEqual(expect.arrayContaining(["PAYMOB", "FAWRY", "INSTAPAY", "SMS", "EMAIL", "WHATSAPP_CLOUD", "PUSH_FCM", "GOOGLE_ADS", "LLM_ASSISTANT", "LLM_AI_GATEWAY", "TURN_VIDEO", "PASSPORT_IDP", "OBJECT_STORAGE"]));
   });
+  it("INTEGRATION_MODES 1.13.1: CARD_GATEWAY and BANK_IPN are accepted (additive), a stored 1.13.0 payload still validates", () => {
+    expect(validateGrowthConfig("INTEGRATION_MODES", { modes: { CARD_GATEWAY: "real", BANK_IPN: "mock" } }).valid).toBe(true);
+    expect(validateGrowthConfig("INTEGRATION_MODES", { modes: { PAYMOB: "real", FAWRY: "mock", INSTAPAY: "mock" } }).valid).toBe(true);
+    expect(validateGrowthConfig("INTEGRATION_MODES", { modes: { CARD_GATEWAY: "sandbox" } }).valid).toBe(false);
+    expect(validateGrowthConfig("INTEGRATION_MODES", { modes: { BANK_IPN_X: "real" } }).valid).toBe(false);
+  });
   it("the three kinds that already existed in 1.13.0 keep their keys (EXPERIMENT_POLICY, AUTOMATION_POLICY, ATTRIBUTION_MODELS are untouched by the sweep)", () => {
     expect(Object.keys(readJson("src/growth-config/EXPERIMENT_POLICY.schema.json").properties)).toEqual(expect.arrayContaining(["minRunDays", "srmAlpha", "kAnonymity", "conversionWindowDays"]));
     expect(readJson("src/growth-config/EXPERIMENT_POLICY.schema.json").properties.kAnonymity.minimum).toBe(10);

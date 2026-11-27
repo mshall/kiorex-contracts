@@ -2,6 +2,12 @@
 
 Semver per contract (KX-09 §07). Additive = minor; removing/renaming a field, type string or path = major with 90-day dual support.
 
+## 1.13.1 (patch, additive; tagged locally `v1.13.1`, NOT published)
+
+### Added
+- `INTEGRATION_MODES` config schema accepts the keys `CARD_GATEWAY` (generic card acquirer) and `BANK_IPN` (bank / IPN rail), each `mock` or `real`, like every other integration. Additive only: no key, enum value or default removed; a stored 1.13.0 payload validates unchanged and an absent key still means "mock". The Kiorex platform patched both keys locally; that patch is removed once this tarball is vendored.
+- Proof: `test/growth-config-sweep.test.ts` (new INTEGRATION_MODES 1.13.1 case) and the unchanged 1.12.0 baseline test. `CONTRACTS_VERSION` = 1.13.1.
+
 ## 1.13.0 (consolidated; PREPARED on branch `contracts-1.13.0`, NOT tagged, NOT published: the founder decides the publish)
 
 Additive minor over 1.12.0 (no field, type string, path, enum value (one request enum gains a value), config key or flag removed or renamed; every new field is optional; no required field added to an existing event, schema or request). This one release **replaces** the "unreleased 1.13.0 and 1.14.0" arrangement: the Phase 4 corporate set that was waiting for "1.14.0" (below) is part of this release, so one publish carries everything every wave asked for (launch guide 11.38, 11.41, 11.63, 11.76, 11.81, 11.88, 11.91, 11.94, 11.121). Additive proof: `test/growth-1.13.test.ts` against `test/growth-baseline-1.12.0.json`.

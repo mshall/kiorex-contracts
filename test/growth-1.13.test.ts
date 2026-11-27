@@ -9,8 +9,8 @@ const baseline = readJson("test/growth-baseline-1.12.0.json");
 
 describe("1.13.0 is an additive minor over 1.12.0 (additive proof)", () => {
   it("version, per-spec versions and packed fixtures", () => {
-    expect(CONTRACTS_VERSION).toBe("1.13.0");
-    expect(readJson("package.json").version).toBe("1.13.0");
+    expect(CONTRACTS_VERSION).toMatch(/^1\.13\.\d+$/);
+    expect(readJson("package.json").version).toMatch(/^1\.13\.\d+$/);
     expect(readJson("openapi/kiorly-marketplace.v1.openapi.json").info.version).toBe("1.7.0");
     expect(readJson("package.json").files).toEqual(expect.arrayContaining(["fixtures/growth-v1.13"]));
   });

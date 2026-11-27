@@ -1375,7 +1375,7 @@ export const GROWTH_CONFIG_SCHEMAS = {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://contracts.kiorex.com/growth-config/INTEGRATION_MODES.schema.json",
     "title": "Growth config: INTEGRATION_MODES",
-    "description": "The mode the founder approved for each external integration (mock or real). A switch to real is a maker-checker change: it is the approval record and audit trail, and the Integrations Control Center shows any drift against the deployed environment. It never carries a credential. Added in 1.13.0. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
+    "description": "The mode the founder approved for each external integration (mock or real). A switch to real is a maker-checker change: it is the approval record and audit trail, and the Integrations Control Center shows any drift against the deployed environment. It never carries a credential. Added in 1.13.0; CARD_GATEWAY and BANK_IPN added in 1.13.1. PROPOSED_DEFAULT until ratified. Unknown keys rejected.",
     "type": "object",
     "additionalProperties": false,
     "properties": {
@@ -1398,6 +1398,20 @@ export const GROWTH_CONFIG_SCHEMAS = {
             ]
           },
           "INSTAPAY": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "CARD_GATEWAY": {
+            "type": "string",
+            "enum": [
+              "mock",
+              "real"
+            ]
+          },
+          "BANK_IPN": {
             "type": "string",
             "enum": [
               "mock",
